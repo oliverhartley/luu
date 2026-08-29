@@ -1,0 +1,125 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  /* Default: Rhode Sunset & Terracotta Palette */
+  :root, [data-theme="rhode"] {
+    --bg-app: #FAF7F2;
+    --surface-card: #FFFFFF;
+    --primary-brand: #E07A5F;
+    --primary-brand-dark: #C85A3D;
+    --primary-brand-light: #FCECE8;
+    --accent-glow: #F4A261;
+    --text-main: #2B2D42;
+    --text-muted: #6C757D;
+    --border-subtle: rgba(224, 122, 95, 0.2);
+    --badge-bg: #FBEBE7;
+    --badge-text: #C85A3D;
+    --gradient-brand: linear-gradient(135deg, #E07A5F 0%, #F4A261 100%);
+  }
+
+  /* Matcha & Pistachio Clean-Girl Palette */
+  [data-theme="matcha"] {
+    --bg-app: #F6F8F5;
+    --surface-card: #FFFFFF;
+    --primary-brand: #4A7C59;
+    --primary-brand-dark: #35583E;
+    --primary-brand-light: #EBF3ED;
+    --accent-glow: #8FCB9B;
+    --text-main: #1F2E23;
+    --text-muted: #5C7162;
+    --border-subtle: rgba(74, 124, 89, 0.2);
+    --badge-bg: #E8F4EC;
+    --badge-text: #2D5A38;
+    --gradient-brand: linear-gradient(135deg, #4A7C59 0%, #8FCB9B 100%);
+  }
+
+  /* Electric Lilac & Velvet Plum Palette */
+  [data-theme="lilac"] {
+    --bg-app: #F8F6FC;
+    --surface-card: #FFFFFF;
+    --primary-brand: #8338EC;
+    --primary-brand-dark: #6411AD;
+    --primary-brand-light: #F2E9FC;
+    --accent-glow: #C77DFF;
+    --text-main: #1D1135;
+    --text-muted: #6B5B84;
+    --border-subtle: rgba(131, 56, 236, 0.2);
+    --badge-bg: #F3E8FF;
+    --badge-text: #6B21A8;
+    --gradient-brand: linear-gradient(135deg, #8338EC 0%, #C77DFF 100%);
+  }
+
+  /* Noir Luxury & Champagne Gold Palette */
+  [data-theme="noir"] {
+    --bg-app: #121214;
+    --surface-card: #1C1C20;
+    --primary-brand: #D4AF37;
+    --primary-brand-dark: #AA820A;
+    --primary-brand-light: #2A261A;
+    --accent-glow: #F3E5AB;
+    --text-main: #F4F4F6;
+    --text-muted: #9E9EA8;
+    --border-subtle: rgba(212, 175, 55, 0.25);
+    --badge-bg: #2C2619;
+    --badge-text: #E5C358;
+    --gradient-brand: linear-gradient(135deg, #D4AF37 0%, #F3E5AB 100%);
+  }
+
+  body {
+    background-color: var(--bg-app);
+    color: var(--text-main);
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    -webkit-tap-highlight-color: transparent;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
+  h1, h2, h3, .font-serif {
+    font-family: 'Playfair Display', Georgia, serif;
+    letter-spacing: -0.015em;
+  }
+}
+
+/* Dynamic Brand Colors */
+.bg-brand-dyn {
+  background-color: var(--primary-brand) !important;
+}
+.bg-brand-dyn-light {
+  background-color: var(--primary-brand-light) !important;
+}
+.text-brand-dyn {
+  color: var(--primary-brand) !important;
+}
+.border-brand-dyn {
+  border-color: var(--border-subtle) !important;
+}
+.gradient-brand-dyn {
+  background: var(--gradient-brand) !important;
+}
+
+/* Glassmorphism 2.0 */
+.glass-panel-modern {
+  background: var(--surface-card);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border-subtle);
+}
+
+/* Holographic sheen on VIP cards */
+.holographic-sheen {
+  background: linear-gradient(
+    115deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.15) 30%,
+    rgba(255, 255, 255, 0.35) 50%,
+    transparent 70%
+  );
+  background-size: 200% 200%;
+  animation: shine 4s infinite linear;
+}
+
+@keyframes shine {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
