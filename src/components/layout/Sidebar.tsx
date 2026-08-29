@@ -8,7 +8,9 @@ import {
   BarChart3, 
   Armchair,
   CheckCircle,
-  AlertTriangle
+  AlertTriangle,
+  Scissors,
+  UserCheck
 } from 'lucide-react';
 
 export const Sidebar: React.FC = () => {
@@ -41,6 +43,13 @@ export const Sidebar: React.FC = () => {
       badgeColor: 'bg-emerald-500 text-white animate-pulse'
     },
     {
+      id: 'stylists',
+      label: 'Peluqueras & Estación',
+      icon: UserCheck,
+      badge: arrivedCount > 0 ? `${arrivedCount} en sala` : undefined,
+      badgeColor: 'bg-brand-100 text-brand-800 font-bold'
+    },
+    {
       id: 'floorplan',
       label: 'Mapa de Sillones',
       icon: Armchair,
@@ -53,6 +62,11 @@ export const Sidebar: React.FC = () => {
       icon: Users,
     },
     {
+      id: 'services',
+      label: 'Servicios & Tarifas',
+      icon: Scissors,
+    },
+    {
       id: 'marketing',
       label: 'Fidelización & WhatsApp',
       icon: Sparkles,
@@ -61,7 +75,7 @@ export const Sidebar: React.FC = () => {
     },
     {
       id: 'inventory',
-      label: 'Inventario & Stock',
+      label: 'Productos & POS',
       icon: Package,
       badge: lowStockCount > 0 ? `${lowStockCount} alertas` : undefined,
       badgeColor: 'bg-amber-500 text-white'
@@ -169,9 +183,9 @@ export const Sidebar: React.FC = () => {
             >
               <Icon className="w-5 h-5 mb-0.5" />
               <span className="text-[10px] font-medium tracking-tight">
-                {item.id === 'agenda' ? 'Agenda' : item.id === 'floorplan' ? 'Sillones' : item.id === 'clients' ? 'Clientes' : item.id === 'marketing' ? 'Marketing' : 'Stock'}
+                {item.id === 'agenda' ? 'Agenda' : item.id === 'stylists' ? 'Peluqueras' : item.id === 'floorplan' ? 'Sillones' : item.id === 'clients' ? 'Clientes' : item.id === 'marketing' ? 'Marketing' : 'Stock'}
               </span>
-              {item.badge && item.id === 'agenda' && arrivedCount > 0 && (
+              {item.badge && (item.id === 'agenda' || item.id === 'stylists') && arrivedCount > 0 && (
                 <span className="absolute top-0 right-2 w-2.5 h-2.5 bg-emerald-500 rounded-full ring-2 ring-white"></span>
               )}
             </button>

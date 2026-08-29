@@ -11,11 +11,13 @@ import {
   Search, 
   SlidersHorizontal,
   Armchair,
-  RotateCcw 
+  RotateCcw,
+  LogIn
 } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
 import { ThemeSwitcherBar } from '../themes/ThemeSwitcherBar';
+import { UserMenu } from './UserMenu';
 
 interface NavbarProps {
   onOpenNewAppointmentModal: () => void;
@@ -23,6 +25,7 @@ interface NavbarProps {
   onOpenColorCalculator: () => void;
   onOpenCommandPalette: () => void;
   onOpenBeforeAfterSlider: () => void;
+  onOpenAuthScreen?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({ 
@@ -30,7 +33,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenWhatsAppSimulator,
   onOpenColorCalculator,
   onOpenCommandPalette,
-  onOpenBeforeAfterSlider
+  onOpenBeforeAfterSlider,
+  onOpenAuthScreen
 }) => {
   const { 
     role, 
@@ -41,7 +45,8 @@ export const Navbar: React.FC<NavbarProps> = ({
     whatsAppLogs, 
     resetDemoData,
     setActiveTab,
-    activeTab
+    currentUser,
+    currentSalon
   } = useApp();
 
   return (
@@ -60,11 +65,11 @@ export const Navbar: React.FC<NavbarProps> = ({
                   luu<span className="text-brand-500">.</span>
                 </span>
                 <Badge variant="luxury" className="hidden md:inline-flex">
-                  v3.0 Modern
+                  {currentSalon.name}
                 </Badge>
               </div>
               <p className="text-[11px] text-charcoal-500 hidden sm:block">
-                Beauty-Tech & CRM Inteligente
+                Beauty-Tech & CRM Multi-Salón
               </p>
             </div>
           </div>
@@ -72,7 +77,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           {/* Global Search / Command Palette Bar (Cmd+K) */}
           <div 
             onClick={onOpenCommandPalette}
-            className="hidden md:flex items-center space-x-2 bg-[#FAF8F5] hover:bg-brand-50/70 cursor-pointer px-4 py-2 rounded-2xl border border-brand-200/80 shadow-sm text-xs text-charcoal-500 transition-all w-52 lg:w-72"
+            className="hidden md:flex items-center space-x-2 bg-[#FAF8F5] hover:bg-brand-50/70 cursor-pointer px-4 py-2 rounded-2xl border border-brand-200/80 shadow-sm text-xs text-charcoal-500 transition-all w-48 lg:w-64"
           >
             <Search className="w-4 h-4 text-brand-600" />
             <span className="flex-1 truncate">Buscar...</span>
@@ -81,35 +86,11 @@ export const Navbar: React.FC<NavbarProps> = ({
             </kbd>
           </div>
 
-          {/* Right Actions, Palette Switcher & Tools */}
+          {/* Right Actions, Palette Switcher & User Menu */}
           <div className="flex items-center space-x-2 sm:space-x-2.5">
             
             {/* Palette Switcher Bar (Rhode, Matcha, Lilac, Noir) */}
             <ThemeSwitcherBar />
-
-            {/* Before / After Transformation Slider Trigger */}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onOpenBeforeAfterSlider}
-              className="hidden lg:inline-flex items-center space-x-1.5 border-brand-200"
-              title="Comparador Antes vs Después"
-            >
-              <SlidersHorizontal className="w-3.5 h-3.5 text-brand-600" />
-              <span>Antes/Después</span>
-            </Button>
-
-            {/* Color Dye Ratio Calculator Button */}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onOpenColorCalculator}
-              className="hidden sm:inline-flex items-center space-x-1.5 border-brand-200"
-              title="Calculadora de Mezclas de Color 1:1.5 / 1:2"
-            >
-              <Scale className="w-3.5 h-3.5 text-brand-600" />
-              <span className="hidden xl:inline">Báscula</span>
-            </Button>
 
             {/* Quick WhatsApp Simulator Trigger */}
             <Button
@@ -139,39 +120,35 @@ export const Navbar: React.FC<NavbarProps> = ({
               </Button>
             )}
 
-            {/* Role Switcher */}
-            <div className="flex items-center bg-charcoal-100/80 p-1 rounded-xl border border-charcoal-200/60">
-              <button
-                onClick={() => setRole('admin')}
-                className={`flex items-center space-x-1 px-2 py-1 rounded-lg text-xs font-medium transition-all ${
-                  role === 'admin'
-                    ? 'bg-white text-charcoal-950 shadow-sm font-semibold'
-                    : 'text-charcoal-500 hover:text-charcoal-800'
-                }`}
-                title="Modo Dueño/Administrador"
+            {/* Portal Switcher Button for Client Testing */}
+            <button
+              onClick={() => setRole('client')}
+              className="hidden sm:flex items-center space-x-1 px-2.5 py-1.5 rounded-xl text-xs font-semibold bg-brand-50 hover:bg-brand-100 text-brand-800 border border-brand-200 transition-all"
+              title="Probar vista de clienta"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-brand-600" />
+              <span>Portal</span>
+            </button>
+
+            {/* User Profile Menu or Sign In */}
+            {currentUser ? (
+              <UserMenu />
+            ) : (
+              <Button
+                variant="dark"
+                size="sm"
+                onClick={onOpenAuthScreen}
+                className="flex items-center space-x-1.5"
               >
-                <Store className="w-3.5 h-3.5" />
-                <span className="hidden md:inline">Admin</span>
-              </button>
-              
-              <button
-                onClick={() => setRole('client')}
-                className={`flex items-center space-x-1 px-2 py-1 rounded-lg text-xs font-medium transition-all ${
-                  role === 'client'
-                    ? 'bg-gradient-to-r from-brand-500 to-roseGold text-white shadow-sm font-semibold'
-                    : 'text-charcoal-500 hover:text-charcoal-800'
-                }`}
-                title="Modo Cliente / Auto-reserva"
-              >
-                <Sparkles className="w-3.5 h-3.5" />
-                <span className="hidden md:inline">Portal</span>
-              </button>
-            </div>
+                <LogIn className="w-4 h-4" />
+                <span>Ingresar</span>
+              </Button>
+            )}
 
             {/* Reset Demo Data */}
             <button
               onClick={resetDemoData}
-              className="p-1.5 text-charcoal-400 hover:text-charcoal-700 hover:bg-charcoal-100 rounded-lg transition-all hidden sm:block"
+              className="p-1.5 text-charcoal-400 hover:text-charcoal-700 hover:bg-charcoal-100 rounded-lg transition-all hidden lg:block"
               title="Restablecer datos de demostración"
             >
               <RotateCcw className="w-3.5 h-3.5" />

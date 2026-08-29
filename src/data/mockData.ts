@@ -1,4 +1,4 @@
-import { Professional, Service, Client, Appointment, InventoryProduct, MarketingCampaign, WhatsAppMessageSimulation } from '../types';
+import { Professional, Service, Client, Appointment, InventoryProduct, MarketingCampaign, WhatsAppMessageSimulation, ProductSale } from '../types';
 
 export const INITIAL_PROFESSIONALS: Professional[] = [
   {
@@ -381,69 +381,234 @@ export const INITIAL_INVENTORY: InventoryProduct[] = [
     name: 'Decolorante Blonde Studio 9 Niveles',
     brand: "L'Oréal Professionnel",
     category: 'tintes',
+    barcode: '7801122334455',
+    sku: 'DEC-BS9-500',
+    isForSale: false,
     currentStock: 450, // 450 grams remaining
     minStockAlert: 500, // Alert triggered!
     unit: 'g',
     costPrice: 28900,
-    lastRestocked: '2026-07-20'
+    lastRestocked: '2026-07-20',
+    description: 'Polvo decolorante de alto rendimiento que aclara hasta 9 tonos. Formulado con Olicomplex para máxima protección y neutralización de reflejos amarillos indeseados.',
+    features: [
+      '⚡ Aclaración extrema de hasta 9 niveles',
+      '🛡️ Tecnología Olicomplex que cuida la fibra',
+      '🎨 Textura cremosa ideal para balayage al aire libre'
+    ],
+    imageUrl: 'https://images.unsplash.com/photo-1562322140-8baeececf3df?w=600&auto=format&fit=crop&q=80'
   },
   {
     id: 'prod-2',
     name: 'Oxidante Crema 20 Volúmenes (1 Litro)',
     brand: "L'Oréal Professionnel",
     category: 'oxidantes',
+    barcode: '7802233445566',
+    sku: 'OXI-20V-1L',
+    isForSale: false,
     currentStock: 2200,
     minStockAlert: 1000,
     unit: 'ml',
     costPrice: 12500,
-    lastRestocked: '2026-08-01'
+    lastRestocked: '2026-08-01',
+    description: 'Oxidante estabilizado en crema para una mezcla homogénea y resultados de coloración de máxima fidelidad y cobertura impecable.',
+    features: [
+      '🧪 Estabilizado al 6% de peróxido de hidrógeno',
+      '✨ Consistencia cremosa que no gotea',
+      '💆‍♀️ Acondicionadores que protegen el cuero cabelludo'
+    ],
+    imageUrl: 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=600&auto=format&fit=crop&q=80'
   },
   {
     id: 'prod-3',
     name: 'Tratamiento Olaplex Nº 1 & 2 Kit Salon',
     brand: 'Olaplex',
     category: 'tratamientos',
+    barcode: '7809876543210',
+    sku: 'OLA-KIT-SALON',
+    isForSale: true,
     currentStock: 180,
     minStockAlert: 150,
     unit: 'ml',
     costPrice: 65000,
-    lastRestocked: '2026-07-10'
+    salePrice: 79000,
+    lastRestocked: '2026-07-10',
+    description: 'Sistema profesional en dos pasos que multiplica y repara los enlaces de disulfuro quebrados durante la decoloración y coloración química.',
+    features: [
+      '🔬 Tecnología de reconexión molecular de enlaces',
+      '🛡️ Evita el daño capilar durante procesos extremos',
+      '💎 Resultados visibles desde el primer uso'
+    ],
+    imageUrl: 'https://images.unsplash.com/photo-1535585209827-a15fcdbc4c2d?w=600&auto=format&fit=crop&q=80'
   },
   {
     id: 'prod-4',
     name: 'Tinte Majirel Cool Inforced 7.1 (Tubo 50g)',
     brand: "L'Oréal Professionnel",
     category: 'tintes',
+    barcode: '7804455667788',
+    sku: 'MAJ-7.1-COOL',
+    isForSale: false,
     currentStock: 2, // only 2 tubes left! Alert!
     minStockAlert: 5,
     unit: 'tubos',
     costPrice: 6200,
-    lastRestocked: '2026-07-15'
+    lastRestocked: '2026-07-15',
+    description: 'Coloración permanente con hasta 6 semanas de neutralización fría contra reflejos rojizos y anaranjados.',
+    features: [
+      '🎨 Reflejos cenizas ultra fríos de larga duración',
+      '💆‍♀️ Cuidado Ionène G + Incell que fortalece la cutícula',
+      '💯 Cobertura total de canas con acabado natural'
+    ],
+    imageUrl: 'https://images.unsplash.com/photo-1519699047748-de8e457a634e?w=600&auto=format&fit=crop&q=80'
   },
   {
     id: 'prod-5',
     name: 'Base Rubber Nude 30ml',
     brand: 'Kodi Professional',
     category: 'esmaltes',
+    barcode: '7803332221110',
+    sku: 'KOD-RUBBER-NUDE',
+    isForSale: true,
     currentStock: 1, // 1 unit left! Alert!
     minStockAlert: 3,
     unit: 'frascos',
     costPrice: 16900,
-    lastRestocked: '2026-06-28'
+    salePrice: 24900,
+    lastRestocked: '2026-06-28',
+    description: 'Base de camuflaje de alta densidad con elasticidad de caucho para alineación y refuerzo de uñas naturales frágiles.',
+    features: [
+      '💅 Refuerzo elástico anti-quiebre',
+      '💎 Nivelación autónoma perfecta en segundos',
+      '⏱️ Más de 3 semanas sin desprendimientos'
+    ],
+    imageUrl: 'https://images.unsplash.com/photo-1632345031435-8727f6897d53?w=600&auto=format&fit=crop&q=80'
   },
   {
     id: 'prod-6',
-    name: 'Aceite de Argán & Macadamia 50ml (Para reventa)',
+    name: 'Aceite de Argán Tratamiento 100ml',
     brand: 'Moroccanoil',
     category: 'retail',
+    barcode: '7801234567890',
+    sku: 'MOR-OIL-100',
+    isForSale: true,
     currentStock: 8,
     minStockAlert: 4,
     unit: 'unidades',
     costPrice: 18000,
     salePrice: 32000,
-    lastRestocked: '2026-08-05'
+    lastRestocked: '2026-08-05',
+    description: 'El aceite capilar icónico que revolucionó la industria. Enriquecido con aceite de argán rico en antioxidantes y vitaminas para un brillo deslumbrante y tacto de seda.',
+    features: [
+      '✨ Brillo espejo y sedosidad inmediata',
+      '💧 Enriquecido con aceite de argán puro & vitamina E',
+      '🛡️ Protección térmica y control del frizz 48h',
+      '🌿 Fórmula no grasa de rápida absorción'
+    ],
+    imageUrl: 'https://images.unsplash.com/photo-1608248597359-322194d216f4?w=600&auto=format&fit=crop&q=80'
+  },
+  {
+    id: 'prod-7',
+    name: 'Shampoo Nutritive Bain Satin Riche 250ml',
+    brand: 'Kérastase',
+    category: 'retail',
+    barcode: '7804561237894',
+    sku: 'KER-BAIN-SATIN',
+    isForSale: true,
+    currentStock: 6,
+    minStockAlert: 3,
+    unit: 'unidades',
+    costPrice: 21000,
+    salePrice: 36900,
+    lastRestocked: '2026-08-10',
+    description: 'Baño de nutrición profunda con proteínas de origen vegetal y niacinamida. Limpia con extrema delicadeza el cabello seco, devolviéndole ligereza y brillo sublime.',
+    features: [
+      '💧 +58% de hidratación profunda inmediata',
+      '✨ Nutrición intensa sin aportar peso',
+      '🌿 Niacinamida + Proteínas vegetales hidrolizadas',
+      '🌸 Fragancia floral de alta perfumería francesa'
+    ],
+    imageUrl: 'https://images.unsplash.com/photo-1571781926291-c477ebfd024b?w=600&auto=format&fit=crop&q=80'
+  },
+  {
+    id: 'prod-8',
+    name: 'Mascarilla Absolut Repair Gold Quinoa 250ml',
+    brand: "L'Oréal Professionnel",
+    category: 'retail',
+    barcode: '7806549873215',
+    sku: 'LOR-ABS-REP-250',
+    isForSale: true,
+    currentStock: 5,
+    minStockAlert: 2,
+    unit: 'unidades',
+    costPrice: 17500,
+    salePrice: 31900,
+    lastRestocked: '2026-08-12',
+    description: 'Mascarilla reconstructora instantánea para cabellos muy dañados. Infundida con quinoa dorada y proteína de trigo para restaurar la superficie sin apelmazar.',
+    features: [
+      '✨ 77% menos daño en la superficie capilar',
+      '🛡️ 7x más brillo y suavidad de salón',
+      '🌾 Infusión de Quinoa Dorada + Proteína vegetal'
+    ],
+    imageUrl: 'https://images.unsplash.com/photo-1556228720-195a672e8a03?w=600&auto=format&fit=crop&q=80'
   }
 ];
+
+export const INITIAL_PRODUCT_SALES: ProductSale[] = [
+  {
+    id: 'sale-101',
+    salonId: 'salon-1',
+    date: '2026-08-16',
+    time: '11:45',
+    clientId: 'client-1',
+    clientName: 'Isidora Paz Benítez',
+    professionalId: 'prof-1',
+    professionalName: 'Valentina Morales',
+    paymentMethod: 'credit',
+    items: [
+      {
+        productId: 'prod-6',
+        productName: 'Aceite de Argán Tratamiento 100ml',
+        brand: 'Moroccanoil',
+        quantity: 1,
+        unitPrice: 32000,
+        subtotal: 32000,
+        barcode: '7801234567890',
+        imageUrl: 'https://images.unsplash.com/photo-1608248597359-322194d216f4?w=600&auto=format&fit=crop&q=80'
+      }
+    ],
+    subtotal: 32000,
+    discount: 0,
+    total: 32000,
+    notes: 'Recomendado para mantención de puntas tras balayage.'
+  },
+  {
+    id: 'sale-102',
+    salonId: 'salon-1',
+    date: '2026-08-15',
+    time: '16:30',
+    clientId: 'client-2',
+    clientName: 'Florencia Valenzuela',
+    professionalId: 'prof-3',
+    professionalName: 'Javiera Silva',
+    paymentMethod: 'debit',
+    items: [
+      {
+        productId: 'prod-7',
+        productName: 'Shampoo Nutritive Bain Satin Riche 250ml',
+        brand: 'Kérastase',
+        quantity: 1,
+        unitPrice: 36900,
+        subtotal: 36900,
+        barcode: '7804561237894',
+        imageUrl: 'https://images.unsplash.com/photo-1571781926291-c477ebfd024b?w=600&auto=format&fit=crop&q=80'
+      }
+    ],
+    subtotal: 36900,
+    discount: 0,
+    total: 36900
+  }
+];
+
 
 export const INITIAL_CAMPAIGNS: MarketingCampaign[] = [
   {

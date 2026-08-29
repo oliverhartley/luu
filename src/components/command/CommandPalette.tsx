@@ -118,6 +118,22 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
               <button
                 onClick={() => {
                   onClose();
+                  setActiveTab('stylists');
+                }}
+                className="w-full flex items-center justify-between p-2.5 rounded-2xl hover:bg-brand-50 text-xs font-semibold text-charcoal-800 transition-all"
+              >
+                <span className="flex items-center space-x-2.5">
+                  <Scissors className="w-4 h-4 text-brand-600" />
+                  <span>Estación de Peluqueras & Clientas</span>
+                </span>
+                <span className="text-[10px] bg-brand-100 text-brand-800 px-2 py-0.5 rounded-md">
+                  Peluqueras
+                </span>
+              </button>
+
+              <button
+                onClick={() => {
+                  onClose();
                   onOpenColorCalculator();
                 }}
                 className="w-full flex items-center justify-between p-2.5 rounded-2xl hover:bg-brand-50 text-xs font-semibold text-charcoal-800 transition-all"
@@ -128,6 +144,22 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                 </span>
                 <span className="text-[10px] bg-brand-100 text-brand-800 px-2 py-0.5 rounded-md">
                   Báscula
+                </span>
+              </button>
+
+              <button
+                onClick={() => {
+                  onClose();
+                  setActiveTab('inventory');
+                }}
+                className="w-full flex items-center justify-between p-2.5 rounded-2xl hover:bg-brand-50 text-xs font-semibold text-charcoal-800 transition-all"
+              >
+                <span className="flex items-center space-x-2.5">
+                  <Package className="w-4 h-4 text-brand-600" />
+                  <span>Punto de Venta (POS) & Escáner de Código de Barras</span>
+                </span>
+                <span className="text-[10px] bg-brand-100 text-brand-800 px-2 py-0.5 rounded-md">
+                  Venta POS
                 </span>
               </button>
 

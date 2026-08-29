@@ -26,7 +26,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
   isOpen,
   onClose
 }) => {
-  const { checkoutAppointment, inventory, addClientFormula } = useApp();
+  const { checkoutAppointment, inventory, addClientFormula, processProductSale } = useApp();
 
   const [paymentMethod, setPaymentMethod] = useState<'credit' | 'debit' | 'transfer' | 'cash'>('credit');
   const [discount, setDiscount] = useState<number>(0);
@@ -71,6 +71,36 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
         generalNotes: `Registrado en cobro de atención del ${appointment.date}`,
         photos: uploadedPhoto ? [uploadedPhoto] : []
       });
+    }
+
+    // Si se seleccionó un producto de retail adicional, descontar de inventario y registrar venta
+    if (selectedExtraProduct) {
+      const extraProd = inventory.find((p) => p.id === selectedExtraProduct);
+      if (extraProd) {
+        processProductSale({
+          items: [
+            {
+              productId: extraProd.id,
+              productName: extraProd.name,
+              brand: extraProd.brand,
+              quantity: 1,
+              unitPrice: extraProd.salePrice || extraProductPrice,
+              subtotal: extraProd.salePrice || extraProductPrice,
+              barcode: extraProd.barcode,
+              imageUrl: extraProd.imageUrl
+            }
+          ],
+          subtotal: extraProductPrice,
+          discount: 0,
+          total: extraProductPrice,
+          paymentMethod,
+          clientId: appointment.clientId,
+          clientName: appointment.clientName,
+          professionalId: appointment.items[0]?.professionalId,
+          professionalName: appointment.items[0]?.professionalName,
+          notes: `Venta adicional en atención #${appointment.id}`
+        });
+      }
     }
 
     checkoutAppointment(appointment.id, {

@@ -19,10 +19,13 @@ import { ColorRatioCalculatorModal } from './components/tools/ColorRatioCalculat
 import { BeforeAfterSliderModal } from './components/tools/BeforeAfterSliderModal';
 import { BeautyPassModal } from './components/clients/BeautyPassModal';
 import { SalonFloorPlan } from './components/salon-floor/SalonFloorPlan';
+import { ServicesManager } from './components/services/ServicesManager';
+import { StylistsManager } from './components/stylists/StylistsManager';
+import { AuthScreen } from './components/auth/AuthScreen';
 import { Appointment, Client } from './types';
 
 export const App: React.FC = () => {
-  const { role, activeTab } = useApp();
+  const { role, activeTab, currentUser } = useApp();
 
   // Modals state
   const [isNewAppointmentOpen, setIsNewAppointmentOpen] = useState<boolean>(false);
@@ -35,12 +38,23 @@ export const App: React.FC = () => {
   const [isColorCalculatorOpen, setIsColorCalculatorOpen] = useState<boolean>(false);
   const [isBeforeAfterOpen, setIsBeforeAfterOpen] = useState<boolean>(false);
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState<boolean>(false);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
 
   // If Client self-booking role is active, render customer booking view
   if (role === 'client') {
     return (
-      <div className="min-h-screen bg-[#FAF8F5]">
+      <div className="min-h-screen bg-[#FAF7F2]">
         <ClientBookingApp />
+        <ToastContainer />
+      </div>
+    );
+  }
+
+  // If user is logged out, show the full Auth Screen
+  if (!currentUser) {
+    return (
+      <div className="min-h-screen bg-[#FAF7F2]">
+        <AuthScreen />
         <ToastContainer />
       </div>
     );
@@ -59,6 +73,7 @@ export const App: React.FC = () => {
         onOpenColorCalculator={() => setIsColorCalculatorOpen(true)}
         onOpenCommandPalette={() => setIsCommandPaletteOpen(true)}
         onOpenBeforeAfterSlider={() => setIsBeforeAfterOpen(true)}
+        onOpenAuthScreen={() => setIsAuthModalOpen(true)}
       />
 
       {/* Main Layout */}
@@ -81,11 +96,20 @@ export const App: React.FC = () => {
             />
           )}
 
+          {activeTab === 'stylists' && (
+            <StylistsManager
+              onOpenCheckout={(apt) => setCheckoutTargetAppointment(apt)}
+              onViewClientProfile={(clientId) => setProfileTargetClientId(clientId)}
+              onOpenWhatsAppForAppointment={(apt) => {
+                setWhatsAppTargetPhone(apt.clientPhone);
+                setIsWhatsAppSimulatorOpen(true);
+              }}
+            />
+          )}
+
           {activeTab === 'floorplan' && (
             <SalonFloorPlan
               onOpenAppointmentDetails={(clientName) => {
-                const found = profileTargetClientId;
-                // opens first
                 setProfileTargetClientId('client-1');
               }}
             />
@@ -98,6 +122,8 @@ export const App: React.FC = () => {
               onOpenBeautyPass={(client) => setBeautyPassClient(client)}
             />
           )}
+
+          {activeTab === 'services' && <ServicesManager />}
 
           {activeTab === 'marketing' && (
             <MarketingHub
@@ -174,6 +200,21 @@ export const App: React.FC = () => {
         }}
         onViewClientProfile={(cid) => setProfileTargetClientId(cid)}
       />
+
+      {/* Auth Modal if opened from top navbar */}
+      {isAuthModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-charcoal-950/75 backdrop-blur-md animate-fade-in">
+          <div className="relative w-full max-w-4xl">
+            <button
+              onClick={() => setIsAuthModalOpen(false)}
+              className="absolute top-4 right-4 z-50 p-2 text-charcoal-500 hover:text-charcoal-900 bg-white/80 rounded-full"
+            >
+              ✕
+            </button>
+            <AuthScreen onDismiss={() => setIsAuthModalOpen(false)} />
+          </div>
+        </div>
+      )}
 
       {/* Toast feedback messages */}
       <ToastContainer />

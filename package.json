@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "deploy": "npm run build && npx firebase-tools deploy --only hosting --project pelu-harliz-green"
+    "deploy": "gcloud run deploy luu --source . --region us-central1 --allow-unauthenticated",
+    "deploy:firebase": "npm run build && npx firebase-tools deploy --only hosting --project pelu-harliz-green-df830"
   },
   "dependencies": {
     "class-variance-authority": "^0.7.1",

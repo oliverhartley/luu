@@ -2,8 +2,32 @@ export type UserRole = 'admin' | 'stylist' | 'client';
 
 export type ServiceCategory = 'hair' | 'nails' | 'brows_lashes' | 'skincare' | 'spa';
 
+export interface TenantSalon {
+  id: string;
+  name: string;
+  slug: string;
+  address: string;
+  city: string;
+  phone: string;
+  logo?: string;
+  ownerId: string;
+  createdAt: string;
+}
+
+export interface AuthUser {
+  id: string;
+  name: string;
+  email: string;
+  avatar: string;
+  role: 'owner' | 'stylist' | 'receptionist';
+  salonId: string;
+  salonName: string;
+  provider: 'google' | 'password';
+}
+
 export interface Service {
   id: string;
+  salonId?: string;
   name: string;
   category: ServiceCategory;
   durationMinutes: number;
@@ -21,6 +45,7 @@ export interface Service {
 
 export interface Professional {
   id: string;
+  salonId?: string;
   name: string;
   roleTitle: string; // e.g. "Colorista Master", "Manicurista Senior"
   specialties: ServiceCategory[];
@@ -56,6 +81,7 @@ export interface TechnicalFormula {
 
 export interface Client {
   id: string;
+  salonId?: string;
   name: string;
   phone: string;
   email: string;
@@ -85,6 +111,7 @@ export interface AppointmentItem {
 
 export interface Appointment {
   id: string;
+  salonId?: string;
   clientId: string;
   clientName: string;
   clientPhone: string;
@@ -114,19 +141,56 @@ export interface Appointment {
 
 export interface InventoryProduct {
   id: string;
+  salonId?: string;
   name: string;
   brand: string;
   category: 'tintes' | 'oxidantes' | 'tratamientos' | 'esmaltes' | 'desechables' | 'retail';
+  barcode?: string;
+  sku?: string;
+  isForSale?: boolean;
   currentStock: number;
   minStockAlert: number;
   unit: string;
   costPrice: number;
   salePrice?: number;
   lastRestocked: string;
+  description?: string;
+  features?: string[];
+  imageUrl?: string;
 }
+
+export interface ProductSaleItem {
+  productId: string;
+  productName: string;
+  brand: string;
+  quantity: number;
+  unitPrice: number;
+  subtotal: number;
+  barcode?: string;
+  imageUrl?: string;
+}
+
+export interface ProductSale {
+  id: string;
+  salonId?: string;
+  date: string; // YYYY-MM-DD
+  time: string; // HH:mm
+  items: ProductSaleItem[];
+  subtotal: number;
+  discount: number;
+  total: number;
+  paymentMethod: 'credit' | 'debit' | 'transfer' | 'cash';
+  clientId?: string;
+  clientName?: string;
+  professionalId?: string;
+  professionalName?: string;
+  notes?: string;
+}
+
 
 export interface MarketingCampaign {
   id: string;
+  salonId?: string;
   title: string;
   type: 'recurrence' | 'birthday' | 'inactivity_recovery' | 'flash_promo';
   serviceTrigger?: ServiceCategory;
@@ -140,6 +204,7 @@ export interface MarketingCampaign {
 
 export interface WhatsAppMessageSimulation {
   id: string;
+  salonId?: string;
   toName: string;
   toPhone: string;
   type: 'reminder' | 'survey' | 'campaign' | 'checkin_alert' | 'rectification';

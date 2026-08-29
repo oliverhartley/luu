@@ -16,6 +16,7 @@ import {
   Filter
 } from 'lucide-react';
 import { Appointment, AppointmentStatus } from '../../types';
+import { AddServiceToAppointmentModal } from '../stylists/AddServiceToAppointmentModal';
 
 interface AgendaViewProps {
   onOpenNewAppointment: () => void;
@@ -43,6 +44,7 @@ export const AgendaView: React.FC<AgendaViewProps> = ({
   } = useApp();
 
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [targetAppointmentForAddService, setTargetAppointmentForAddService] = useState<Appointment | null>(null);
 
   // Filter appointments for the selected date and professional
   const filteredAppointments = appointments.filter((apt) => {
@@ -285,6 +287,15 @@ export const AgendaView: React.FC<AgendaViewProps> = ({
                     <span className="text-charcoal-600">Total Estimado:</span>
                     <span className="text-brand-800 text-sm">${apt.totalPrice.toLocaleString('es-CL')}</span>
                   </div>
+                  {apt.status !== 'completed' && (
+                    <button
+                      onClick={() => setTargetAppointmentForAddService(apt)}
+                      className="mt-2 w-full flex items-center justify-center space-x-1 py-1 px-2 rounded-lg text-[11px] font-bold text-brand-700 bg-white hover:bg-brand-50 border border-brand-200 border-dashed hover:border-brand-400 transition-all"
+                    >
+                      <Plus className="w-3 h-3 text-brand-600" />
+                      <span>+ Agregar Servicio</span>
+                    </button>
+                  )}
                 </div>
 
                 {/* Right: Operational Actions (Check-In / Checkout / WhatsApp / Formula) */}
@@ -368,6 +379,13 @@ export const AgendaView: React.FC<AgendaViewProps> = ({
           ))
         )}
       </div>
+
+      {/* Add Service Modal */}
+      <AddServiceToAppointmentModal
+        appointment={targetAppointmentForAddService}
+        isOpen={!!targetAppointmentForAddService}
+        onClose={() => setTargetAppointmentForAddService(null)}
+      />
 
     </div>
   );
