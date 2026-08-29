@@ -40,7 +40,7 @@ const COSMETIC_IMAGES: Record<string, string[]> = {
   ]
 };
 
-// Known Barcode Registry for instant intelligent identification
+// Known Barcode Registry for instant accurate identification
 export const KNOWN_BARCODES: Record<string, Partial<AIEnrichmentResult>> = {
   '7801234567890': {
     name: 'Aceite de Argán Tratamiento 100ml',
@@ -116,8 +116,7 @@ export const KNOWN_BARCODES: Record<string, Partial<AIEnrichmentResult>> = {
 
 /**
  * Agente IA de Catálogo Cosmético
- * Analiza el código de barras, marca, nombre y costo para generar una descripción llamativa,
- * características de alto impacto comercial, una foto en alta definición y precio de venta sugerido.
+ * Conecta con Gemini AI si hay clave disponible o ejecuta el motor cosmético inteligente local.
  */
 export async function enrichProductWithAI(params: {
   barcode?: string;
@@ -126,9 +125,6 @@ export async function enrichProductWithAI(params: {
   category?: InventoryProduct['category'];
   costPrice?: number;
 }): Promise<AIEnrichmentResult> {
-  // Simular tiempo de pensamiento del agente (350ms para respuesta fluida pero perceptible)
-  await new Promise((resolve) => setTimeout(resolve, 350));
-
   const cleanBarcode = (params.barcode || '').trim();
 
   // 1. Si coincide con un código de barra de catálogo conocido, devolver datos enriquecidos precisos
@@ -150,7 +146,19 @@ export async function enrichProductWithAI(params: {
     };
   }
 
-  // 2. Si no es un código predefinido, generar de forma dinámica e inteligente según el nombre o categoría
+  // 2. Intentar llamar a Gemini AI en vivo si existe API key configurada
+  const geminiKey = typeof window !== 'undefined' ? localStorage.getItem('luu_gemini_api_key') : null;
+  if (geminiKey) {
+    try {
+      const liveResult = await callLiveGeminiAPI(geminiKey, params);
+      if (liveResult) return liveResult;
+    } catch (e) {
+      console.warn('[AI Agent] Llamada a Gemini en vivo falló, usando motor cosmético integrado:', e);
+    }
+  }
+
+  // 3. Motor cosmético integrado autónomo
+  await new Promise((resolve) => setTimeout(resolve, 350));
   const queryName = (params.name || '').trim();
   const queryBrand = (params.brand || '').trim() || detectBrandFromName(queryName) || 'Professional Care';
   const category = params.category || detectCategoryFromName(queryName);
@@ -158,7 +166,7 @@ export async function enrichProductWithAI(params: {
   const dynamicInfo = generateDynamicCopywriting(queryName, queryBrand, category);
 
   const suggestedSalePrice = params.costPrice && params.costPrice > 0
-    ? Math.round((params.costPrice * 1.55) / 500) * 500 // 55% de margen estándar en salón, redondeado a 500
+    ? Math.round((params.costPrice * 1.55) / 500) * 500
     : undefined;
 
   return {
@@ -168,6 +176,59 @@ export async function enrichProductWithAI(params: {
     description: dynamicInfo.description,
     features: dynamicInfo.features,
     imageUrl: getRandomImage(category),
+    suggestedSalePrice
+  };
+}
+
+async function callLiveGeminiAPI(
+  apiKey: string, 
+  params: { barcode?: string; name?: string; brand?: string; category?: InventoryProduct['category']; costPrice?: number; }
+): Promise<AIEnrichmentResult | null> {
+  const promptText = `Eres el Agente IA de un Salón de Belleza Boutique. Genera la ficha comercial en JSON para este producto:
+Nombre: "${params.name || ''}"
+Marca: "${params.brand || ''}"
+Código de barras: "${params.barcode || ''}"
+Categoría previa: "${params.category || 'retail'}"
+Costo de compra: ${params.costPrice || 'desconocido'}
+
+Responde ÚNICAMENTE un objeto JSON válido con esta estructura exacta (sin texto extra):
+{
+  "name": "Nombre comercial completo del producto",
+  "brand": "Marca cosmética",
+  "category": "retail" | "tratamientos" | "tintes" | "oxidantes" | "esmaltes" | "desechables",
+  "description": "Descripción vendedora, atractiva, sensorial y elegante (3 a 4 líneas)",
+  "features": ["✨ Beneficio 1", "🌿 Beneficio 2", "🛡️ Beneficio 3", "💧 Beneficio 4"]
+}`;
+
+  const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      contents: [{ parts: [{ text: promptText }] }],
+      generationConfig: { temperature: 0.4, responseMimeType: 'application/json' }
+    })
+  });
+
+  if (!res.ok) return null;
+
+  const data = await res.json();
+  const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+  if (!text) return null;
+
+  const parsed = JSON.parse(text);
+  const cat = parsed.category || params.category || 'retail';
+
+  const suggestedSalePrice = params.costPrice && params.costPrice > 0
+    ? Math.round((params.costPrice * 1.55) / 500) * 500
+    : undefined;
+
+  return {
+    name: parsed.name || params.name || 'Producto Profesional',
+    brand: parsed.brand || params.brand || 'Luu Salon',
+    category: cat,
+    description: parsed.description,
+    features: parsed.features || ['✨ Fórmula profesional', '🌿 Alta eficacia', '🛡️ Resultados duraderos'],
+    imageUrl: getRandomImage(cat),
     suggestedSalePrice
   };
 }
