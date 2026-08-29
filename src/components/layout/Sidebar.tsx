@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { 
   Calendar, 
@@ -10,7 +10,10 @@ import {
   CheckCircle,
   AlertTriangle,
   Scissors,
-  UserCheck
+  UserCheck,
+  Menu,
+  X,
+  ChevronRight
 } from 'lucide-react';
 
 export const Sidebar: React.FC = () => {
@@ -23,6 +26,8 @@ export const Sidebar: React.FC = () => {
     inventory, 
     campaigns 
   } = useApp();
+
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
 
   const arrivedCount = appointments.filter(
     (a) => a.date === selectedDate && a.status === 'arrived'
@@ -62,6 +67,13 @@ export const Sidebar: React.FC = () => {
       icon: Users,
     },
     {
+      id: 'inventory',
+      label: 'Productos & POS',
+      icon: Package,
+      badge: lowStockCount > 0 ? `${lowStockCount} alertas` : undefined,
+      badgeColor: 'bg-amber-500 text-white'
+    },
+    {
       id: 'services',
       label: 'Servicios & Tarifas',
       icon: Scissors,
@@ -72,13 +84,6 @@ export const Sidebar: React.FC = () => {
       icon: Sparkles,
       badge: `${activeCampaignsCount} activas`,
       badgeColor: 'bg-brand-100 text-brand-700'
-    },
-    {
-      id: 'inventory',
-      label: 'Productos & POS',
-      icon: Package,
-      badge: lowStockCount > 0 ? `${lowStockCount} alertas` : undefined,
-      badgeColor: 'bg-amber-500 text-white'
     },
     {
       id: 'analytics',
@@ -170,28 +175,149 @@ export const Sidebar: React.FC = () => {
 
       {/* Mobile Bottom Navigation Bar */}
       <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-brand-100 px-2 py-1.5 flex items-center justify-around shadow-lg">
-        {navItems.slice(0, 5).map((item) => {
-          const Icon = item.icon;
-          const isActive = activeTab === item.id;
-          return (
-            <button
-              key={item.id}
-              onClick={() => setActiveTab(item.id)}
-              className={`flex flex-col items-center py-1 px-2 rounded-xl transition-all relative ${
-                isActive ? 'text-brand-600 font-bold' : 'text-charcoal-500 hover:text-charcoal-800'
-              }`}
-            >
-              <Icon className="w-5 h-5 mb-0.5" />
-              <span className="text-[10px] font-medium tracking-tight">
-                {item.id === 'agenda' ? 'Agenda' : item.id === 'stylists' ? 'Peluqueras' : item.id === 'floorplan' ? 'Sillones' : item.id === 'clients' ? 'Clientes' : item.id === 'marketing' ? 'Marketing' : 'Stock'}
-              </span>
-              {item.badge && (item.id === 'agenda' || item.id === 'stylists') && arrivedCount > 0 && (
-                <span className="absolute top-0 right-2 w-2.5 h-2.5 bg-emerald-500 rounded-full ring-2 ring-white"></span>
-              )}
-            </button>
-          );
-        })}
+        {/* 1. Agenda */}
+        <button
+          onClick={() => setActiveTab('agenda')}
+          className={`flex flex-col items-center py-1 px-2 rounded-xl transition-all relative ${
+            activeTab === 'agenda' ? 'text-brand-600 font-bold' : 'text-charcoal-500 hover:text-charcoal-800'
+          }`}
+        >
+          <Calendar className="w-5 h-5 mb-0.5" />
+          <span className="text-[10px] font-medium tracking-tight">Agenda</span>
+          {arrivedCount > 0 && (
+            <span className="absolute top-0 right-2 w-2.5 h-2.5 bg-emerald-500 rounded-full ring-2 ring-white animate-pulse"></span>
+          )}
+        </button>
+
+        {/* 2. Sillones */}
+        <button
+          onClick={() => setActiveTab('floorplan')}
+          className={`flex flex-col items-center py-1 px-2 rounded-xl transition-all relative ${
+            activeTab === 'floorplan' ? 'text-brand-600 font-bold' : 'text-charcoal-500 hover:text-charcoal-800'
+          }`}
+        >
+          <Armchair className="w-5 h-5 mb-0.5" />
+          <span className="text-[10px] font-medium tracking-tight">Sillones</span>
+        </button>
+
+        {/* 3. Clientes */}
+        <button
+          onClick={() => setActiveTab('clients')}
+          className={`flex flex-col items-center py-1 px-2 rounded-xl transition-all relative ${
+            activeTab === 'clients' ? 'text-brand-600 font-bold' : 'text-charcoal-500 hover:text-charcoal-800'
+          }`}
+        >
+          <Users className="w-5 h-5 mb-0.5" />
+          <span className="text-[10px] font-medium tracking-tight">Clientes</span>
+        </button>
+
+        {/* 4. PRODUCTOS & POS (Directo y visible en mobile!) */}
+        <button
+          onClick={() => setActiveTab('inventory')}
+          className={`flex flex-col items-center py-1 px-2 rounded-xl transition-all relative ${
+            activeTab === 'inventory' ? 'text-brand-600 font-bold' : 'text-charcoal-500 hover:text-charcoal-800'
+          }`}
+        >
+          <Package className="w-5 h-5 mb-0.5" />
+          <span className="text-[10px] font-medium tracking-tight">Productos</span>
+          {lowStockCount > 0 && (
+            <span className="absolute top-0.5 right-2 w-2.5 h-2.5 bg-amber-500 rounded-full ring-2 ring-white"></span>
+          )}
+        </button>
+
+        {/* 5. MÁS (Menú completo para servicios, marketing, métricas) */}
+        <button
+          onClick={() => setIsMobileMenuOpen(true)}
+          className={`flex flex-col items-center py-1 px-2 rounded-xl transition-all relative ${
+            ['services', 'marketing', 'analytics'].includes(activeTab) || isMobileMenuOpen
+              ? 'text-brand-600 font-bold'
+              : 'text-charcoal-500 hover:text-charcoal-800'
+          }`}
+        >
+          <Menu className="w-5 h-5 mb-0.5" />
+          <span className="text-[10px] font-medium tracking-tight">Más</span>
+          {activeCampaignsCount > 0 && (
+            <span className="absolute top-0.5 right-2 w-2 h-2 bg-brand-500 rounded-full ring-2 ring-white"></span>
+          )}
+        </button>
       </nav>
+
+      {/* Mobile "Más Módulos" Slide-up Sheet */}
+      {isMobileMenuOpen && (
+        <div className="lg:hidden fixed inset-0 z-50 flex flex-col justify-end bg-charcoal-950/60 backdrop-blur-sm animate-fade-in">
+          <div 
+            className="fixed inset-0"
+            onClick={() => setIsMobileMenuOpen(false)}
+          />
+          <div className="relative z-10 bg-white rounded-t-3xl p-5 shadow-2xl border-t border-brand-100 max-h-[85vh] overflow-y-auto space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-brand-100">
+              <div className="flex items-center space-x-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-brand-500"></span>
+                <h3 className="font-serif text-lg font-bold text-charcoal-950">Todos los Módulos</h3>
+              </div>
+              <button
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="p-1.5 text-charcoal-400 hover:text-charcoal-800 rounded-full hover:bg-brand-50"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 gap-2">
+              {navItems.map((item) => {
+                const Icon = item.icon;
+                const isActive = activeTab === item.id;
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => {
+                      setActiveTab(item.id);
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className={`w-full flex items-center justify-between p-3 rounded-2xl transition-all ${
+                      isActive
+                        ? 'bg-brand-500 text-white font-bold shadow-md'
+                        : 'bg-[#FAF8F5] hover:bg-brand-50 text-charcoal-800 border border-brand-100/80'
+                    }`}
+                  >
+                    <div className="flex items-center space-x-3">
+                      <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${
+                        isActive ? 'bg-white/20 text-white' : 'bg-white text-brand-600 shadow-2xs border border-brand-100'
+                      }`}>
+                        <Icon className="w-4 h-4" />
+                      </div>
+                      <div className="text-left">
+                        <p className="text-xs font-bold leading-tight">{item.label}</p>
+                        <p className={`text-[10px] ${isActive ? 'text-white/80' : 'text-charcoal-500'}`}>
+                          {item.id === 'inventory' 
+                            ? 'Inventario, código de barras & POS' 
+                            : item.id === 'services' 
+                            ? 'Catálogo de servicios y precios' 
+                            : item.id === 'marketing' 
+                            ? 'Campañas automáticas y WhatsApp' 
+                            : item.id === 'analytics' 
+                            ? 'Métricas y reportes financieros' 
+                            : 'Gestión del salón'}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      {item.badge && (
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                          isActive ? 'bg-white/20 text-white' : item.badgeColor
+                        }`}>
+                          {item.badge}
+                        </span>
+                      )}
+                      <ChevronRight className={`w-4 h-4 ${isActive ? 'text-white' : 'text-charcoal-400'}`} />
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 };
