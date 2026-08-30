@@ -12,23 +12,17 @@ import {
   TrendingUp,
   Percent,
   Power,
-  ExternalLink,
-  Palette
+  ExternalLink
 } from 'lucide-react';
 import { MarketingCampaign } from '../../types';
-import { Badge } from '../ui/badge';
 import { openWhatsApp } from '../../lib/whatsapp';
 
 interface MarketingHubProps {
   onOpenWhatsAppSimulator: (clientPhone?: string) => void;
-  onOpenLogoStudio?: () => void;
 }
 
-export const MarketingHub: React.FC<MarketingHubProps> = ({ 
-  onOpenWhatsAppSimulator,
-  onOpenLogoStudio
-}) => {
-  const { campaigns, toggleCampaign, clients, sendWhatsAppMessage, currentSalon } = useApp();
+export const MarketingHub: React.FC<MarketingHubProps> = ({ onOpenWhatsAppSimulator }) => {
+  const { campaigns, toggleCampaign, clients, sendWhatsAppMessage } = useApp();
 
   // Calculate inactive clients (> 30 days)
   const inactiveClients = clients.filter((c) => c.tags.includes('Inactivo'));
@@ -74,62 +68,14 @@ export const MarketingHub: React.FC<MarketingHubProps> = ({
           </p>
         </div>
 
-        <div className="flex items-center space-x-2 self-start sm:self-auto">
-          {onOpenLogoStudio && (
-            <button
-              onClick={onOpenLogoStudio}
-              className="inline-flex items-center space-x-2 px-3.5 py-2 text-xs sm:text-sm font-bold text-brand-900 bg-gradient-to-r from-brand-50 to-roseGold/20 hover:from-brand-100 hover:to-roseGold/30 border border-brand-200 rounded-xl shadow-sm transition-all"
-            >
-              <Palette className="w-4 h-4 text-brand-600" />
-              <span>Estudio de Logo IA</span>
-            </button>
-          )}
-
-          <button
-            onClick={() => onOpenWhatsAppSimulator()}
-            className="inline-flex items-center space-x-2 px-4 py-2 text-xs sm:text-sm font-bold text-emerald-800 bg-emerald-100 hover:bg-emerald-200 border border-emerald-300 rounded-xl shadow-sm transition-all"
-          >
-            <Smartphone className="w-4 h-4 text-emerald-600" />
-            <span>Abrir Simulador WhatsApp</span>
-          </button>
-        </div>
+        <button
+          onClick={() => onOpenWhatsAppSimulator()}
+          className="inline-flex items-center space-x-2 px-4 py-2 text-xs sm:text-sm font-bold text-emerald-800 bg-emerald-100 hover:bg-emerald-200 border border-emerald-300 rounded-xl shadow-sm transition-all self-start sm:self-auto"
+        >
+          <Smartphone className="w-4 h-4 text-emerald-600" />
+          <span>Abrir Simulador WhatsApp</span>
+        </button>
       </div>
-
-      {/* Featured AI Logo & Branding Banner */}
-      {onOpenLogoStudio && (
-        <div className="bg-gradient-to-r from-[#FAF6F0] via-white to-brand-50/60 rounded-3xl p-5 sm:p-6 border border-brand-200 shadow-sm flex flex-col md:flex-row items-center justify-between gap-5 relative overflow-hidden">
-          <div className="flex items-center space-x-4">
-            <div className="w-16 h-16 rounded-2xl bg-white border border-brand-100 shadow-md p-2 flex items-center justify-center flex-shrink-0">
-              {currentSalon.logo ? (
-                <img src={currentSalon.logo} alt="Logo" className="w-full h-full object-contain" />
-              ) : (
-                <Sparkles className="w-8 h-8 text-brand-500" />
-              )}
-            </div>
-            <div>
-              <div className="flex items-center space-x-2 mb-1">
-                <h3 className="font-serif text-lg font-bold text-charcoal-950">
-                  Estudio de Identidad & Logo con IA
-                </h3>
-                <Badge variant="luxury" className="bg-brand-100/70 text-brand-900 border-brand-200 text-[10px]">
-                  Google Imagen 3
-                </Badge>
-              </div>
-              <p className="text-xs text-charcoal-600 max-w-xl">
-                Crea o renueva el logotipo de <strong>{currentSalon.name}</strong> con estética cosmética de autor. Se sincroniza con tus tarjetas de fidelidad VIP, WhatsApp y portal web.
-              </p>
-            </div>
-          </div>
-
-          <button
-            onClick={onOpenLogoStudio}
-            className="w-full md:w-auto px-5 py-2.5 rounded-2xl bg-charcoal-900 hover:bg-charcoal-950 text-white text-xs font-bold flex items-center justify-center space-x-2 shadow-md transition-all flex-shrink-0"
-          >
-            <Sparkles className="w-4 h-4 text-brand-300" />
-            <span>Diseñar Logo con IA</span>
-          </button>
-        </div>
-      )}
 
       {/* Top Performance Metrics */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

@@ -70,14 +70,10 @@ export const BeautyPassModal: React.FC<BeautyPassModalProps> = ({
           {/* Top Brand & Tier */}
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 rounded-xl bg-white/10 backdrop-blur-md flex items-center justify-center text-brand-300 overflow-hidden p-0.5">
-                {currentSalon.logo ? (
-                  <img src={currentSalon.logo} alt="Logo" className="w-full h-full object-contain rounded-lg" />
-                ) : (
-                  <Scissors className="w-4 h-4" />
-                )}
+              <div className="w-8 h-8 rounded-xl bg-white/10 backdrop-blur-md flex items-center justify-center text-brand-300">
+                <Scissors className="w-4 h-4" />
               </div>
-              <span className="font-serif text-lg font-bold tracking-tight">{currentSalon.name}</span>
+              <span className="font-serif text-lg font-bold tracking-tight">luu.</span>
             </div>
             
             <Badge variant="luxury" className="bg-white/20 text-white border-white/30 backdrop-blur-md text-[10px]">

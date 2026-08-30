@@ -72,7 +72,7 @@ export const ClientProfileModal: React.FC<ClientProfileModalProps> = ({
               ))}
             </div>
             
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-charcoal-600 mt-1.5">
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-charcoal-600 mt-1.5">
               <span className="flex items-center space-x-1.5">
                 <Phone className="w-3.5 h-3.5 text-brand-600" />
                 <span>{client.phone}</span>

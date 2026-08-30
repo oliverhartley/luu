@@ -13,7 +13,8 @@ import {
   Video,
   MoreVertical,
   Scissors,
-  ExternalLink
+  ExternalLink,
+  MessageCircle
 } from 'lucide-react';
 import { WhatsAppMessageSimulation } from '../../types';
 import { openWhatsApp } from '../../lib/whatsapp';
