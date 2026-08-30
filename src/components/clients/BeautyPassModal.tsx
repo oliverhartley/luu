@@ -14,7 +14,6 @@ import {
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
 import { Client } from '../../types';
-import { openWhatsApp, WhatsAppTemplates } from '../../lib/whatsapp';
 
 interface BeautyPassModalProps {
   client: Client | null;
@@ -27,7 +26,7 @@ export const BeautyPassModal: React.FC<BeautyPassModalProps> = ({
   isOpen,
   onClose
 }) => {
-  const { showToast, currentSalon } = useApp();
+  const { showToast } = useApp();
 
   if (!isOpen || !client) return null;
 
@@ -35,11 +34,8 @@ export const BeautyPassModal: React.FC<BeautyPassModalProps> = ({
   const isVip = client.tags.includes('VIP') || client.totalVisits >= 5;
 
   const handleSharePass = () => {
-    const passUrl = `https://pelu.app/pass/${client.id}`;
-    navigator.clipboard.writeText(passUrl);
-    const msg = WhatsAppTemplates.beautyPass(client.name, currentSalon.name, passUrl);
-    openWhatsApp(client.phone, msg);
-    showToast('Enlace Copiado & WhatsApp Abierto', `Abriendo chat con ${client.name}...`, 'success');
+    navigator.clipboard.writeText(`https://pelu.app/pass/${client.id}`);
+    showToast('Enlace de Beauty Pass Copiado', 'Listo para enviar por WhatsApp a la clienta', 'success');
   };
 
   return (

@@ -11,11 +11,9 @@ import {
   Plus, 
   FileText, 
   MessageSquare,
-  CheckCircle,
-  ExternalLink
+  CheckCircle
 } from 'lucide-react';
 import { Appointment } from '../../types';
-import { openWhatsApp, WhatsAppTemplates } from '../../lib/whatsapp';
 
 interface CheckoutModalProps {
   appointment: Appointment | null;
@@ -28,7 +26,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
   isOpen,
   onClose
 }) => {
-  const { checkoutAppointment, inventory, addClientFormula, processProductSale, currentSalon } = useApp();
+  const { checkoutAppointment, inventory, addClientFormula, processProductSale } = useApp();
 
   const [paymentMethod, setPaymentMethod] = useState<'credit' | 'debit' | 'transfer' | 'cash'>('credit');
   const [discount, setDiscount] = useState<number>(0);
@@ -294,32 +292,14 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
           </div>
 
           {/* WhatsApp Survey Notification Banner */}
-          <div className="bg-emerald-50 p-3 rounded-2xl border border-emerald-200 flex items-center justify-between gap-2">
-            <div className="flex items-start space-x-2.5">
-              <MessageSquare className="w-4 h-4 text-emerald-600 mt-0.5 shrink-0" />
-              <div className="text-xs text-emerald-950">
-                <p className="font-bold">Encuesta de Satisfacción WhatsApp</p>
-                <p className="text-[11px] text-emerald-800">
-                  Al confirmar, se registrará el envío a {appointment.clientName} ({appointment.clientPhone}).
-                </p>
-              </div>
+          <div className="bg-emerald-50 p-3 rounded-2xl border border-emerald-200 flex items-start space-x-2.5">
+            <MessageSquare className="w-4 h-4 text-emerald-600 mt-0.5 shrink-0" />
+            <div className="text-xs text-emerald-950">
+              <p className="font-bold">Disparo Automático de Encuesta de Satisfacción</p>
+              <p className="text-[11px] text-emerald-800">
+                Al confirmar, se enviará un mensaje de WhatsApp a {appointment.clientName} para calificar su experiencia de 1 a 5 ⭐.
+              </p>
             </div>
-            <button
-              type="button"
-              onClick={() => {
-                const msg = WhatsAppTemplates.survey(
-                  appointment.clientName,
-                  currentSalon.name,
-                  appointment.items[0]?.professionalName || 'tu estilista'
-                );
-                openWhatsApp(appointment.clientPhone, msg);
-              }}
-              className="px-2.5 py-1 text-xs font-bold bg-[#00A884] hover:bg-[#008f70] text-white rounded-xl shadow-sm flex items-center space-x-1 shrink-0 transition-all"
-              title="Abrir WhatsApp Web con la encuesta redactada"
-            >
-              <ExternalLink className="w-3 h-3" />
-              <span>Abrir wa.me</span>
-            </button>
           </div>
 
           {/* Total & Action */}

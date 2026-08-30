@@ -4,10 +4,15 @@ import {
   Scissors, 
   Store, 
   Users, 
+  Armchair, 
   Sparkles, 
+  Package, 
   Check, 
+  CheckCircle2, 
   ArrowRight, 
   ArrowLeft, 
+  Camera, 
+  Upload, 
   Plus, 
   Trash2, 
   Phone, 
@@ -15,13 +20,15 @@ import {
   MapPin, 
   Clock, 
   X, 
-  Smile, 
-  CheckCircle2, 
-  Copy, 
-  ExternalLink,
-  ShieldCheck
+  Heart,
+  Smile,
+  BadgeCheck,
+  DollarSign,
+  AlertCircle,
+  HelpCircle,
+  SkipForward
 } from 'lucide-react';
-import { Professional, Service, ServiceCategory } from '../../types';
+import { Professional, Service, Station, InventoryProduct, ServiceCategory, TenantSalon } from '../../types';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
 
@@ -38,7 +45,9 @@ const PRESET_AVATARS = [
   'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=300&auto=format&fit=crop&q=80',
   'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=300&auto=format&fit=crop&q=80',
   'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=300&auto=format&fit=crop&q=80',
+  'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=300&auto=format&fit=crop&q=80',
   'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=300&auto=format&fit=crop&q=80',
+  'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=300&auto=format&fit=crop&q=80',
   'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&auto=format&fit=crop&q=80'
 ];
 
@@ -49,62 +58,109 @@ const PRESET_SALON_PHOTOS = [
   'https://images.unsplash.com/photo-1633681926022-84c23e8cb2d6?w=600&auto=format&fit=crop&q=80'
 ];
 
+const PRESET_COLORS = [
+  '#D57B6C', '#E8B4B8', '#BCA893', '#A34638', '#6366F1', '#EC4899', '#10B981', '#F59E0B'
+];
+
 const SUGGESTED_SERVICES: Array<Omit<Service, 'id' | 'salonId'>> = [
   {
     name: 'Balayage Signature & Matiz Gloss',
     category: 'hair',
     durationMinutes: 180,
-    price: 85000,
-    description: 'Aclaración degradada personalizada, baño de luz, tratamiento restaurador y peinado.',
+    price: 95000,
+    description: 'Aclaración degradada personalizada, baño de luz, tratamiento restaurador y peinado con ondas.',
     defaultRecurrenceDays: 90
   },
   {
-    name: 'Corte Mujer & Brushing Styling',
+    name: 'Corte de Autor & Peinado Brushing',
     category: 'hair',
     durationMinutes: 50,
-    price: 28000,
-    description: 'Visagismo según forma de rostro, lavado relajante y peinado styling final.',
+    price: 32000,
+    description: 'Diagnóstico capilar, visagismo según forma de rostro, lavado relajante y styling final.',
     defaultRecurrenceDays: 45
   },
   {
-    name: 'Lavado Spa, Masaje Craneal & Peinado',
+    name: 'Lavado Spa, Masaje & Brushing',
     category: 'hair',
     durationMinutes: 40,
     price: 18000,
-    description: 'Lavado sensorial con masaje craneal y secado profesional.',
+    description: 'Lavado con masaje craneal relajante y secado con movimiento.',
     defaultRecurrenceDays: 20
   },
   {
-    name: 'Manicura Rusa & Esmaltado Permanente',
+    name: 'Manicura Rusa Combinada + Esmaltado Permanente',
     category: 'nails',
     durationMinutes: 60,
-    price: 24000,
-    description: 'Limpieza profunda de cutículas con torno y esmaltado de alta duración.',
+    price: 26000,
+    description: 'Limpieza profunda de cutículas con torno, nivelación y esmaltado de alta duración.',
     defaultRecurrenceDays: 21
   },
   {
-    name: 'Hidratación Capilar & Sellado Molecular',
-    category: 'spa',
-    durationMinutes: 60,
-    price: 35000,
-    description: 'Tratamiento intensivo para sellar cutícula y recuperar brillo extremo.',
-    defaultRecurrenceDays: 30
-  },
-  {
-    name: 'Lifting de Pestañas con Keratina',
+    name: 'Lifting de Pestañas con Keratina & Tinte Negro',
     category: 'brows_lashes',
     durationMinutes: 50,
     price: 28000,
-    description: 'Curvatura natural desde la raíz, nutrición con keratina y efecto rímel.',
+    description: 'Curvatura natural desde la raíz, nutrición intensa con keratina y efecto máscara de pestañas.',
     defaultRecurrenceDays: 45
   },
   {
-    name: 'Corte Hombre & Barba de Autor',
-    category: 'hair',
-    durationMinutes: 40,
-    price: 22000,
-    description: 'Corte clásico o degradado con tijera y máquina más perfilado de barba.',
+    name: 'Hidratación Profunda & Cauterización Molecular',
+    category: 'spa',
+    durationMinutes: 60,
+    price: 45000,
+    description: 'Tratamiento intensivo para sellar cutícula y recuperar brillo y suavidad extrema.',
     defaultRecurrenceDays: 30
+  }
+];
+
+const SUGGESTED_PRODUCTS: Array<Omit<InventoryProduct, 'id' | 'salonId' | 'lastRestocked'>> = [
+  {
+    name: 'Shampoo No. 4 Bond Maintenance 250ml',
+    brand: 'Olaplex',
+    category: 'retail',
+    currentStock: 12,
+    minStockAlert: 3,
+    unit: 'unidades',
+    costPrice: 18000,
+    salePrice: 32000,
+    isForSale: true,
+    description: 'Shampoo reparador que limpia suavemente e hidrata el cabello dañado por decoloración.'
+  },
+  {
+    name: 'Tinte Profesional Majirel 50ml (Gama Fríos)',
+    brand: "L'Oréal Professionnel",
+    category: 'tintes',
+    currentStock: 24,
+    minStockAlert: 6,
+    unit: 'tubos',
+    costPrice: 5500,
+    salePrice: 0,
+    isForSale: false,
+    description: 'Coloración permanente con Ionène G e Incell para máxima cobertura de canas.'
+  },
+  {
+    name: 'Aceite Elixir Ultime L\'Huile Originale 100ml',
+    brand: 'Kérastase',
+    category: 'retail',
+    currentStock: 8,
+    minStockAlert: 2,
+    unit: 'unidades',
+    costPrice: 26000,
+    salePrice: 44000,
+    isForSale: true,
+    description: 'Aceite sublimador capilar con extracto de camelia salvaje para brillo y protección térmica.'
+  },
+  {
+    name: 'Colección GelColor Esmalte Permanente 15ml',
+    brand: 'OPI',
+    category: 'esmaltes',
+    currentStock: 30,
+    minStockAlert: 5,
+    unit: 'frascos',
+    costPrice: 7500,
+    salePrice: 0,
+    isForSale: false,
+    description: 'Esmaltado en gel con acabado ultrabrillante y duración de hasta 3 semanas.'
   }
 ];
 
@@ -114,45 +170,35 @@ export const OnboardingWizardModal: React.FC = () => {
     setIsOnboardingOpen, 
     completeOnboarding,
     currentSalon,
-    currentUser,
     updateSalonInfo,
     professionals,
     addProfessional,
     deleteProfessional,
+    stations,
+    addStation,
+    deleteStation,
     services,
     addService,
-    deleteService,
-    setActiveTab,
-    showToast
+    inventory,
+    addProduct,
+    setActiveTab
   } = useApp();
 
-  // Step state: 0 = Welcome, 1 = Salon Info, 2 = Stylists, 3 = Services, 4 = Success
+  // Step state: 0 = Welcome, 1 = Salon Info, 2 = Stylists, 3 = Stations, 4 = Services, 5 = Products, 6 = Success
   const [step, setStep] = useState<number>(0);
 
   // STEP 1: Salon Info Form
   const [salonName, setSalonName] = useState<string>(currentSalon?.name || '');
-  const [salonPhone, setSalonPhone] = useState<string>(currentSalon?.phone || '+56 9 ');
-  const [salonCity, setSalonCity] = useState<string>(currentSalon?.city || 'Santiago, Chile');
+  const [salonSlogan, setSalonSlogan] = useState<string>(currentSalon?.slogan || 'El templo de la belleza y diseño de autor');
   const [salonAddress, setSalonAddress] = useState<string>(currentSalon?.address && currentSalon?.address !== 'Dirección por configurar' ? currentSalon.address : '');
-  const [salonInstagram, setSalonInstagram] = useState<string>(currentSalon?.instagram || '');
+  const [salonCity, setSalonCity] = useState<string>(currentSalon?.city || 'Santiago, Chile');
+  const [salonPhone, setSalonPhone] = useState<string>(currentSalon?.phone || '+56 9 ');
+  const [salonEmail, setSalonEmail] = useState<string>(currentSalon?.email || '');
+  const [salonInstagram, setSalonInstagram] = useState<string>(currentSalon?.instagram || '@tupeluqueria');
   const [salonHours, setSalonHours] = useState<string>(currentSalon?.openingHours || 'Lunes a Sábado 10:00 - 20:00');
-  const [salonLogo, setSalonLogo] = useState<string>(currentSalon?.logo || PRESET_SALON_PHOTOS[0]);
+  const [salonLogo, setSalonLogo] = useState<string>(currentSalon?.logo || '');
 
-  // STEP 2: Stylist inline add
-  const [newProfName, setNewProfName] = useState<string>('');
-  const [newProfRole, setNewProfRole] = useState<string>('Master Colorista');
-  const [newProfAvatar, setNewProfAvatar] = useState<string>(PRESET_AVATARS[0]);
-
-  // STEP 3: Custom service inline add
-  const [newServiceName, setNewServiceName] = useState<string>('');
-  const [newServicePrice, setNewServicePrice] = useState<number>(30000);
-  const [newServiceDuration, setNewServiceDuration] = useState<number>(60);
-  const [isAddingCustomService, setIsAddingCustomService] = useState<boolean>(false);
-
-  // Link copy state
-  const [isCopied, setIsCopied] = useState<boolean>(false);
-
-  // Track initialization so we only sync once when opened
+  // Track open transition so we only initialize state once when modal opens
   const wasOpenRef = useRef<boolean>(false);
 
   useEffect(() => {
@@ -161,25 +207,89 @@ export const OnboardingWizardModal: React.FC = () => {
       setSalonName(currentSalon?.name || '');
       setSalonPhone(currentSalon?.phone || '+56 9 ');
       setSalonCity(currentSalon?.city || 'Santiago, Chile');
+      setSalonEmail(currentSalon?.email || '');
       setSalonAddress(currentSalon?.address && currentSalon?.address !== 'Dirección por configurar' ? currentSalon.address : '');
+      setSalonSlogan(currentSalon?.slogan || '');
       setSalonInstagram(currentSalon?.instagram || '');
       setSalonHours(currentSalon?.openingHours || 'Lunes a Sábado 10:00 - 20:00');
-      setSalonLogo(currentSalon?.logo || PRESET_SALON_PHOTOS[0]);
+      setSalonLogo(currentSalon?.logo || '');
     }
     wasOpenRef.current = isOnboardingOpen;
   }, [isOnboardingOpen]);
 
+  // STEP 2: Stylist Form (No comisiones!)
+  const [profName, setProfName] = useState<string>('');
+  const [profRoleTitle, setProfRoleTitle] = useState<string>('Master Colorista & Balayage');
+  const [profPhone, setProfPhone] = useState<string>('+56 9 ');
+  const [profSpecialties, setProfSpecialties] = useState<ServiceCategory[]>(['hair']);
+  const [profColorHex, setProfColorHex] = useState<string>(PRESET_COLORS[0]);
+  const [profAvatar, setProfAvatar] = useState<string>('');
+  const profFileInputRef = useRef<HTMLInputElement>(null);
+
+  // STEP 3: Station Form
+  const [stationName, setStationName] = useState<string>('');
+  const [stationCategory, setStationCategory] = useState<Station['category']>('hair_color');
+  const [stationChairNum, setStationChairNum] = useState<number>(stations.length + 1);
+  const [stationAssignedProfId, setStationAssignedProfId] = useState<string>('');
+  const [stationPhoto, setStationPhoto] = useState<string>('');
+  const stationFileInputRef = useRef<HTMLInputElement>(null);
+
+  // STEP 4: Service Custom Form
+  const [customServName, setCustomServName] = useState<string>('');
+  const [customServCategory, setCustomServCategory] = useState<ServiceCategory>('hair');
+  const [customServDuration, setCustomServDuration] = useState<number>(60);
+  const [customServPrice, setCustomServPrice] = useState<number>(35000);
+  const [customServDesc, setCustomServDesc] = useState<string>('');
+
+  // STEP 5: Product Custom Form
+  const [customProdName, setCustomProdName] = useState<string>('');
+  const [customProdBrand, setCustomProdBrand] = useState<string>('');
+  const [customProdCategory, setCustomProdCategory] = useState<InventoryProduct['category']>('retail');
+  const [customProdStock, setCustomProdStock] = useState<number>(10);
+  const [customProdCost, setCustomProdCost] = useState<number>(15000);
+  const [customProdSale, setCustomProdSale] = useState<number>(28000);
+  const [customProdIsForSale, setCustomProdIsForSale] = useState<boolean>(true);
+
   if (!isOnboardingOpen) return null;
 
-  // Save Step 1 (Salon Info)
+  // Handle Image Upload for Stylist
+  const handleProfPhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        if (typeof reader.result === 'string') {
+          setProfAvatar(reader.result);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // Handle Image Upload for Station
+  const handleStationPhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        if (typeof reader.result === 'string') {
+          setStationPhoto(reader.result);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // Save Step 1 (Salon Info) and go to Step 2
   const handleSaveSalonInfo = (e: React.FormEvent) => {
     e.preventDefault();
-    const finalName = salonName.trim() || currentSalon.name || 'Mi Peluquería';
     updateSalonInfo({
-      name: finalName,
+      name: salonName.trim() || currentSalon.name,
+      slogan: salonSlogan.trim(),
       address: salonAddress.trim(),
-      city: salonCity.trim() || 'Santiago, Chile',
+      city: salonCity.trim(),
       phone: salonPhone.trim(),
+      email: salonEmail.trim(),
       instagram: salonInstagram.trim(),
       openingHours: salonHours.trim(),
       logo: salonLogo
@@ -187,223 +297,303 @@ export const OnboardingWizardModal: React.FC = () => {
     setStep(2);
   };
 
-  // Add Owner as first Stylist with 1 click
-  const handleAddOwnerAsStylist = () => {
-    const ownerName = currentUser?.name || 'Estilista Principal';
-    const alreadyExists = professionals.some(
-      (p) => p.name.toLowerCase() === ownerName.toLowerCase()
-    );
-    if (!alreadyExists) {
-      addProfessional({
-        name: ownerName,
-        roleTitle: 'Dueño(a) & Master Stylist',
-        specialties: ['hair'],
-        avatar: currentUser?.avatar || PRESET_AVATARS[0],
-        rating: 5.0,
-        commissionRate: 0.5,
-        phone: salonPhone || '+56 9 ',
-        colorHex: '#D57B6C'
-      });
-    }
-  };
+  // Add Professional in Step 2
+  const handleAddProfessional = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (!profName.trim()) return;
 
-  // Add Suggested Team with 1 click
-  const handleAddSuggestedTeam = () => {
-    const teamToLoad = [
-      {
-        name: 'Valentina Morales',
-        roleTitle: 'Master Colorista & Balayage',
-        specialties: ['hair' as ServiceCategory],
-        avatar: PRESET_AVATARS[0],
-        rating: 5.0,
-        commissionRate: 0.45,
-        phone: '+56 9 8123 4567',
-        colorHex: '#D57B6C'
-      },
-      {
-        name: 'Camila Soto',
-        roleTitle: 'Especialista en Manicura & Nail Art',
-        specialties: ['nails' as ServiceCategory],
-        avatar: PRESET_AVATARS[1],
-        rating: 4.9,
-        commissionRate: 0.4,
-        phone: '+56 9 8234 5678',
-        colorHex: '#E8B4B8'
-      }
-    ];
+    // Fallback avatar if empty: initials avatar or first preset
+    const fallbackAvatar = profAvatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(profName.trim())}&background=D57B6C&color=fff&size=200`;
 
-    teamToLoad.forEach((p) => {
-      if (!professionals.some((existing) => existing.name === p.name)) {
-        addProfessional(p);
-      }
-    });
-  };
-
-  // Add custom professional
-  const handleAddCustomStylist = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newProfName.trim()) return;
     addProfessional({
-      name: newProfName.trim(),
-      roleTitle: newProfRole.trim() || 'Estilista Profesional',
-      specialties: ['hair'],
-      avatar: newProfAvatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(newProfName.trim())}&background=D57B6C&color=fff`,
+      name: profName.trim(),
+      roleTitle: profRoleTitle.trim() || 'Estilista Profesional',
+      specialties: profSpecialties.length > 0 ? profSpecialties : ['hair'],
+      avatar: fallbackAvatar,
       rating: 5.0,
-      commissionRate: 0.4,
-      phone: '+56 9 ',
-      colorHex: '#D57B6C'
+      commissionRate: 0.4, // standard background default, not requested in UI
+      phone: profPhone.trim(),
+      colorHex: profColorHex
     });
-    setNewProfName('');
-    setNewProfRole('Master Colorista');
+
+    // Reset Form
+    setProfName('');
+    setProfRoleTitle('Colorista & Estilista');
+    setProfPhone('+56 9 ');
+    setProfAvatar('');
   };
 
-  // Toggle Suggested Service
-  const handleToggleSuggestedService = (serv: Omit<Service, 'id' | 'salonId'>) => {
-    const existing = services.find((s) => s.name.toLowerCase() === serv.name.toLowerCase());
-    if (existing) {
-      deleteService(existing.id);
-    } else {
-      addService(serv);
-    }
+  // Add Station in Step 3
+  const handleAddStation = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    const assignedProf = professionals.find((p) => p.id === stationAssignedProfId);
+
+    const sName = stationName.trim() || `Sillón ${stationChairNum} · ${stationCategory.replace('_', ' ')}`;
+
+    addStation({
+      name: sName,
+      category: stationCategory,
+      chairNumber: stationChairNum,
+      assignedProfessionalId: assignedProf?.id,
+      assignedProfessionalName: assignedProf?.name || 'Staff Rotativo',
+      assignedProfessionalAvatar: assignedProf?.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80',
+      photoUrl: stationPhoto || undefined,
+      status: 'ready'
+    });
+
+    // Reset & increment chair
+    setStationName('');
+    setStationPhoto('');
+    setStationChairNum((prev) => prev + 1);
   };
 
-  // Add Custom Service
+  // Quick 1-click Station Preset
+  const handleQuickAddStation = (cat: Station['category'], defaultLabel: string) => {
+    const chairNum = stations.length + 1;
+    const defaultProf = professionals[chairNum % professionals.length] || professionals[0];
+
+    addStation({
+      name: `${defaultLabel} ${chairNum}`,
+      category: cat,
+      chairNumber: chairNum,
+      assignedProfessionalId: defaultProf?.id,
+      assignedProfessionalName: defaultProf?.name || 'Staff Rotativo',
+      assignedProfessionalAvatar: defaultProf?.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80',
+      status: 'ready'
+    });
+  };
+
+  // Add Service in Step 4
   const handleAddCustomService = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newServiceName.trim()) return;
+    if (!customServName.trim()) return;
+
     addService({
-      name: newServiceName.trim(),
-      category: 'hair',
-      durationMinutes: Number(newServiceDuration) || 60,
-      price: Number(newServicePrice) || 25000,
-      description: 'Servicio creado durante la configuración inicial.'
+      name: customServName.trim(),
+      category: customServCategory,
+      durationMinutes: Number(customServDuration),
+      price: Number(customServPrice),
+      description: customServDesc.trim() || 'Servicio realizado con técnicas de autor y productos premium.'
     });
-    setNewServiceName('');
-    setNewServicePrice(30000);
-    setIsAddingCustomService(false);
+
+    setCustomServName('');
+    setCustomServDesc('');
   };
 
-  // Finish Onboarding
+  // Add 1-click Suggested Service
+  const handleAddSuggestedService = (s: Omit<Service, 'id' | 'salonId'>) => {
+    const alreadyExists = services.some((existing) => existing.name.toLowerCase() === s.name.toLowerCase());
+    if (!alreadyExists) {
+      addService(s);
+    }
+  };
+
+  // Add Product in Step 5
+  const handleAddCustomProduct = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!customProdName.trim()) return;
+
+    addProduct({
+      name: customProdName.trim(),
+      brand: customProdBrand.trim() || 'Marca Profesional',
+      category: customProdCategory,
+      currentStock: Number(customProdStock),
+      minStockAlert: 2,
+      unit: 'unidades',
+      costPrice: Number(customProdCost),
+      salePrice: customProdIsForSale ? Number(customProdSale) : 0,
+      isForSale: customProdIsForSale,
+      description: 'Producto registrado desde el asistente de configuración inicial.'
+    });
+
+    setCustomProdName('');
+    setCustomProdBrand('');
+  };
+
+  // Add 1-click Suggested Product
+  const handleAddSuggestedProduct = (p: Omit<InventoryProduct, 'id' | 'salonId' | 'lastRestocked'>) => {
+    const alreadyExists = inventory.some((existing) => existing.name.toLowerCase() === p.name.toLowerCase());
+    if (!alreadyExists) {
+      addProduct(p);
+    }
+  };
+
+  // Finish Wizard
   const handleFinishWizard = () => {
     completeOnboarding();
     setActiveTab('agenda');
-    showToast('🎉 ¡Salón Configurado!', 'Tu plataforma luu. está lista para trabajar.', 'success');
-  };
-
-  const bookingSlug = (salonName || currentSalon.name || 'mi-salon')
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-');
-  const bookingUrl = `https://luu.cl/${bookingSlug}`;
-
-  const copyBookingLink = () => {
-    navigator.clipboard.writeText(bookingUrl);
-    setIsCopied(true);
-    showToast('Enlace Copiado', 'Link de reservas copiado al portapapeles.', 'success');
-    setTimeout(() => setIsCopied(false), 2500);
   };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-charcoal-950/80 backdrop-blur-md animate-fade-in overflow-y-auto">
-      <div className="relative w-full max-w-3xl bg-white rounded-3xl sm:rounded-[2rem] shadow-2xl border border-brand-100 overflow-hidden flex flex-col my-auto max-h-[92vh]">
+      <div className="relative w-full max-w-4xl bg-white rounded-3xl sm:rounded-[2.5rem] shadow-2xl border border-brand-100 overflow-hidden flex flex-col my-auto max-h-[92vh]">
         
-        {/* Top Header Bar & Simple Steps Indicator */}
-        <div className="bg-gradient-to-r from-charcoal-900 via-charcoal-950 to-brand-950 text-white p-5 sm:p-6 flex items-center justify-between border-b border-white/10 shrink-0">
+        {/* Top Header Bar & Progress Tracker */}
+        <div className="bg-gradient-to-r from-charcoal-900 via-charcoal-950 to-brand-950 text-white p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/10 shrink-0">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-brand-500 to-roseGold flex items-center justify-center text-white shadow-lg">
+            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-brand-500 to-roseGold flex items-center justify-center text-white shadow-lg shrink-0">
               <Scissors className="w-5 h-5" />
             </div>
             <div>
               <div className="flex items-center space-x-2">
-                <span className="font-serif text-xl font-bold tracking-tight">luu<span className="text-brand-400">.</span></span>
+                <span className="font-serif text-xl font-bold tracking-tight">
+                  luu<span className="text-brand-400">.</span>
+                </span>
                 <span className="text-white/40 text-xs">|</span>
-                <span className="text-xs font-semibold text-brand-200 uppercase tracking-wider">Asistente de Configuración</span>
+                <span className="text-xs font-semibold text-brand-200 uppercase tracking-wider">
+                  Asistente de Configuración
+                </span>
               </div>
-              <p className="text-[11px] text-white/60">
-                {step === 0 && 'Bienvenida al CRM de tu salón'}
-                {step === 1 && 'Paso 1 de 3: Identidad y Contacto'}
-                {step === 2 && 'Paso 2 de 3: Tu Equipo de Estilistas'}
-                {step === 3 && 'Paso 3 de 3: Tu Carta de Servicios'}
-                {step === 4 && '¡Configuración Completada!'}
+              <p className="text-[11px] text-charcoal-300">
+                Paso a paso para dejar tu salón funcionando al 100%
               </p>
             </div>
           </div>
 
-          {/* Step Badges (Steps 1 to 3) */}
-          {step > 0 && step < 4 && (
-            <div className="hidden sm:flex items-center space-x-2 text-xs font-medium">
-              <span className={`px-2.5 py-1 rounded-full ${step === 1 ? 'bg-brand-500 text-white font-bold' : 'bg-white/10 text-white/60'}`}>
-                1. Salón
-              </span>
-              <span className="text-white/30">→</span>
-              <span className={`px-2.5 py-1 rounded-full ${step === 2 ? 'bg-brand-500 text-white font-bold' : 'bg-white/10 text-white/60'}`}>
-                2. Equipo
-              </span>
-              <span className="text-white/30">→</span>
-              <span className={`px-2.5 py-1 rounded-full ${step === 3 ? 'bg-brand-500 text-white font-bold' : 'bg-white/10 text-white/60'}`}>
-                3. Servicios
-              </span>
+          {/* Steps Indicator Badges (Only shown for steps 1-5) */}
+          {step >= 1 && step <= 5 && (
+            <div className="flex items-center space-x-1.5 overflow-x-auto py-1">
+              {[
+                { num: 1, label: 'Salón', icon: Store },
+                { num: 2, label: 'Peluqueras', icon: Users },
+                { num: 3, label: 'Sillones', icon: Armchair },
+                { num: 4, label: 'Servicios', icon: Scissors },
+                { num: 5, label: 'Productos', icon: Package }
+              ].map((item) => {
+                const isActive = step === item.num;
+                const isCompleted = step > item.num;
+                const Icon = item.icon;
+
+                return (
+                  <button
+                    key={item.num}
+                    onClick={() => setStep(item.num)}
+                    className={`flex items-center space-x-1 px-2.5 py-1 rounded-xl text-xs font-bold transition-all ${
+                      isActive
+                        ? 'bg-brand-500 text-white shadow-md shadow-brand-500/20'
+                        : isCompleted
+                        ? 'bg-white/15 text-brand-200 hover:bg-white/25'
+                        : 'bg-white/5 text-white/40 hover:bg-white/10'
+                    }`}
+                  >
+                    {isCompleted ? (
+                      <Check className="w-3 h-3 text-emerald-400" />
+                    ) : (
+                      <Icon className="w-3 h-3" />
+                    )}
+                    <span className="hidden md:inline">{item.label}</span>
+                  </button>
+                );
+              })}
             </div>
           )}
 
-          {/* Close button */}
+          {/* Close / Skip All button */}
           <button
             onClick={() => setIsOnboardingOpen(false)}
-            className="text-white/60 hover:text-white p-2 rounded-full hover:bg-white/10 transition-colors"
-            title="Cerrar por ahora"
+            className="text-white/60 hover:text-white p-2 rounded-full hover:bg-white/10 transition-colors ml-auto sm:ml-0"
+            title="Guardar y cerrar por ahora"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* ========================================================================= */}
-        {/* STEP 0: BIENVENIDA CÁLIDA                                                 */}
+        {/* STEP 0: BIENVENIDA SIMPÁTICA Y GRACIOSA                                   */}
         {/* ========================================================================= */}
         {step === 0 && (
           <div className="p-6 sm:p-10 overflow-y-auto flex-1 flex flex-col justify-between space-y-6">
-            <div className="max-w-xl mx-auto text-center space-y-4">
-              <div className="inline-flex items-center space-x-2 bg-brand-50 text-brand-800 px-4 py-1.5 rounded-full border border-brand-200 text-xs font-bold shadow-2xs">
+            <div className="max-w-2xl mx-auto text-center space-y-4">
+              
+              <div className="inline-flex items-center space-x-2 bg-brand-50 text-brand-800 px-4 py-1.5 rounded-full border border-brand-200 text-xs font-bold shadow-2xs animate-bounce">
                 <Sparkles className="w-4 h-4 text-brand-600" />
                 <span>¡Hola, artista del peinado y la belleza!</span>
               </div>
 
-              <h2 className="font-serif text-2xl sm:text-3xl font-bold text-charcoal-950 leading-tight">
+              <h2 className="font-serif text-3xl sm:text-4xl font-bold text-charcoal-950 leading-tight">
                 Sabemos que organizar una peluquería es más difícil que desenredar una decoloración mal hecha...
               </h2>
 
-              <p className="text-xs sm:text-sm text-charcoal-600 leading-relaxed font-sans">
-                Entre clientas que llegan tarde diciendo <i>"¡estoy a la vuelta!"</i> y mezclas secretas anotadas en servilletas, el día a día puede ser un torbellino. 
-                Por eso creamos este asistente: <strong>en solo 3 pasos dejamos tu salón impecable, digital y listo para brillar. ✨</strong>
+              <p className="text-sm sm:text-base text-charcoal-600 leading-relaxed font-sans">
+                Entre clientas que llegan 20 minutos tarde diciendo <i>"¡estoy a la vuelta!"</i> y mezclas secretas de tintes anotadas en servilletas, el día a día puede ser un torbellino. 
+                <br className="hidden sm:inline" />
+                Por eso creamos este asistente: <strong>en solo 3 minutos dejamos tu salón impecable, digital y listo para brillar. ✨</strong>
               </p>
             </div>
 
-            {/* 3 Steps Overview Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 max-w-2xl mx-auto w-full">
-              <div className="p-4 rounded-2xl bg-[#FAF8F5] border border-brand-200/80 text-center space-y-2">
-                <div className="w-10 h-10 mx-auto rounded-xl bg-brand-100/80 text-brand-800 flex items-center justify-center font-bold">
-                  1
+            {/* Quick Steps Overview Card */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 max-w-3xl mx-auto w-full">
+              
+              <div className="p-4 rounded-2xl bg-[#FAF8F5] border border-brand-200/80 space-y-1.5 hover:shadow-sm transition-all">
+                <div className="w-8 h-8 rounded-xl bg-brand-500 text-white flex items-center justify-center shadow-xs">
+                  <Store className="w-4 h-4" />
                 </div>
-                <h4 className="font-bold text-xs text-charcoal-900">Tu Salón</h4>
-                <p className="text-[11px] text-charcoal-500">Nombre, WhatsApp de contacto y dirección.</p>
+                <h4 className="font-bold text-xs text-charcoal-900">1. Tu Templo</h4>
+                <p className="text-[11px] text-charcoal-600 leading-snug">
+                  Dirección, teléfono de contacto y tu Instagram para presumir los antes y después.
+                </p>
               </div>
 
-              <div className="p-4 rounded-2xl bg-[#FAF8F5] border border-brand-200/80 text-center space-y-2">
-                <div className="w-10 h-10 mx-auto rounded-xl bg-brand-100/80 text-brand-800 flex items-center justify-center font-bold">
-                  2
+              <div className="p-4 rounded-2xl bg-[#FAF8F5] border border-brand-200/80 space-y-1.5 hover:shadow-sm transition-all">
+                <div className="w-8 h-8 rounded-xl bg-roseGold text-white flex items-center justify-center shadow-xs">
+                  <Users className="w-4 h-4" />
                 </div>
-                <h4 className="font-bold text-xs text-charcoal-900">Tu Equipo</h4>
-                <p className="text-[11px] text-charcoal-500">Tus estilistas y profesionales estrella.</p>
+                <h4 className="font-bold text-xs text-charcoal-900">2. Tu Dream Team</h4>
+                <p className="text-[11px] text-charcoal-600 leading-snug">
+                  Tus peluqueras estrella. Fotos optativas (por si hoy no se han peinado).
+                </p>
               </div>
 
-              <div className="p-4 rounded-2xl bg-[#FAF8F5] border border-brand-200/80 text-center space-y-2">
-                <div className="w-10 h-10 mx-auto rounded-xl bg-brand-100/80 text-brand-800 flex items-center justify-center font-bold">
-                  3
+              <div className="p-4 rounded-2xl bg-[#FAF8F5] border border-brand-200/80 space-y-1.5 hover:shadow-sm transition-all">
+                <div className="w-8 h-8 rounded-xl bg-charcoal-800 text-white flex items-center justify-center shadow-xs">
+                  <Armchair className="w-4 h-4" />
                 </div>
-                <h4 className="font-bold text-xs text-charcoal-900">Tus Servicios</h4>
-                <p className="text-[11px] text-charcoal-500">Elige tus servicios con 1 solo clic.</p>
+                <div className="flex items-center justify-between">
+                  <h4 className="font-bold text-xs text-charcoal-900">3. Los Sillones</h4>
+                  <Badge variant="luxury" className="text-[9px]">Skip</Badge>
+                </div>
+                <p className="text-[11px] text-charcoal-600 leading-snug">
+                  Tus tronos de atención. Puedes saltarlo si aún estás reacomodando los espejos.
+                </p>
               </div>
+
+              <div className="p-4 rounded-2xl bg-[#FAF8F5] border border-brand-200/80 space-y-1.5 hover:shadow-sm transition-all">
+                <div className="w-8 h-8 rounded-xl bg-brand-600 text-white flex items-center justify-center shadow-xs">
+                  <Scissors className="w-4 h-4" />
+                </div>
+                <h4 className="font-bold text-xs text-charcoal-900">4. Tu Carta de Mimos</h4>
+                <p className="text-[11px] text-charcoal-600 leading-snug">
+                  Balayage, cortes, uñas o spa. Elige de nuestras plantillas con 1 clic.
+                </p>
+              </div>
+
+              <div className="p-4 rounded-2xl bg-[#FAF8F5] border border-brand-200/80 space-y-1.5 hover:shadow-sm transition-all">
+                <div className="w-8 h-8 rounded-xl bg-amber-600 text-white flex items-center justify-center shadow-xs">
+                  <Package className="w-4 h-4" />
+                </div>
+                <div className="flex items-center justify-between">
+                  <h4 className="font-bold text-xs text-charcoal-900">5. Pócimas & Shampoos</h4>
+                  <Badge variant="luxury" className="text-[9px]">Skip</Badge>
+                </div>
+                <p className="text-[11px] text-charcoal-600 leading-snug">
+                  Controla stock técnico o venta retail. También puedes omitirlo.
+                </p>
+              </div>
+
+              <div className="p-4 rounded-2xl bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-200 space-y-1.5 flex flex-col justify-center">
+                <div className="flex items-center space-x-1.5 text-emerald-700 font-bold text-xs">
+                  <Smile className="w-4 h-4" />
+                  <span>¡Sin Estrés!</span>
+                </div>
+                <p className="text-[11px] text-emerald-800 leading-snug">
+                  Puedes editar todo después cuantas veces quieras. ¡Nada está grabado en piedra!
+                </p>
+              </div>
+
             </div>
 
-            <div className="flex flex-col items-center justify-center pt-2">
+            {/* Welcome CTA Footer */}
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-4 border-t border-brand-100">
               <Button
                 variant="luxury"
                 size="lg"
@@ -413,57 +603,69 @@ export const OnboardingWizardModal: React.FC = () => {
                 <span>¡Vamos a configurar mi salón! 🚀</span>
                 <ArrowRight className="w-4 h-4" />
               </Button>
-              <p className="text-[11px] text-charcoal-400 mt-2">Puedes editar todo después cuando quieras. ¡Nada está grabado en piedra!</p>
             </div>
           </div>
         )}
 
         {/* ========================================================================= */}
-        {/* STEP 1: INFORMACIÓN DEL SALÓN                                             */}
+        {/* STEP 1: INFORMACIÓN DEL SALÓN (DIRECCIÓN, CONTACTO, INSTAGRAM, HORARIOS)  */}
         {/* ========================================================================= */}
         {step === 1 && (
-          <form onSubmit={handleSaveSalonInfo} className="p-6 sm:p-8 overflow-y-auto flex-1 space-y-5">
+          <form onSubmit={handleSaveSalonInfo} className="p-6 sm:p-8 overflow-y-auto flex-1 space-y-6">
             <div>
               <div className="flex items-center space-x-2">
-                <Badge variant="luxury">Paso 1 de 3</Badge>
-                <h3 className="font-serif text-xl font-bold text-charcoal-950">
+                <Badge variant="luxury">Paso 1 de 5</Badge>
+                <h3 className="font-serif text-xl sm:text-2xl font-bold text-charcoal-950">
                   La Identidad de tu Salón
                 </h3>
               </div>
               <p className="text-xs text-charcoal-500 mt-1">
-                Estos datos aparecerán en los recordatorios automáticos de WhatsApp y en el portal de tus clientas.
+                Estos datos aparecerán en los recordatorios automáticos de WhatsApp y el portal de tus clientas.
               </p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              
               {/* Salon Name */}
-              <div className="md:col-span-2">
+              <div>
                 <label className="block text-xs font-bold text-charcoal-700 mb-1">
                   Nombre de la Peluquería / Salón *
                 </label>
                 <input
                   type="text"
                   required
-                  autoFocus
                   value={salonName}
                   onChange={(e) => setSalonName(e.target.value)}
-                  placeholder="Ej. PElu, Studio Glow, Atelier Providencia"
-                  className="w-full px-3.5 py-2.5 text-xs bg-[#FAF8F5] border border-brand-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-400 font-semibold"
+                  placeholder="Ej. luu. Vitacura"
+                  className="w-full px-3.5 py-2.5 text-xs bg-[#FAF8F5] border border-brand-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-400"
                 />
               </div>
 
-              {/* WhatsApp Phone */}
+              {/* Slogan */}
               <div>
-                <label className="block text-xs font-bold text-charcoal-700 mb-1 flex items-center">
-                  <Phone className="w-3.5 h-3.5 mr-1 text-emerald-600" />
-                  WhatsApp Oficial para Reservas *
+                <label className="block text-xs font-bold text-charcoal-700 mb-1">
+                  Eslogan o Frase Característica
                 </label>
                 <input
                   type="text"
-                  required
-                  value={salonPhone}
-                  onChange={(e) => setSalonPhone(e.target.value)}
-                  placeholder="+56 9 9162 7029"
+                  value={salonSlogan}
+                  onChange={(e) => setSalonSlogan(e.target.value)}
+                  placeholder="Ej. Especialistas en balayage y diseño de autor"
+                  className="w-full px-3.5 py-2.5 text-xs bg-[#FAF8F5] border border-brand-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-400"
+                />
+              </div>
+
+              {/* Address */}
+              <div>
+                <label className="block text-xs font-bold text-charcoal-700 mb-1 flex items-center">
+                  <MapPin className="w-3.5 h-3.5 mr-1 text-brand-600" />
+                  Dirección Física Completa
+                </label>
+                <input
+                  type="text"
+                  value={salonAddress}
+                  onChange={(e) => setSalonAddress(e.target.value)}
+                  placeholder="Ej. Av. Alonso de Córdova 3820, Local 4"
                   className="w-full px-3.5 py-2.5 text-xs bg-[#FAF8F5] border border-brand-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-400"
                 />
               </div>
@@ -471,7 +673,7 @@ export const OnboardingWizardModal: React.FC = () => {
               {/* City / Country */}
               <div>
                 <label className="block text-xs font-bold text-charcoal-700 mb-1">
-                  Comuna y Ciudad
+                  Comuna, Ciudad y País
                 </label>
                 <input
                   type="text"
@@ -482,17 +684,32 @@ export const OnboardingWizardModal: React.FC = () => {
                 />
               </div>
 
-              {/* Address */}
+              {/* WhatsApp Phone */}
               <div>
                 <label className="block text-xs font-bold text-charcoal-700 mb-1 flex items-center">
-                  <MapPin className="w-3.5 h-3.5 mr-1 text-brand-600" />
-                  Dirección Física
+                  <Phone className="w-3.5 h-3.5 mr-1 text-emerald-600" />
+                  WhatsApp / Teléfono Oficial de Contacto
                 </label>
                 <input
                   type="text"
-                  value={salonAddress}
-                  onChange={(e) => setSalonAddress(e.target.value)}
-                  placeholder="Ej. Nueva Costanera 3222"
+                  value={salonPhone}
+                  onChange={(e) => setSalonPhone(e.target.value)}
+                  placeholder="+56 9 8123 4567"
+                  className="w-full px-3.5 py-2.5 text-xs bg-[#FAF8F5] border border-brand-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-400"
+                />
+              </div>
+
+              {/* Email */}
+              <div>
+                <label className="block text-xs font-bold text-charcoal-700 mb-1 flex items-center">
+                  <Mail className="w-3.5 h-3.5 mr-1 text-blue-600" />
+                  Correo Electrónico de Contacto
+                </label>
+                <input
+                  type="email"
+                  value={salonEmail}
+                  onChange={(e) => setSalonEmail(e.target.value)}
+                  placeholder="contacto@tupeluqueria.cl"
                   className="w-full px-3.5 py-2.5 text-xs bg-[#FAF8F5] border border-brand-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-400"
                 />
               </div>
@@ -501,41 +718,85 @@ export const OnboardingWizardModal: React.FC = () => {
               <div>
                 <label className="block text-xs font-bold text-charcoal-700 mb-1 flex items-center">
                   <InstagramIcon className="w-3.5 h-3.5 mr-1 text-pink-600" />
-                  Instagram Oficial
+                  Instagram del Salón
                 </label>
                 <input
                   type="text"
                   value={salonInstagram}
                   onChange={(e) => setSalonInstagram(e.target.value)}
-                  placeholder="@pelu"
+                  placeholder="@luu.vitacura"
                   className="w-full px-3.5 py-2.5 text-xs bg-[#FAF8F5] border border-brand-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-400"
                 />
               </div>
+
+              {/* Hours */}
+              <div>
+                <label className="block text-xs font-bold text-charcoal-700 mb-1 flex items-center">
+                  <Clock className="w-3.5 h-3.5 mr-1 text-amber-600" />
+                  Horario de Atención Habitual
+                </label>
+                <input
+                  type="text"
+                  value={salonHours}
+                  onChange={(e) => setSalonHours(e.target.value)}
+                  placeholder="Ej. Lun a Sáb 10:00 - 20:00"
+                  className="w-full px-3.5 py-2.5 text-xs bg-[#FAF8F5] border border-brand-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-400"
+                />
+              </div>
+
             </div>
 
-            {/* Presets de Foto de Portada */}
-            <div className="pt-2">
-              <label className="block text-xs font-bold text-charcoal-700 mb-2">
-                Foto de Portada o Fachada del Salón
+            {/* Salon Logo / Aesthetic Photo (Optativo) */}
+            <div className="pt-2 border-t border-brand-100">
+              <label className="block text-xs font-bold text-charcoal-700 mb-2 flex items-center justify-between">
+                <span>Foto de Fachada o Logo del Salón (Optativo)</span>
+                <span className="text-[10px] text-charcoal-400 font-normal">Puedes subir una imagen o elegir un preset</span>
               </label>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+
+              <div className="flex flex-wrap items-center gap-3">
+                {/* Presets */}
                 {PRESET_SALON_PHOTOS.map((photoUrl, idx) => (
-                  <button
+                  <img
                     key={idx}
-                    type="button"
+                    src={photoUrl}
+                    alt={`Preset salón ${idx + 1}`}
                     onClick={() => setSalonLogo(photoUrl)}
-                    className={`relative rounded-xl overflow-hidden aspect-video border-2 transition-all ${
-                      salonLogo === photoUrl ? 'border-brand-500 ring-2 ring-brand-300' : 'border-transparent opacity-70 hover:opacity-100'
+                    className={`w-16 h-12 rounded-xl object-cover cursor-pointer border transition-all ${
+                      salonLogo === photoUrl ? 'ring-2 ring-brand-500 scale-105 border-brand-500' : 'opacity-70 hover:opacity-100'
                     }`}
-                  >
-                    <img src={photoUrl} alt={`Preset ${idx + 1}`} className="w-full h-full object-cover" />
-                    {salonLogo === photoUrl && (
-                      <div className="absolute inset-0 bg-brand-900/30 flex items-center justify-center">
-                        <CheckCircle2 className="w-5 h-5 text-white" />
-                      </div>
-                    )}
-                  </button>
+                  />
                 ))}
+
+                {/* Upload Custom Logo/Photo */}
+                <label className="w-16 h-12 rounded-xl border border-dashed border-brand-300 hover:border-brand-500 flex flex-col items-center justify-center cursor-pointer bg-[#FAF8F5] text-charcoal-500 hover:text-brand-700 transition-all">
+                  <Camera className="w-4 h-4" />
+                  <span className="text-[9px] font-bold mt-0.5">Subir</span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        const reader = new FileReader();
+                        reader.onloadend = () => {
+                          if (typeof reader.result === 'string') setSalonLogo(reader.result);
+                        };
+                        reader.readAsDataURL(file);
+                      }
+                    }}
+                  />
+                </label>
+
+                {salonLogo && (
+                  <button
+                    type="button"
+                    onClick={() => setSalonLogo('')}
+                    className="text-xs text-red-500 hover:underline ml-2"
+                  >
+                    Quitar foto
+                  </button>
+                )}
               </div>
             </div>
 
@@ -556,7 +817,7 @@ export const OnboardingWizardModal: React.FC = () => {
                 variant="luxury"
                 className="text-xs px-6 font-bold shadow-md shadow-brand-500/20"
               >
-                <span>Continuar a Tu Equipo</span>
+                <span>Guardar y Continuar a Peluqueras</span>
                 <ArrowRight className="w-3.5 h-3.5 ml-1.5" />
               </Button>
             </div>
@@ -564,183 +825,245 @@ export const OnboardingWizardModal: React.FC = () => {
         )}
 
         {/* ========================================================================= */}
-        {/* STEP 2: TU EQUIPO (LAS PELUQUERAS / PROFESIONALES)                        */}
+        {/* STEP 2: LAS PELUQUERAS (FOTOS OPTATIVO, SIN COMISIÓN)                     */}
         {/* ========================================================================= */}
         {step === 2 && (
-          <div className="p-6 sm:p-8 overflow-y-auto flex-1 space-y-5">
+          <div className="p-6 sm:p-8 overflow-y-auto flex-1 space-y-6">
             <div>
               <div className="flex items-center space-x-2">
-                <Badge variant="luxury">Paso 2 de 3</Badge>
-                <h3 className="font-serif text-xl font-bold text-charcoal-950">
-                  Tu Equipo de Peluqueras & Especialistas
+                <Badge variant="luxury">Paso 2 de 5</Badge>
+                <h3 className="font-serif text-xl sm:text-2xl font-bold text-charcoal-950">
+                  Las Peluqueras & Tu Equipo
                 </h3>
               </div>
               <p className="text-xs text-charcoal-500 mt-1">
-                Agrega a las profesionales de tu salón para que las clientas puedan reservar hora con ellas.
+                Configura a las estilistas de tu equipo. Las fotos son <strong>optativas</strong> y puedes subir una o elegir un preset.
               </p>
             </div>
 
-            {/* 1-Click Quick Add Cards if empty */}
-            {professionals.length === 0 && (
-              <div className="p-4 bg-brand-50/60 border border-brand-200 rounded-2xl space-y-3">
-                <p className="text-xs font-semibold text-brand-950">
-                  ⚡ Agrega tu primer profesional con 1 clic:
-                </p>
-                <div className="flex flex-col sm:flex-row gap-2">
-                  <button
-                    type="button"
-                    onClick={handleAddOwnerAsStylist}
-                    className="flex-1 px-3.5 py-2.5 bg-white border border-brand-200 rounded-xl hover:bg-brand-50 text-left transition-all shadow-2xs"
+            {/* Current Stylists List */}
+            <div>
+              <h4 className="text-xs font-bold text-charcoal-800 uppercase tracking-wider mb-2">
+                Equipo Configurado ({professionals.length})
+              </h4>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                {professionals.map((prof) => (
+                  <div
+                    key={prof.id}
+                    className="p-3.5 rounded-2xl bg-[#FAF8F5] border border-brand-200/80 flex items-center justify-between space-x-3 shadow-2xs"
                   >
-                    <span className="block text-xs font-bold text-charcoal-900">
-                      + Agregarme a mí ({currentUser?.name || 'Dueño'})
-                    </span>
-                    <span className="block text-[11px] text-charcoal-500">Como Estilista & Colorista Principal</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={handleAddSuggestedTeam}
-                    className="flex-1 px-3.5 py-2.5 bg-white border border-brand-200 rounded-xl hover:bg-brand-50 text-left transition-all shadow-2xs"
-                  >
-                    <span className="block text-xs font-bold text-charcoal-900">+ Cargar 2 estilistas de ejemplo</span>
-                    <span className="block text-[11px] text-charcoal-500">Colorista y Manicurista</span>
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* Current Team List */}
-            {professionals.length > 0 && (
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-charcoal-700 uppercase tracking-wider">
-                    Peluqueras en el Salón ({professionals.length})
-                  </span>
-                  <button
-                    type="button"
-                    onClick={handleAddOwnerAsStylist}
-                    className="text-[11px] text-brand-700 hover:text-brand-900 font-semibold"
-                  >
-                    + Agregarme a mí
-                  </button>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                  {professionals.map((prof) => (
-                    <div
-                      key={prof.id}
-                      className="p-3 bg-[#FAF8F5] border border-brand-200/80 rounded-2xl flex items-center justify-between space-x-3 shadow-2xs"
-                    >
-                      <div className="flex items-center space-x-2.5 min-w-0">
-                        <img
-                          src={prof.avatar}
-                          alt={prof.name}
-                          className="w-10 h-10 rounded-xl object-cover ring-1 ring-brand-300 shrink-0"
-                        />
-                        <div className="min-w-0">
-                          <h4 className="text-xs font-bold text-charcoal-900 truncate">{prof.name}</h4>
-                          <p className="text-[11px] text-charcoal-500 truncate">{prof.roleTitle}</p>
+                    <div className="flex items-center space-x-2.5 min-w-0">
+                      <img
+                        src={prof.avatar}
+                        alt={prof.name}
+                        className="w-10 h-10 rounded-xl object-cover ring-1 ring-brand-300 shrink-0"
+                      />
+                      <div className="min-w-0">
+                        <h5 className="font-bold text-xs text-charcoal-950 truncate">{prof.name}</h5>
+                        <p className="text-[11px] text-charcoal-500 truncate">{prof.roleTitle}</p>
+                        <div className="flex items-center space-x-1 mt-0.5">
+                          <span
+                            className="w-2.5 h-2.5 rounded-full inline-block"
+                            style={{ backgroundColor: prof.colorHex }}
+                          />
+                          <span className="text-[10px] text-charcoal-400">{prof.phone}</span>
                         </div>
                       </div>
-
-                      <button
-                        type="button"
-                        onClick={() => deleteProfessional(prof.id)}
-                        className="p-1.5 text-charcoal-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 transition-colors"
-                        title="Eliminar profesional"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
                     </div>
-                  ))}
-                </div>
+
+                    <button
+                      onClick={() => deleteProfessional(prof.id)}
+                      className="text-charcoal-400 hover:text-red-600 p-1.5 rounded-lg hover:bg-red-50 transition-colors"
+                      title="Eliminar estilista"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                ))}
               </div>
-            )}
+            </div>
 
-            {/* Inline Add Stylist Form */}
-            <form onSubmit={handleAddCustomStylist} className="p-4 bg-white border border-brand-200/80 rounded-2xl space-y-3">
-              <span className="text-xs font-bold text-charcoal-800 flex items-center">
-                <Plus className="w-3.5 h-3.5 mr-1 text-brand-600" />
-                Añadir Otra Profesional
-              </span>
+            {/* Form to Add Stylist */}
+            <div className="bg-white p-5 rounded-3xl border border-brand-200 shadow-sm space-y-4">
+              <div className="flex items-center space-x-2">
+                <Plus className="w-4 h-4 text-brand-600" />
+                <h4 className="font-bold text-xs text-charcoal-900 uppercase tracking-wider">
+                  Añadir Peluquera al Salón
+                </h4>
+              </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
                 <div>
-                  <label className="block text-[11px] font-medium text-charcoal-600 mb-1">Nombre</label>
+                  <label className="block text-xs font-bold text-charcoal-700 mb-1">Nombre Completo *</label>
                   <input
                     type="text"
-                    value={newProfName}
-                    onChange={(e) => setNewProfName(e.target.value)}
+                    value={profName}
+                    onChange={(e) => setProfName(e.target.value)}
                     placeholder="Ej. Valentina Morales"
                     className="w-full px-3 py-2 text-xs bg-[#FAF8F5] border border-brand-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-400"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-medium text-charcoal-600 mb-1">Especialidad / Cargo</label>
+                  <label className="block text-xs font-bold text-charcoal-700 mb-1">Rol / Especialidad Principal</label>
                   <input
                     type="text"
-                    value={newProfRole}
-                    onChange={(e) => setNewProfRole(e.target.value)}
-                    placeholder="Ej. Colorista & Balayage, Manicurista"
+                    value={profRoleTitle}
+                    onChange={(e) => setProfRoleTitle(e.target.value)}
+                    placeholder="Ej. Master Colorista, Manicurista Senior"
+                    className="w-full px-3 py-2 text-xs bg-[#FAF8F5] border border-brand-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-400"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-charcoal-700 mb-1">Teléfono / WhatsApp</label>
+                  <input
+                    type="text"
+                    value={profPhone}
+                    onChange={(e) => setProfPhone(e.target.value)}
+                    placeholder="+56 9 8123 4567"
                     className="w-full px-3 py-2 text-xs bg-[#FAF8F5] border border-brand-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-400"
                   />
                 </div>
               </div>
 
-              {/* Avatar Selector */}
-              <div>
-                <label className="block text-[11px] font-medium text-charcoal-600 mb-1.5">Foto de perfil (elige una):</label>
-                <div className="flex items-center gap-2 overflow-x-auto pb-1">
-                  {PRESET_AVATARS.map((av, idx) => (
-                    <button
-                      key={idx}
-                      type="button"
-                      onClick={() => setNewProfAvatar(av)}
-                      className={`w-9 h-9 rounded-full overflow-hidden shrink-0 border-2 transition-all ${
-                        newProfAvatar === av ? 'border-brand-500 scale-110' : 'border-transparent opacity-60 hover:opacity-100'
-                      }`}
-                    >
-                      <img src={av} alt="Avatar" className="w-full h-full object-cover" />
-                    </button>
-                  ))}
+              {/* Specialties & Color */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                <div>
+                  <label className="block text-xs font-bold text-charcoal-700 mb-1.5">Especialidades que atiende</label>
+                  <div className="flex flex-wrap gap-1.5">
+                    {(['hair', 'nails', 'brows_lashes', 'skincare', 'spa'] as ServiceCategory[]).map((cat) => {
+                      const isSelected = profSpecialties.includes(cat);
+                      const labels: Record<string, string> = {
+                        hair: '💇‍♀️ Cabello',
+                        nails: '💅 Uñas',
+                        brows_lashes: '👁️ Pestañas/Cejas',
+                        skincare: '✨ Facial',
+                        spa: '🧖‍♀️ Spa'
+                      };
+                      return (
+                        <button
+                          type="button"
+                          key={cat}
+                          onClick={() => {
+                            setProfSpecialties((prev) =>
+                              isSelected ? prev.filter((c) => c !== cat) : [...prev, cat]
+                            );
+                          }}
+                          className={`px-2.5 py-1 rounded-xl text-xs font-semibold border transition-all ${
+                            isSelected
+                              ? 'bg-brand-500 text-white border-brand-500 shadow-2xs'
+                              : 'bg-[#FAF8F5] text-charcoal-700 border-brand-200 hover:bg-white'
+                          }`}
+                        >
+                          {labels[cat] || cat}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-charcoal-700 mb-1.5">Color en la Agenda</label>
+                  <div className="flex items-center space-x-2">
+                    {PRESET_COLORS.map((c) => (
+                      <button
+                        type="button"
+                        key={c}
+                        onClick={() => setProfColorHex(c)}
+                        className={`w-6 h-6 rounded-full transition-transform ${
+                          profColorHex === c ? 'scale-125 ring-2 ring-offset-2 ring-charcoal-900' : 'hover:scale-110'
+                        }`}
+                        style={{ backgroundColor: c }}
+                      />
+                    ))}
+                  </div>
                 </div>
               </div>
 
-              <div className="flex justify-end">
+              {/* Optional Photo */}
+              <div className="pt-2 border-t border-brand-100">
+                <label className="block text-xs font-bold text-charcoal-700 mb-2 flex items-center justify-between">
+                  <span>Foto de Perfil (Optativo)</span>
+                  <span className="text-[10px] text-charcoal-400 font-normal">Sube foto de tu estilista o elige de los presets</span>
+                </label>
+
+                <div className="flex flex-wrap items-center gap-2.5">
+                  {/* File Upload Button */}
+                  <label className="w-10 h-10 rounded-xl border border-dashed border-brand-300 hover:border-brand-500 bg-[#FAF8F5] flex flex-col items-center justify-center cursor-pointer text-charcoal-500 hover:text-brand-700 transition-all">
+                    <Camera className="w-4 h-4" />
+                    <input
+                      type="file"
+                      ref={profFileInputRef}
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleProfPhotoUpload}
+                    />
+                  </label>
+
+                  {/* Preset Avatars */}
+                  {PRESET_AVATARS.map((av, idx) => (
+                    <img
+                      key={idx}
+                      src={av}
+                      alt="Preset"
+                      onClick={() => setProfAvatar(av)}
+                      className={`w-10 h-10 rounded-xl object-cover cursor-pointer border transition-all ${
+                        profAvatar === av ? 'ring-2 ring-brand-500 scale-110 border-brand-500' : 'opacity-70 hover:opacity-100'
+                      }`}
+                    />
+                  ))}
+
+                  {profAvatar && (
+                    <div className="flex items-center space-x-2 ml-2">
+                      <img
+                        src={profAvatar}
+                        alt="Seleccionada"
+                        className="w-10 h-10 rounded-xl object-cover ring-2 ring-emerald-500 shadow-xs"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setProfAvatar('')}
+                        className="text-[11px] text-red-500 hover:underline"
+                      >
+                        Quitar
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex justify-end pt-2">
                 <Button
-                  type="submit"
-                  variant="outline"
-                  size="sm"
-                  disabled={!newProfName.trim()}
-                  className="text-xs font-semibold"
+                  type="button"
+                  variant="luxury"
+                  disabled={!profName.trim()}
+                  onClick={() => handleAddProfessional()}
+                  className="text-xs"
                 >
                   <Plus className="w-3.5 h-3.5 mr-1" />
-                  Agregar al Equipo
+                  Añadir a la lista
                 </Button>
               </div>
-            </form>
+            </div>
 
-            {/* Navigation */}
+            {/* Step Navigation */}
             <div className="flex items-center justify-between pt-4 border-t border-brand-100">
               <Button
-                type="button"
                 variant="outline"
                 onClick={() => setStep(1)}
                 className="text-xs"
               >
                 <ArrowLeft className="w-3.5 h-3.5 mr-1" />
-                Volver a Salón
+                Anterior
               </Button>
 
               <Button
-                type="button"
                 variant="luxury"
                 onClick={() => setStep(3)}
                 className="text-xs px-6 font-bold shadow-md shadow-brand-500/20"
               >
-                <span>Continuar a Servicios</span>
+                <span>Siguiente: Sillones</span>
                 <ArrowRight className="w-3.5 h-3.5 ml-1.5" />
               </Button>
             </div>
@@ -748,152 +1071,383 @@ export const OnboardingWizardModal: React.FC = () => {
         )}
 
         {/* ========================================================================= */}
-        {/* STEP 3: TUS SERVICIOS (SELECCIÓN VISUAL CON 1 CLIC)                      */}
+        {/* STEP 3: SILLONES (FOTOS OPTATIVO, CON OPCIÓN DE SKIP)                      */}
         {/* ========================================================================= */}
         {step === 3 && (
-          <div className="p-6 sm:p-8 overflow-y-auto flex-1 space-y-5">
-            <div>
-              <div className="flex items-center space-x-2">
-                <Badge variant="luxury">Paso 3 de 3</Badge>
-                <h3 className="font-serif text-xl font-bold text-charcoal-950">
-                  Tu Carta de Servicios
-                </h3>
+          <div className="p-6 sm:p-8 overflow-y-auto flex-1 space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <div className="flex items-center space-x-2">
+                  <Badge variant="luxury">Paso 3 de 5</Badge>
+                  <h3 className="font-serif text-xl sm:text-2xl font-bold text-charcoal-950">
+                    Sillones & Estaciones
+                  </h3>
+                </div>
+                <p className="text-xs text-charcoal-500 mt-1">
+                  Organiza los puestos de atención. Fotos optativas. Si prefieres hacerlo después, puedes <strong>saltar este paso</strong>.
+                </p>
               </div>
-              <p className="text-xs text-charcoal-500 mt-1">
-                Marca los servicios que ofreces en tu peluquería para agregarlos a tu lista con 1 clic.
-              </p>
-            </div>
 
-            {/* Suggested Services Checklist */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-              {SUGGESTED_SERVICES.map((serv, idx) => {
-                const isSelected = services.some(
-                  (s) => s.name.toLowerCase() === serv.name.toLowerCase()
-                );
-                return (
-                  <div
-                    key={idx}
-                    onClick={() => handleToggleSuggestedService(serv)}
-                    className={`p-3.5 rounded-2xl border cursor-pointer transition-all flex items-start justify-between space-x-3 ${
-                      isSelected
-                        ? 'bg-brand-50/70 border-brand-400 shadow-xs'
-                        : 'bg-[#FAF8F5] border-brand-200/80 hover:bg-brand-50/30'
-                    }`}
-                  >
-                    <div className="space-y-1 min-w-0">
-                      <div className="flex items-center space-x-1.5">
-                        <span className="text-xs font-bold text-charcoal-900 leading-tight">{serv.name}</span>
-                      </div>
-                      <p className="text-[11px] text-charcoal-500 leading-snug line-clamp-1">{serv.description}</p>
-                      <div className="flex items-center space-x-2 pt-0.5 text-[11px] font-semibold text-brand-900">
-                        <span>${serv.price.toLocaleString('es-CL')}</span>
-                        <span className="text-charcoal-400">·</span>
-                        <span className="text-charcoal-600 font-normal">{serv.durationMinutes} min</span>
-                      </div>
-                    </div>
-
-                    <div
-                      className={`w-5 h-5 rounded-lg border flex items-center justify-center shrink-0 mt-0.5 transition-colors ${
-                        isSelected
-                          ? 'bg-brand-500 border-brand-500 text-white'
-                          : 'border-charcoal-300 bg-white'
-                      }`}
-                    >
-                      {isSelected && <Check className="w-3.5 h-3.5 stroke-[3]" />}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-
-            {/* Add Custom Service Accordion / Form */}
-            {!isAddingCustomService ? (
+              {/* SKIP BUTTON */}
               <button
                 type="button"
-                onClick={() => setIsAddingCustomService(true)}
-                className="w-full py-2.5 border border-dashed border-brand-300 rounded-2xl text-xs font-semibold text-brand-800 hover:bg-brand-50/60 transition-colors flex items-center justify-center space-x-1.5"
+                onClick={() => setStep(4)}
+                className="inline-flex items-center space-x-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold text-charcoal-600 bg-charcoal-100 hover:bg-charcoal-200 transition-colors self-start sm:self-auto"
               >
-                <Plus className="w-4 h-4" />
-                <span>+ Agregar un servicio personalizado</span>
+                <span>Saltar este paso</span>
+                <SkipForward className="w-3.5 h-3.5 text-charcoal-500" />
               </button>
-            ) : (
-              <form onSubmit={handleAddCustomService} className="p-4 bg-brand-50/50 border border-brand-200 rounded-2xl space-y-3">
-                <span className="text-xs font-bold text-charcoal-800">Nuevo Servicio Personalizado</span>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-                  <div className="sm:col-span-1">
-                    <label className="block text-[11px] font-medium text-charcoal-600 mb-1">Nombre</label>
-                    <input
-                      type="text"
-                      required
-                      value={newServiceName}
-                      onChange={(e) => setNewServiceName(e.target.value)}
-                      placeholder="Ej. Mechas Babylights"
-                      className="w-full px-3 py-2 text-xs bg-white border border-brand-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-400"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-[11px] font-medium text-charcoal-600 mb-1">Precio ($ CLP)</label>
-                    <input
-                      type="number"
-                      required
-                      value={newServicePrice}
-                      onChange={(e) => setNewServicePrice(Number(e.target.value))}
-                      className="w-full px-3 py-2 text-xs bg-white border border-brand-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-400"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-[11px] font-medium text-charcoal-600 mb-1">Duración (min)</label>
-                    <input
-                      type="number"
-                      required
-                      value={newServiceDuration}
-                      onChange={(e) => setNewServiceDuration(Number(e.target.value))}
-                      className="w-full px-3 py-2 text-xs bg-white border border-brand-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-400"
-                    />
-                  </div>
+            </div>
+
+            {/* 1-Click Quick Add Presets */}
+            <div className="bg-brand-50/70 p-4 rounded-3xl border border-brand-200/80 space-y-2">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-brand-900 flex items-center space-x-1">
+                <Sparkles className="w-3.5 h-3.5 text-brand-600" />
+                <span>Agregar estaciones comunes con 1 clic</span>
+              </span>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={() => handleQuickAddStation('hair_cut', 'Sillón de Corte & Peinado')}
+                  className="px-3 py-1.5 text-xs font-semibold bg-white border border-brand-200 hover:border-brand-400 rounded-xl shadow-2xs flex items-center space-x-1.5 text-charcoal-800"
+                >
+                  <Scissors className="w-3.5 h-3.5 text-brand-600" />
+                  <span>+ Sillón Corte</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleQuickAddStation('hair_color', 'Sillón de Colorimetría')}
+                  className="px-3 py-1.5 text-xs font-semibold bg-white border border-brand-200 hover:border-brand-400 rounded-xl shadow-2xs flex items-center space-x-1.5 text-charcoal-800"
+                >
+                  <Sparkles className="w-3.5 h-3.5 text-roseGold" />
+                  <span>+ Sillón Color</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleQuickAddStation('wash_spa', 'Lavacabezas & Spa Capilar')}
+                  className="px-3 py-1.5 text-xs font-semibold bg-white border border-brand-200 hover:border-brand-400 rounded-xl shadow-2xs flex items-center space-x-1.5 text-charcoal-800"
+                >
+                  <Armchair className="w-3.5 h-3.5 text-blue-500" />
+                  <span>+ Lavacabezas</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleQuickAddStation('nails', 'Mesa de Manicura Rusa')}
+                  className="px-3 py-1.5 text-xs font-semibold bg-white border border-brand-200 hover:border-brand-400 rounded-xl shadow-2xs flex items-center space-x-1.5 text-charcoal-800"
+                >
+                  <span>💅</span>
+                  <span>+ Mesa Manicura</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleQuickAddStation('lashes', 'Cabina Lash & Brow')}
+                  className="px-3 py-1.5 text-xs font-semibold bg-white border border-brand-200 hover:border-brand-400 rounded-xl shadow-2xs flex items-center space-x-1.5 text-charcoal-800"
+                >
+                  <span>👁️</span>
+                  <span>+ Cabina Pestañas</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Stations List */}
+            <div>
+              <h4 className="text-xs font-bold text-charcoal-800 uppercase tracking-wider mb-2">
+                Sillones en el Plano ({stations.length})
+              </h4>
+              {stations.length === 0 ? (
+                <div className="p-6 text-center bg-[#FAF8F5] rounded-2xl border border-dashed border-charcoal-300 text-xs text-charcoal-500">
+                  No hay sillones creados aún. Añade uno con el formulario o los botones rápidos, o pulsa "Saltar este paso".
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                  {stations.map((st) => (
+                    <div
+                      key={st.id}
+                      className="p-3.5 rounded-2xl bg-[#FAF8F5] border border-brand-200/80 flex items-center justify-between space-x-2 shadow-2xs"
+                    >
+                      <div className="flex items-center space-x-2.5 min-w-0">
+                        {st.photoUrl ? (
+                          <img
+                            src={st.photoUrl}
+                            alt={st.name}
+                            className="w-10 h-10 rounded-xl object-cover ring-1 ring-brand-300 shrink-0"
+                          />
+                        ) : (
+                          <div className="w-10 h-10 rounded-xl bg-brand-100 text-brand-700 flex items-center justify-center font-bold text-xs shrink-0">
+                            #{st.chairNumber}
+                          </div>
+                        )}
+                        <div className="min-w-0">
+                          <h5 className="font-bold text-xs text-charcoal-950 truncate">{st.name}</h5>
+                          <p className="text-[11px] text-charcoal-500 truncate">
+                            {st.assignedProfessionalName || 'Staff Rotativo'}
+                          </p>
+                        </div>
+                      </div>
+
+                      <button
+                        onClick={() => deleteStation(st.id)}
+                        className="text-charcoal-400 hover:text-red-600 p-1.5 rounded-lg hover:bg-red-50 transition-colors"
+                        title="Eliminar puesto"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Custom Station Form */}
+            <div className="bg-white p-5 rounded-3xl border border-brand-200 shadow-sm space-y-4">
+              <div className="flex items-center space-x-2">
+                <Plus className="w-4 h-4 text-brand-600" />
+                <h4 className="font-bold text-xs text-charcoal-900 uppercase tracking-wider">
+                  Personalizar Nuevo Puesto o Sillón
+                </h4>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-charcoal-700 mb-1">Número de Sillón</label>
+                  <input
+                    type="number"
+                    min="1"
+                    value={stationChairNum}
+                    onChange={(e) => setStationChairNum(Number(e.target.value))}
+                    className="w-full px-3 py-2 text-xs bg-[#FAF8F5] border border-brand-200 rounded-xl focus:outline-none"
+                  />
                 </div>
 
-                <div className="flex justify-end space-x-2">
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setIsAddingCustomService(false)}
-                    className="text-xs"
-                  >
-                    Cancelar
-                  </Button>
-                  <Button
-                    type="submit"
-                    variant="luxury"
-                    size="sm"
-                    className="text-xs font-bold"
-                  >
-                    Guardar Servicio
-                  </Button>
+                <div>
+                  <label className="block text-xs font-bold text-charcoal-700 mb-1">Nombre o Etiqueta</label>
+                  <input
+                    type="text"
+                    value={stationName}
+                    onChange={(e) => setStationName(e.target.value)}
+                    placeholder="Ej. Sillón 1 · Colorimetría"
+                    className="w-full px-3 py-2 text-xs bg-[#FAF8F5] border border-brand-200 rounded-xl focus:outline-none"
+                  />
                 </div>
-              </form>
-            )}
 
-            {/* Navigation */}
+                <div>
+                  <label className="block text-xs font-bold text-charcoal-700 mb-1">Peluquera Asignada (Optativo)</label>
+                  <select
+                    value={stationAssignedProfId}
+                    onChange={(e) => setStationAssignedProfId(e.target.value)}
+                    className="w-full px-3 py-2 text-xs bg-[#FAF8F5] border border-brand-200 rounded-xl focus:outline-none"
+                  >
+                    <option value="">Rotativo / Cualquier estilista</option>
+                    {professionals.map((p) => (
+                      <option key={p.id} value={p.id}>{p.name} ({p.roleTitle})</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {/* Photo of station (Optativo) */}
+              <div className="pt-2 border-t border-brand-100 flex items-center justify-between flex-wrap gap-2">
+                <div className="flex items-center space-x-2">
+                  <label className="px-3 py-1.5 rounded-xl border border-dashed border-brand-300 hover:border-brand-500 bg-[#FAF8F5] text-xs font-semibold cursor-pointer text-charcoal-700 flex items-center space-x-1.5 transition-all">
+                    <Camera className="w-3.5 h-3.5 text-brand-600" />
+                    <span>Subir foto del sillón (Optativo)</span>
+                    <input
+                      type="file"
+                      ref={stationFileInputRef}
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleStationPhotoUpload}
+                    />
+                  </label>
+                  {stationPhoto && (
+                    <span className="text-[11px] text-emerald-600 font-bold flex items-center">
+                      <CheckCircle2 className="w-3.5 h-3.5 mr-1" />
+                      Foto cargada
+                    </span>
+                  )}
+                </div>
+
+                <Button
+                  type="button"
+                  variant="luxury"
+                  onClick={() => handleAddStation()}
+                  className="text-xs"
+                >
+                  <Plus className="w-3.5 h-3.5 mr-1" />
+                  Añadir Sillón
+                </Button>
+              </div>
+            </div>
+
+            {/* Step Navigation */}
             <div className="flex items-center justify-between pt-4 border-t border-brand-100">
               <Button
-                type="button"
                 variant="outline"
                 onClick={() => setStep(2)}
                 className="text-xs"
               >
                 <ArrowLeft className="w-3.5 h-3.5 mr-1" />
-                Volver a Equipo
+                Anterior
+              </Button>
+
+              <div className="flex items-center space-x-2">
+                <Button
+                  variant="outline"
+                  onClick={() => setStep(4)}
+                  className="text-xs text-charcoal-600"
+                >
+                  Saltar Sillones
+                </Button>
+                <Button
+                  variant="luxury"
+                  onClick={() => setStep(4)}
+                  className="text-xs px-6 font-bold shadow-md shadow-brand-500/20"
+                >
+                  <span>Siguiente: Servicios</span>
+                  <ArrowRight className="w-3.5 h-3.5 ml-1.5" />
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ========================================================================= */}
+        {/* STEP 4: SERVICIOS                                                         */}
+        {/* ========================================================================= */}
+        {step === 4 && (
+          <div className="p-6 sm:p-8 overflow-y-auto flex-1 space-y-6">
+            <div>
+              <div className="flex items-center space-x-2">
+                <Badge variant="luxury">Paso 4 de 5</Badge>
+                <h3 className="font-serif text-xl sm:text-2xl font-bold text-charcoal-950">
+                  Carta de Servicios & Tarifas
+                </h3>
+              </div>
+              <p className="text-xs text-charcoal-500 mt-1">
+                Selecciona los servicios que ofrece tu salón o agrega los tuyos personalizados con precio y duración.
+              </p>
+            </div>
+
+            {/* Quick 1-Click Suggestions */}
+            <div>
+              <h4 className="text-xs font-bold text-brand-900 uppercase tracking-wider mb-2.5 flex items-center space-x-1.5">
+                <Sparkles className="w-3.5 h-3.5 text-brand-600" />
+                <span>Servicios Populares (Toca para agregar a tu carta con 1 clic)</span>
+              </h4>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
+                {SUGGESTED_SERVICES.map((s, idx) => {
+                  const isAdded = services.some((existing) => existing.name.toLowerCase() === s.name.toLowerCase());
+
+                  return (
+                    <div
+                      key={idx}
+                      onClick={() => handleAddSuggestedService(s)}
+                      className={`p-3 rounded-2xl border text-left cursor-pointer transition-all flex flex-col justify-between ${
+                        isAdded
+                          ? 'bg-brand-50/70 border-brand-300 ring-1 ring-brand-200'
+                          : 'bg-[#FAF8F5] border-brand-200 hover:bg-white hover:border-brand-400 shadow-2xs'
+                      }`}
+                    >
+                      <div>
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-brand-800 bg-white px-2 py-0.5 rounded-full border border-brand-200">
+                            {s.category}
+                          </span>
+                          {isAdded ? (
+                            <Badge variant="success" className="text-[9px]">Agregado</Badge>
+                          ) : (
+                            <span className="text-[11px] font-bold text-brand-600 hover:underline">+ Agregar</span>
+                          )}
+                        </div>
+                        <h5 className="font-bold text-xs text-charcoal-950 leading-snug">{s.name}</h5>
+                      </div>
+                      <div className="flex items-center justify-between text-xs pt-2 mt-2 border-t border-brand-100">
+                        <span className="text-charcoal-500 text-[11px]">{s.durationMinutes} min</span>
+                        <span className="font-bold text-charcoal-900">${s.price.toLocaleString('es-CL')}</span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Custom Service Form */}
+            <form onSubmit={handleAddCustomService} className="bg-white p-5 rounded-3xl border border-brand-200 shadow-sm space-y-3">
+              <div className="flex items-center space-x-2">
+                <Plus className="w-4 h-4 text-brand-600" />
+                <h4 className="font-bold text-xs text-charcoal-900 uppercase tracking-wider">
+                  Crear Servicio Personalizado
+                </h4>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                <div className="sm:col-span-2">
+                  <label className="block text-xs font-bold text-charcoal-700 mb-1">Nombre del Servicio *</label>
+                  <input
+                    type="text"
+                    required
+                    value={customServName}
+                    onChange={(e) => setCustomServName(e.target.value)}
+                    placeholder="Ej. Babylights + Tratamiento Nutritivo"
+                    className="w-full px-3 py-2 text-xs bg-[#FAF8F5] border border-brand-200 rounded-xl focus:outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-charcoal-700 mb-1">Duración (min)</label>
+                  <input
+                    type="number"
+                    min="15"
+                    step="15"
+                    value={customServDuration}
+                    onChange={(e) => setCustomServDuration(Number(e.target.value))}
+                    className="w-full px-3 py-2 text-xs bg-[#FAF8F5] border border-brand-200 rounded-xl focus:outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-charcoal-700 mb-1">Precio ($ CLP)</label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="1000"
+                    value={customServPrice}
+                    onChange={(e) => setCustomServPrice(Number(e.target.value))}
+                    className="w-full px-3 py-2 text-xs bg-[#FAF8F5] border border-brand-200 rounded-xl focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <div className="flex justify-end pt-1">
+                <Button
+                  type="submit"
+                  variant="luxury"
+                  disabled={!customServName.trim()}
+                  className="text-xs"
+                >
+                  <Plus className="w-3.5 h-3.5 mr-1" />
+                  Agregar a mi Carta
+                </Button>
+              </div>
+            </form>
+
+            {/* Step Navigation */}
+            <div className="flex items-center justify-between pt-4 border-t border-brand-100">
+              <Button
+                variant="outline"
+                onClick={() => setStep(3)}
+                className="text-xs"
+              >
+                <ArrowLeft className="w-3.5 h-3.5 mr-1" />
+                Anterior
               </Button>
 
               <Button
-                type="button"
                 variant="luxury"
-                onClick={() => setStep(4)}
+                onClick={() => setStep(5)}
                 className="text-xs px-6 font-bold shadow-md shadow-brand-500/20"
               >
-                <span>Finalizar Configuración 🎉</span>
+                <span>Siguiente: Productos</span>
                 <ArrowRight className="w-3.5 h-3.5 ml-1.5" />
               </Button>
             </div>
@@ -901,89 +1455,270 @@ export const OnboardingWizardModal: React.FC = () => {
         )}
 
         {/* ========================================================================= */}
-        {/* STEP 4: CELEBRACIÓN Y TODO LISTO                                         */}
+        {/* STEP 5: PRODUCTOS (CON OPCIÓN DE SKIP)                                    */}
         {/* ========================================================================= */}
-        {step === 4 && (
-          <div className="p-6 sm:p-10 overflow-y-auto flex-1 flex flex-col justify-between space-y-6 text-center">
-            <div className="max-w-md mx-auto space-y-3">
-              <div className="w-16 h-16 rounded-3xl bg-emerald-50 text-emerald-600 border border-emerald-200 flex items-center justify-center mx-auto shadow-md animate-bounce">
-                <Sparkles className="w-8 h-8" />
+        {step === 5 && (
+          <div className="p-6 sm:p-8 overflow-y-auto flex-1 space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <div className="flex items-center space-x-2">
+                  <Badge variant="luxury">Paso 5 de 5</Badge>
+                  <h3 className="font-serif text-xl sm:text-2xl font-bold text-charcoal-950">
+                    Productos & Control de Inventario
+                  </h3>
+                </div>
+                <p className="text-xs text-charcoal-500 mt-1">
+                  Registra productos para uso en el lavacabezas o para venta en recepción. Puedes <strong>saltar este paso</strong> si lo deseas.
+                </p>
               </div>
 
-              <h2 className="font-serif text-2xl sm:text-3xl font-bold text-charcoal-950">
-                ¡Tu salón ya está listo para brillar!
+              {/* SKIP BUTTON */}
+              <button
+                type="button"
+                onClick={() => setStep(6)}
+                className="inline-flex items-center space-x-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold text-charcoal-600 bg-charcoal-100 hover:bg-charcoal-200 transition-colors self-start sm:self-auto"
+              >
+                <span>Saltar este paso</span>
+                <SkipForward className="w-3.5 h-3.5 text-charcoal-500" />
+              </button>
+            </div>
+
+            {/* Quick 1-Click Suggestions */}
+            <div>
+              <h4 className="text-xs font-bold text-brand-900 uppercase tracking-wider mb-2.5 flex items-center space-x-1.5">
+                <Sparkles className="w-3.5 h-3.5 text-brand-600" />
+                <span>Productos Habituales (Toca para agregar a tu inventario)</span>
+              </h4>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {SUGGESTED_PRODUCTS.map((p, idx) => {
+                  const isAdded = inventory.some((existing) => existing.name.toLowerCase() === p.name.toLowerCase());
+
+                  return (
+                    <div
+                      key={idx}
+                      onClick={() => handleAddSuggestedProduct(p)}
+                      className={`p-3.5 rounded-2xl border text-left cursor-pointer transition-all flex items-center justify-between ${
+                        isAdded
+                          ? 'bg-brand-50/70 border-brand-300 ring-1 ring-brand-200'
+                          : 'bg-[#FAF8F5] border-brand-200 hover:bg-white hover:border-brand-400 shadow-2xs'
+                      }`}
+                    >
+                      <div className="min-w-0 pr-2">
+                        <span className="text-[10px] font-bold text-brand-700 uppercase">{p.brand}</span>
+                        <h5 className="font-bold text-xs text-charcoal-950 truncate">{p.name}</h5>
+                        <p className="text-[11px] text-charcoal-500 mt-0.5">
+                          Stock: {p.currentStock} {p.unit} · {p.isForSale ? `Venta $${p.salePrice?.toLocaleString('es-CL')}` : 'Uso Técnico'}
+                        </p>
+                      </div>
+
+                      {isAdded ? (
+                        <Badge variant="success" className="text-[9px] shrink-0">Agregado</Badge>
+                      ) : (
+                        <span className="text-xs font-bold text-brand-600 hover:underline shrink-0">+ Añadir</span>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Custom Product Form */}
+            <form onSubmit={handleAddCustomProduct} className="bg-white p-5 rounded-3xl border border-brand-200 shadow-sm space-y-3">
+              <div className="flex items-center space-x-2">
+                <Plus className="w-4 h-4 text-brand-600" />
+                <h4 className="font-bold text-xs text-charcoal-900 uppercase tracking-wider">
+                  Registrar Producto Personalizado
+                </h4>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-charcoal-700 mb-1">Nombre del Producto *</label>
+                  <input
+                    type="text"
+                    required
+                    value={customProdName}
+                    onChange={(e) => setCustomProdName(e.target.value)}
+                    placeholder="Ej. Serum Sellador de Puntas"
+                    className="w-full px-3 py-2 text-xs bg-[#FAF8F5] border border-brand-200 rounded-xl focus:outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-charcoal-700 mb-1">Marca</label>
+                  <input
+                    type="text"
+                    value={customProdBrand}
+                    onChange={(e) => setCustomProdBrand(e.target.value)}
+                    placeholder="Ej. Moroccanoil"
+                    className="w-full px-3 py-2 text-xs bg-[#FAF8F5] border border-brand-200 rounded-xl focus:outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-charcoal-700 mb-1">Stock Inicial (unidades)</label>
+                  <input
+                    type="number"
+                    min="1"
+                    value={customProdStock}
+                    onChange={(e) => setCustomProdStock(Number(e.target.value))}
+                    className="w-full px-3 py-2 text-xs bg-[#FAF8F5] border border-brand-200 rounded-xl focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
+                <div>
+                  <label className="block text-xs font-bold text-charcoal-700 mb-1">Precio Costo ($ CLP)</label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={customProdCost}
+                    onChange={(e) => setCustomProdCost(Number(e.target.value))}
+                    className="w-full px-3 py-2 text-xs bg-[#FAF8F5] border border-brand-200 rounded-xl focus:outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-charcoal-700 mb-1">Precio Venta Clientas ($ CLP)</label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={customProdSale}
+                    onChange={(e) => setCustomProdSale(Number(e.target.value))}
+                    className="w-full px-3 py-2 text-xs bg-[#FAF8F5] border border-brand-200 rounded-xl focus:outline-none"
+                  />
+                </div>
+
+                <div className="flex items-center pt-5">
+                  <label className="flex items-center space-x-2 text-xs font-semibold text-charcoal-700 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={customProdIsForSale}
+                      onChange={(e) => setCustomProdIsForSale(e.target.checked)}
+                      className="w-4 h-4 rounded text-brand-600 focus:ring-brand-500"
+                    />
+                    <span>Disponible para venta a clientas</span>
+                  </label>
+                </div>
+              </div>
+
+              <div className="flex justify-end pt-1">
+                <Button
+                  type="submit"
+                  variant="luxury"
+                  disabled={!customProdName.trim()}
+                  className="text-xs"
+                >
+                  <Plus className="w-3.5 h-3.5 mr-1" />
+                  Agregar al Inventario
+                </Button>
+              </div>
+            </form>
+
+            {/* Step Navigation */}
+            <div className="flex items-center justify-between pt-4 border-t border-brand-100">
+              <Button
+                variant="outline"
+                onClick={() => setStep(4)}
+                className="text-xs"
+              >
+                <ArrowLeft className="w-3.5 h-3.5 mr-1" />
+                Anterior
+              </Button>
+
+              <div className="flex items-center space-x-2">
+                <Button
+                  variant="outline"
+                  onClick={() => setStep(6)}
+                  className="text-xs text-charcoal-600"
+                >
+                  Saltar Productos
+                </Button>
+                <Button
+                  variant="luxury"
+                  onClick={() => setStep(6)}
+                  className="text-xs px-6 font-bold shadow-md shadow-brand-500/20"
+                >
+                  <span>Revisar y Finalizar ➔</span>
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ========================================================================= */}
+        {/* STEP 6: RESUMEN Y CELEBRACIÓN FINAL                                       */}
+        {/* ========================================================================= */}
+        {step === 6 && (
+          <div className="p-6 sm:p-10 overflow-y-auto flex-1 flex flex-col justify-between space-y-6">
+            <div className="max-w-xl mx-auto text-center space-y-3">
+              <div className="w-16 h-16 rounded-3xl bg-gradient-to-tr from-emerald-500 to-teal-400 text-white flex items-center justify-center mx-auto shadow-xl shadow-emerald-500/20 animate-bounce">
+                <BadgeCheck className="w-8 h-8" />
+              </div>
+
+              <h2 className="font-serif text-3xl font-bold text-charcoal-950">
+                ¡Tu Salón está 100% Listo para Brillar! 🥂✨
               </h2>
 
               <p className="text-xs sm:text-sm text-charcoal-600">
-                Hemos configurado la base de <strong>{salonName || currentSalon.name}</strong>. Ya puedes empezar a agendar citas y recibir clientas.
+                ¡Felicitaciones! Has configurado la estructura completa de <strong>{currentSalon.name}</strong>. Ya puedes agendar citas, coordinar a tu equipo y recibir a tus clientas.
               </p>
             </div>
 
-            {/* Summary Highlights */}
-            <div className="grid grid-cols-3 gap-2.5 max-w-lg mx-auto w-full">
-              <div className="p-3 bg-[#FAF8F5] border border-brand-200/80 rounded-2xl">
-                <Store className="w-5 h-5 mx-auto text-brand-600 mb-1" />
-                <span className="block text-[11px] text-charcoal-500">Salón</span>
-                <span className="block text-xs font-bold text-charcoal-900 truncate">{salonName || currentSalon.name}</span>
-              </div>
-
-              <div className="p-3 bg-[#FAF8F5] border border-brand-200/80 rounded-2xl">
+            {/* Summary Cards */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-3xl mx-auto w-full">
+              <div className="p-4 rounded-2xl bg-[#FAF8F5] border border-brand-200/80 text-center space-y-1">
                 <Users className="w-5 h-5 mx-auto text-brand-600 mb-1" />
-                <span className="block text-[11px] text-charcoal-500">Equipo</span>
-                <span className="block text-xs font-bold text-charcoal-900">{professionals.length} estilistas</span>
+                <span className="font-serif text-2xl font-bold text-charcoal-950">{professionals.length}</span>
+                <p className="text-[11px] text-charcoal-500 font-semibold">Peluqueras</p>
               </div>
 
-              <div className="p-3 bg-[#FAF8F5] border border-brand-200/80 rounded-2xl">
-                <Scissors className="w-5 h-5 mx-auto text-brand-600 mb-1" />
-                <span className="block text-[11px] text-charcoal-500">Servicios</span>
-                <span className="block text-xs font-bold text-charcoal-900">{services.length} activos</span>
+              <div className="p-4 rounded-2xl bg-[#FAF8F5] border border-brand-200/80 text-center space-y-1">
+                <Armchair className="w-5 h-5 mx-auto text-roseGold mb-1" />
+                <span className="font-serif text-2xl font-bold text-charcoal-950">{stations.length}</span>
+                <p className="text-[11px] text-charcoal-500 font-semibold">Sillones / Puestos</p>
+              </div>
+
+              <div className="p-4 rounded-2xl bg-[#FAF8F5] border border-brand-200/80 text-center space-y-1">
+                <Scissors className="w-5 h-5 mx-auto text-charcoal-800 mb-1" />
+                <span className="font-serif text-2xl font-bold text-charcoal-950">{services.length}</span>
+                <p className="text-[11px] text-charcoal-500 font-semibold">Servicios en Carta</p>
+              </div>
+
+              <div className="p-4 rounded-2xl bg-[#FAF8F5] border border-brand-200/80 text-center space-y-1">
+                <Package className="w-5 h-5 mx-auto text-amber-600 mb-1" />
+                <span className="font-serif text-2xl font-bold text-charcoal-950">{inventory.length}</span>
+                <p className="text-[11px] text-charcoal-500 font-semibold">Productos</p>
               </div>
             </div>
 
-            {/* Public Booking Link Card */}
-            <div className="p-4 max-w-lg mx-auto w-full bg-brand-50/70 border border-brand-200 rounded-2xl space-y-2 text-left">
+            {/* Salon Details Recap */}
+            <div className="max-w-2xl mx-auto w-full bg-[#FAF8F5] p-4 rounded-2xl border border-brand-200 text-xs space-y-2">
+              <div className="flex items-center justify-between border-b border-brand-100 pb-2">
+                <span className="text-charcoal-500 font-medium">Ubicación:</span>
+                <span className="font-bold text-charcoal-900">{currentSalon.address}, {currentSalon.city}</span>
+              </div>
+              <div className="flex items-center justify-between border-b border-brand-100 pb-2">
+                <span className="text-charcoal-500 font-medium">WhatsApp Oficial:</span>
+                <span className="font-bold text-emerald-700">{currentSalon.phone}</span>
+              </div>
               <div className="flex items-center justify-between">
-                <span className="text-[11px] font-bold text-brand-900 uppercase tracking-wider">
-                  Tu Enlace Público de Reservas
-                </span>
-                <Badge variant="luxury" className="text-[10px]">Listo para compartir</Badge>
+                <span className="text-charcoal-500 font-medium">Instagram:</span>
+                <span className="font-bold text-pink-600">{currentSalon.instagram || '@tupeluqueria'}</span>
               </div>
-
-              <div className="flex items-center space-x-2 bg-white px-3 py-2 rounded-xl border border-brand-200">
-                <span className="text-xs font-mono text-charcoal-700 truncate flex-1">{bookingUrl}</span>
-                <button
-                  type="button"
-                  onClick={copyBookingLink}
-                  className="px-2.5 py-1 text-xs font-semibold text-brand-800 hover:bg-brand-50 rounded-lg transition-colors flex items-center space-x-1 shrink-0"
-                >
-                  {isCopied ? (
-                    <>
-                      <Check className="w-3.5 h-3.5 text-emerald-600" />
-                      <span className="text-emerald-700">Copiado</span>
-                    </>
-                  ) : (
-                    <>
-                      <Copy className="w-3.5 h-3.5" />
-                      <span>Copiar</span>
-                    </>
-                  )}
-                </button>
-              </div>
-              <p className="text-[11px] text-charcoal-500">
-                Puedes poner este link en tu biografía de Instagram o enviarlo por WhatsApp a tus clientas.
-              </p>
             </div>
 
-            {/* Final Action Button */}
-            <div className="flex justify-center pt-2">
+            {/* Final CTA */}
+            <div className="flex justify-center pt-4 border-t border-brand-100">
               <Button
                 variant="luxury"
                 size="lg"
                 onClick={handleFinishWizard}
-                className="w-full sm:w-auto px-10 py-3 text-sm font-bold shadow-lg shadow-brand-500/25 flex items-center justify-center space-x-2"
+                className="w-full sm:w-auto px-10 py-3 text-sm font-bold shadow-xl shadow-brand-500/25 flex items-center justify-center space-x-2"
               >
-                <span>Ir a mi Agenda y Comenzar 🚀</span>
-                <ArrowRight className="w-4 h-4" />
+                <Sparkles className="w-4 h-4" />
+                <span>¡Ir a la Agenda y Comenzar a Gestionar! 🚀</span>
               </Button>
             </div>
           </div>
