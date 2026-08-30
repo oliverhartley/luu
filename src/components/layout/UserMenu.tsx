@@ -9,10 +9,13 @@ import {
   Plus, 
   Sparkles, 
   ShieldCheck,
-  Scissors
+  Scissors,
+  Trash2,
+  HelpCircle
 } from 'lucide-react';
 import { Avatar } from '../ui/avatar';
 import { Badge } from '../ui/badge';
+import { DeleteAccountModal } from './DeleteAccountModal';
 
 export const UserMenu: React.FC<{ onOpenRegisterSalon?: () => void }> = ({
   onOpenRegisterSalon
@@ -26,12 +29,17 @@ export const UserMenu: React.FC<{ onOpenRegisterSalon?: () => void }> = ({
     role, 
     setRole,
     setActiveTab,
-    setIsOnboardingOpen 
+    setIsOnboardingOpen,
+    setIsTutorialOpen 
   } = useApp();
 
   const [isOpen, setIsOpen] = useState<boolean>(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState<boolean>(false);
 
   if (!currentUser) return null;
+
+  const userEmail = (currentUser.email || '').toLowerCase().trim();
+  const isEligibleForAccountDeletion = userEmail === 'oliver@harliz.com' || userEmail === 'fran@harliz.com';
 
   return (
     <div className="relative">
@@ -145,6 +153,20 @@ export const UserMenu: React.FC<{ onOpenRegisterSalon?: () => void }> = ({
               </div>
             </div>
 
+            {/* Feature Tutorial Action */}
+            <div className="pt-2 border-t border-brand-100">
+              <button
+                onClick={() => {
+                  setIsTutorialOpen(true);
+                  setIsOpen(false);
+                }}
+                className="w-full flex items-center space-x-2 p-2 rounded-xl text-xs font-bold text-brand-900 bg-brand-50 hover:bg-brand-100 border border-brand-200 transition-all"
+              >
+                <HelpCircle className="w-4 h-4 text-brand-600" />
+                <span>Tutorial de Funcionalidades</span>
+              </button>
+            </div>
+
             {/* Onboarding Wizard Action */}
             <div className="pt-2 border-t border-brand-100">
               <button
@@ -152,9 +174,9 @@ export const UserMenu: React.FC<{ onOpenRegisterSalon?: () => void }> = ({
                   setIsOnboardingOpen(true);
                   setIsOpen(false);
                 }}
-                className="w-full flex items-center space-x-2 p-2 rounded-xl text-xs font-bold text-brand-900 bg-brand-50 hover:bg-brand-100 border border-brand-200 transition-all"
+                className="w-full flex items-center space-x-2 p-2 rounded-xl text-xs font-bold text-charcoal-700 hover:bg-brand-50 border border-brand-100 transition-all"
               >
-                <Sparkles className="w-4 h-4 text-brand-600" />
+                <Sparkles className="w-4 h-4 text-amber-600" />
                 <span>Asistente de Configuración</span>
               </button>
             </div>
@@ -166,16 +188,39 @@ export const UserMenu: React.FC<{ onOpenRegisterSalon?: () => void }> = ({
                   logout();
                   setIsOpen(false);
                 }}
-                className="w-full flex items-center space-x-2 p-2 rounded-xl text-xs font-bold text-red-600 hover:bg-red-50 transition-all"
+                className="w-full flex items-center space-x-2 p-2 rounded-xl text-xs font-bold text-charcoal-700 hover:bg-brand-50 transition-all"
               >
-                <LogOut className="w-4 h-4" />
+                <LogOut className="w-4 h-4 text-charcoal-500" />
                 <span>Cerrar Sesión</span>
               </button>
             </div>
 
+            {/* Delete Account Action - ONLY visible for oliver@harliz.com and fran@harliz.com */}
+            {isEligibleForAccountDeletion && (
+              <div className="pt-2 border-t border-red-100">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsDeleteModalOpen(true);
+                    setIsOpen(false);
+                  }}
+                  className="w-full flex items-center space-x-2 p-2 rounded-xl text-xs font-bold text-red-600 bg-red-50/70 hover:bg-red-100 border border-red-200/80 transition-all group shadow-2xs"
+                >
+                  <Trash2 className="w-4 h-4 text-red-500 group-hover:scale-110 transition-transform" />
+                  <span>Eliminar Cuenta</span>
+                </button>
+              </div>
+            )}
+
           </div>
         </>
       )}
+
+      {/* Confirmation Modal to Delete Account */}
+      <DeleteAccountModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+      />
 
     </div>
   );

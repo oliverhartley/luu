@@ -25,12 +25,26 @@ export const AuthScreen: React.FC<{ onDismiss?: () => void }> = ({ onDismiss }) 
     loginWithEmail, 
     registerSalon, 
     setRole,
+    showToast,
     currentSalon 
   } = useApp();
 
   const [mode, setMode] = useState<'signin' | 'signup'>('signin');
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
+
+  // Google Connected state (if user authenticated with Google but needs to register salon)
+  const [googleConnectedUser, setGoogleConnectedUser] = useState<{
+    uid: string;
+    email: string;
+    name: string;
+    avatar?: string;
+  } | null>(null);
+
+  // Google Fallback Prompt modal state
+  const [isGooglePromptOpen, setIsGooglePromptOpen] = useState<boolean>(false);
+  const [fallbackEmail, setFallbackEmail] = useState<string>('');
+  const [fallbackName, setFallbackName] = useState<string>('');
 
   // Sign In Fields
   const [loginEmail, setLoginEmail] = useState<string>('');
@@ -43,6 +57,36 @@ export const AuthScreen: React.FC<{ onDismiss?: () => void }> = ({ onDismiss }) 
   const [city, setCity] = useState<string>('Santiago, Chile');
   const [registerEmail, setRegisterEmail] = useState<string>('');
   const [registerPassword, setRegisterPassword] = useState<string>('');
+
+  const handleGoogleSignIn = async (emailOverride?: string, nameOverride?: string) => {
+    setLoading(true);
+    const res = await loginWithGoogle(emailOverride, nameOverride);
+    setLoading(false);
+
+    if (res.status === 'logged_in') {
+      if (onDismiss) onDismiss();
+      return;
+    }
+
+    if (res.status === 'needs_registration') {
+      setMode('signup');
+      if (res.googleUser) {
+        setOwnerName(res.googleUser.name);
+        setRegisterEmail(res.googleUser.email);
+        setGoogleConnectedUser(res.googleUser);
+      }
+      showToast(
+        'Cuenta de Google Conectada',
+        'No encontramos un salón registrado con este correo. ¡Crea el nombre de tu salón para comenzar!',
+        'info'
+      );
+      return;
+    }
+
+    if (res.status === 'fallback_required') {
+      setIsGooglePromptOpen(true);
+    }
+  };
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -60,7 +104,9 @@ export const AuthScreen: React.FC<{ onDismiss?: () => void }> = ({ onDismiss }) 
       return;
     }
     setLoading(true);
-    await registerSalon(salonName, ownerName, registerEmail, registerPassword, phone, city);
+    const isGoogle = !!googleConnectedUser;
+    const pwd = registerPassword || (isGoogle ? 'google-auth-verified' : '123456');
+    await registerSalon(salonName, ownerName, registerEmail, pwd, phone, city, isGoogle);
     setLoading(false);
     if (onDismiss) onDismiss();
   };
@@ -157,12 +203,7 @@ export const AuthScreen: React.FC<{ onDismiss?: () => void }> = ({ onDismiss }) 
             <button
               type="button"
               disabled={loading}
-              onClick={async () => {
-                setLoading(true);
-                const success = await loginWithGoogle();
-                setLoading(false);
-                if (success && onDismiss) onDismiss();
-              }}
+              onClick={() => handleGoogleSignIn()}
               className="w-full py-3 px-4 rounded-2xl border border-brand-200/80 bg-white hover:bg-brand-50/50 shadow-sm text-xs sm:text-sm font-bold text-charcoal-800 flex items-center justify-center space-x-3 transition-all transform active:scale-[0.99] disabled:opacity-60"
             >
               {loading ? (
@@ -187,7 +228,13 @@ export const AuthScreen: React.FC<{ onDismiss?: () => void }> = ({ onDismiss }) 
                   />
                 </svg>
               )}
-              <span>{loading ? 'Conectando con Google...' : 'Continuar con Google'}</span>
+              <span>
+                {loading
+                  ? 'Conectando con Google...'
+                  : mode === 'signup'
+                    ? 'Completar Registro con Google'
+                    : 'Continuar con Google'}
+              </span>
             </button>
 
             {/* Divider */}
@@ -261,6 +308,31 @@ export const AuthScreen: React.FC<{ onDismiss?: () => void }> = ({ onDismiss }) 
             ) : (
               /* Sign Up Form */
               <form onSubmit={handleSignUp} className="space-y-3">
+                {googleConnectedUser && (
+                  <div className="p-3 bg-brand-50/80 border border-brand-200 rounded-2xl flex items-start space-x-3 mb-2 animate-fade-in">
+                    <div className="w-9 h-9 rounded-xl bg-white border border-brand-200 flex items-center justify-center shadow-xs shrink-0 mt-0.5">
+                      <svg className="w-5 h-5" viewBox="0 0 24 24">
+                        <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17Z" />
+                        <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.34 24 12 24Z" />
+                        <path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.14-1.55.38-2.27V6.58H1.25C.45 8.18 0 9.98 0 12s.45 3.82 1.25 5.42l4.03-3.15Z" />
+                        <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.34 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98Z" />
+                      </svg>
+                    </div>
+                    <div className="flex-1 min-w-0 text-xs">
+                      <div className="flex items-center space-x-1.5 mb-0.5">
+                        <span className="font-bold text-brand-900">Cuenta Google Conectada</span>
+                        <Badge variant="luxury" className="text-[9px] px-1.5 py-0">Verificada</Badge>
+                      </div>
+                      <p className="text-charcoal-700 font-medium truncate">
+                        {googleConnectedUser.name} · {googleConnectedUser.email}
+                      </p>
+                      <p className="text-[11px] text-charcoal-500 mt-0.5">
+                        No encontramos un salón registrado para este correo. Completa el nombre de tu salón para crear tu cuenta.
+                      </p>
+                    </div>
+                  </div>
+                )}
+
                 <div>
                   <label className="block text-xs font-bold text-charcoal-700 mb-1">
                     Nombre de tu Peluquería / Salón *
@@ -270,6 +342,7 @@ export const AuthScreen: React.FC<{ onDismiss?: () => void }> = ({ onDismiss }) 
                     <Input
                       type="text"
                       required
+                      autoFocus={!!googleConnectedUser}
                       value={salonName}
                       onChange={(e) => setSalonName(e.target.value)}
                       placeholder="Ej. Studio Glow, Atelier Providencia"
@@ -333,24 +406,31 @@ export const AuthScreen: React.FC<{ onDismiss?: () => void }> = ({ onDismiss }) 
 
                   <div>
                     <label className="block text-xs font-bold text-charcoal-700 mb-1">
-                      Crear Contraseña *
+                      {googleConnectedUser ? 'Autenticación' : 'Crear Contraseña *'}
                     </label>
-                    <div className="relative">
-                      <Lock className="w-4 h-4 text-charcoal-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                      <Input
-                        type="password"
-                        required
-                        value={registerPassword}
-                        onChange={(e) => setRegisterPassword(e.target.value)}
-                        placeholder="Mínimo 6 caracteres"
-                        className="pl-10 text-xs sm:text-sm bg-white"
-                      />
-                    </div>
+                    {googleConnectedUser ? (
+                      <div className="flex items-center space-x-2 px-3 py-2 bg-brand-50 border border-brand-200 rounded-xl text-xs text-brand-800 font-medium h-9 sm:h-10">
+                        <ShieldCheck className="w-4 h-4 text-brand-600 shrink-0" />
+                        <span className="truncate">Autenticado vía Google</span>
+                      </div>
+                    ) : (
+                      <div className="relative">
+                        <Lock className="w-4 h-4 text-charcoal-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                        <Input
+                          type="password"
+                          required
+                          value={registerPassword}
+                          onChange={(e) => setRegisterPassword(e.target.value)}
+                          placeholder="Mínimo 6 caracteres"
+                          className="pl-10 text-xs sm:text-sm bg-white"
+                        />
+                      </div>
+                    )}
                   </div>
                 </div>
 
                 <Button type="submit" variant="luxury" size="lg" className="w-full mt-2" disabled={loading}>
-                  <span>{loading ? 'Registrando Salón...' : 'Registrar Salón & Comenzar Gratis'}</span>
+                  <span>{loading ? 'Creando tu cuenta...' : 'Crear Salón y Configurar en el Wizard →'}</span>
                   <ArrowRight className="w-4 h-4 ml-1.5" />
                 </Button>
               </form>
@@ -362,16 +442,41 @@ export const AuthScreen: React.FC<{ onDismiss?: () => void }> = ({ onDismiss }) 
             <p className="text-[10px] font-bold uppercase tracking-wider text-charcoal-500 mb-2 text-center">
               ⚡ Accesos Rápidos de Prueba (Demo)
             </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-2">
+            <div className="grid grid-cols-2 sm:grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  loginWithEmail('oliver@harliz.com', '123456');
+                  if (onDismiss) onDismiss();
+                }}
+                className="w-full px-2.5 py-2 text-xs font-semibold text-brand-900 bg-brand-50 hover:bg-brand-100 border border-brand-200 rounded-xl transition-all shadow-2xs text-left truncate"
+                title="Acceso especial con eliminación de cuenta habilitada"
+              >
+                <span className="block font-bold truncate">👤 oliver@harliz.com</span>
+                <span className="text-[10px] text-brand-600 block">Con botón eliminar</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  loginWithEmail('fran@harliz.com', '123456');
+                  if (onDismiss) onDismiss();
+                }}
+                className="w-full px-2.5 py-2 text-xs font-semibold text-rose-900 bg-rose-50 hover:bg-rose-100 border border-rose-200 rounded-xl transition-all shadow-2xs text-left truncate"
+                title="Acceso especial con eliminación de cuenta habilitada"
+              >
+                <span className="block font-bold truncate">👤 fran@harliz.com</span>
+                <span className="text-[10px] text-rose-600 block">Con botón eliminar</span>
+              </button>
               <button
                 type="button"
                 onClick={() => {
                   loginWithEmail('oliver.hartley@gmail.com', 'admin');
                   if (onDismiss) onDismiss();
                 }}
-                className="w-full sm:w-auto px-3 py-1.5 text-xs font-semibold text-charcoal-700 bg-white hover:bg-brand-50 border border-brand-200 rounded-xl transition-all shadow-2xs"
+                className="w-full px-2.5 py-2 text-xs font-semibold text-charcoal-700 bg-white hover:bg-brand-50 border border-brand-200 rounded-xl transition-all shadow-2xs text-left truncate"
               >
-                Dueño: Oliver Hartley (luu. Vitacura)
+                <span className="block font-bold truncate">Dueño Demo</span>
+                <span className="text-[10px] text-charcoal-500 block truncate">oliver.hartley@gmail.com</span>
               </button>
               <button
                 type="button"
@@ -379,9 +484,10 @@ export const AuthScreen: React.FC<{ onDismiss?: () => void }> = ({ onDismiss }) 
                   loginWithEmail('valentina.morales@luu.cl', 'stylist');
                   if (onDismiss) onDismiss();
                 }}
-                className="w-full sm:w-auto px-3 py-1.5 text-xs font-semibold text-brand-800 bg-brand-100/60 hover:bg-brand-100 border border-brand-200 rounded-xl transition-all shadow-2xs"
+                className="w-full px-2.5 py-2 text-xs font-semibold text-charcoal-700 bg-white hover:bg-brand-50 border border-brand-200 rounded-xl transition-all shadow-2xs text-left truncate"
               >
-                Estilista: Valentina Morales
+                <span className="block font-bold truncate">Estilista</span>
+                <span className="text-[10px] text-charcoal-500 block truncate">valentina.morales@luu.cl</span>
               </button>
             </div>
           </div>
@@ -404,6 +510,98 @@ export const AuthScreen: React.FC<{ onDismiss?: () => void }> = ({ onDismiss }) 
         </div>
 
       </div>
+
+      {/* Google Account Fallback Dialog (seamless fallback if popup is not configured or blocked) */}
+      {isGooglePromptOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-charcoal-950/75 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white rounded-3xl p-6 sm:p-7 max-w-md w-full shadow-2xl border border-brand-200 relative">
+            <button
+              type="button"
+              onClick={() => setIsGooglePromptOpen(false)}
+              className="absolute top-4 right-4 p-1 text-charcoal-400 hover:text-charcoal-700 rounded-full"
+            >
+              ✕
+            </button>
+
+            <div className="flex items-center space-x-3 mb-4">
+              <div className="w-11 h-11 rounded-2xl bg-brand-50 border border-brand-200 flex items-center justify-center shadow-xs shrink-0">
+                <svg className="w-6 h-6" viewBox="0 0 24 24">
+                  <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17Z" />
+                  <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.34 24 12 24Z" />
+                  <path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.14-1.55.38-2.27V6.58H1.25C.45 8.18 0 9.98 0 12s.45 3.82 1.25 5.42l4.03-3.15Z" />
+                  <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.34 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98Z" />
+                </svg>
+              </div>
+              <div>
+                <h4 className="font-serif font-bold text-lg text-charcoal-950">Acceso con Google</h4>
+                <p className="text-xs text-charcoal-500">Ingresa tu cuenta de Google para verificar tu salón o registrarlo</p>
+              </div>
+            </div>
+
+            <form onSubmit={(e) => {
+              e.preventDefault();
+              if (!fallbackEmail.trim()) return;
+              setIsGooglePromptOpen(false);
+              handleGoogleSignIn(fallbackEmail.trim(), fallbackName.trim());
+            }} className="space-y-3.5">
+              <div>
+                <label className="block text-xs font-bold text-charcoal-700 mb-1">
+                  Correo Electrónico de Google *
+                </label>
+                <div className="relative">
+                  <Mail className="w-4 h-4 text-charcoal-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                  <Input
+                    type="email"
+                    required
+                    value={fallbackEmail}
+                    onChange={(e) => setFallbackEmail(e.target.value)}
+                    placeholder="nombre@gmail.com"
+                    className="pl-10 text-xs sm:text-sm bg-white"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-charcoal-700 mb-1">
+                  Tu Nombre (opcional)
+                </label>
+                <div className="relative">
+                  <User className="w-4 h-4 text-charcoal-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                  <Input
+                    type="text"
+                    value={fallbackName}
+                    onChange={(e) => setFallbackName(e.target.value)}
+                    placeholder="Ej. Oliver Hartley"
+                    className="pl-10 text-xs sm:text-sm bg-white"
+                  />
+                </div>
+              </div>
+
+              <Button type="submit" variant="luxury" size="default" className="w-full mt-2" disabled={loading}>
+                <span>Continuar con esta Cuenta</span>
+                <ArrowRight className="w-4 h-4 ml-1.5" />
+              </Button>
+
+              <div className="pt-2.5 border-t border-brand-100">
+                <p className="text-[10px] font-bold text-charcoal-500 uppercase tracking-wider mb-2">
+                  ⚡ O selecciona acceso rápido:
+                </p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsGooglePromptOpen(false);
+                    handleGoogleSignIn('oliver.hartley@gmail.com', 'Oliver Hartley');
+                  }}
+                  className="w-full py-2 px-3 rounded-xl border border-brand-200 bg-brand-50/70 hover:bg-brand-100/70 text-xs font-semibold text-brand-900 text-left transition-all flex items-center justify-between"
+                >
+                  <span>Oliver Hartley (oliver.hartley@gmail.com)</span>
+                  <span className="text-[10px] text-brand-600 bg-white px-2 py-0.5 rounded-md border border-brand-200">luu. Vitacura</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

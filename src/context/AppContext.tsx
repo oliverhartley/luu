@@ -1,11 +1,12 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
 import { 
   onAuthStateChanged, 
   signInWithPopup, 
   signInWithEmailAndPassword, 
   createUserWithEmailAndPassword, 
   updateProfile, 
-  signOut 
+  signOut,
+  deleteUser
 } from 'firebase/auth';
 import { auth, googleProvider } from '../lib/firebase';
 import { loadOrSeedCollection, saveDocument, deleteDocument } from '../lib/firestoreSync';
@@ -24,7 +25,8 @@ import {
   TenantSalon,
   AuthUser,
   ProductSale,
-  Station
+  Station,
+  GoogleAuthResponse
 } from '../types';
 import { 
   INITIAL_PROFESSIONALS, 
@@ -54,6 +56,7 @@ export const INITIAL_SALONS: TenantSalon[] = [
     city: 'Santiago, Chile',
     phone: '+56 9 8123 4567',
     email: 'contacto@luu-vitacura.cl',
+    ownerEmail: 'oliver.hartley@gmail.com',
     instagram: '@luu.vitacura',
     openingHours: 'Lun a Sáb 10:00 - 20:00',
     slogan: 'El templo de la colorimetría y diseño de autor',
@@ -69,6 +72,7 @@ export const INITIAL_SALONS: TenantSalon[] = [
     city: 'Santiago, Chile',
     phone: '+56 9 9876 5432',
     email: 'hola@atelierprovidencia.cl',
+    ownerEmail: 'atelier@providencia.cl',
     instagram: '@atelier.providencia',
     openingHours: 'Mar a Sáb 09:30 - 19:30',
     ownerId: 'user-2',
@@ -94,10 +98,11 @@ interface AppContextType {
   currentUser: AuthUser | null;
   currentSalon: TenantSalon;
   salons: TenantSalon[];
-  loginWithGoogle: () => Promise<boolean>;
+  loginWithGoogle: (emailOverride?: string, nameOverride?: string) => Promise<GoogleAuthResponse>;
   loginWithEmail: (email: string, password: string) => Promise<boolean>;
-  registerSalon: (salonName: string, ownerName: string, email: string, password: string, phone: string, city?: string) => Promise<void>;
+  registerSalon: (salonName: string, ownerName: string, email: string, password: string, phone: string, city?: string, isGoogleAuth?: boolean) => Promise<void>;
   logout: () => Promise<void>;
+  deleteAccount: () => Promise<boolean>;
   switchSalon: (salonId: string) => void;
   updateSalonInfo: (info: Partial<TenantSalon>) => void;
   
@@ -126,6 +131,11 @@ interface AppContextType {
   isOnboardingOpen: boolean;
   setIsOnboardingOpen: (open: boolean) => void;
   completeOnboarding: () => void;
+
+  // Feature Tutorial Modal (Tour de Funcionalidades)
+  isTutorialOpen: boolean;
+  setIsTutorialOpen: (open: boolean) => void;
+  dismissTutorial: (dontShowAgain?: boolean) => void;
   
   // Actions
   addProfessional: (professional: Omit<Professional, 'id'>) => Professional;
@@ -210,6 +220,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return false;
   });
 
+  const [isTutorialOpen, setIsTutorialOpen] = useState<boolean>(() => {
+    const dismissed = localStorage.getItem('luu_tutorial_dismissed');
+    return dismissed !== 'true';
+  });
+
   const [clients, setClients] = useState<Client[]>(() => {
     const saved = localStorage.getItem('pelu_clients');
     return saved ? JSON.parse(saved) : INITIAL_CLIENTS;
@@ -244,6 +259,43 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [selectedProfessionalFilter, setSelectedProfessionalFilter] = useState<string | 'all'>('all');
   const [activeTab, setActiveTab] = useState<string>('agenda');
   const [toasts, setToasts] = useState<Toast[]>([]);
+
+  // Multi-tenant data filtering: Isolate data so new salons start clean
+  const filteredProfessionals = useMemo(() => {
+    return professionals.filter(
+      (p) => p.salonId === currentSalon.id || (!p.salonId && currentSalon.id === 'salon-1')
+    );
+  }, [professionals, currentSalon.id]);
+
+  const filteredServices = useMemo(() => {
+    return services.filter(
+      (s) => s.salonId === currentSalon.id || (!s.salonId && currentSalon.id === 'salon-1')
+    );
+  }, [services, currentSalon.id]);
+
+  const filteredStations = useMemo(() => {
+    return stations.filter(
+      (st) => st.salonId === currentSalon.id || (!st.salonId && currentSalon.id === 'salon-1')
+    );
+  }, [stations, currentSalon.id]);
+
+  const filteredInventory = useMemo(() => {
+    return inventory.filter(
+      (i) => i.salonId === currentSalon.id || (!i.salonId && currentSalon.id === 'salon-1')
+    );
+  }, [inventory, currentSalon.id]);
+
+  const filteredClients = useMemo(() => {
+    return clients.filter(
+      (c) => c.salonId === currentSalon.id || (!c.salonId && currentSalon.id === 'salon-1')
+    );
+  }, [clients, currentSalon.id]);
+
+  const filteredAppointments = useMemo(() => {
+    return appointments.filter(
+      (a) => a.salonId === currentSalon.id || (!a.salonId && currentSalon.id === 'salon-1')
+    );
+  }, [appointments, currentSalon.id]);
 
   // Sync state to localStorage
   useEffect(() => {
@@ -335,23 +387,34 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
       if (firebaseUser) {
-        const displayName = firebaseUser.displayName || firebaseUser.email?.split('@')[0] || 'Usuario';
-        const user: AuthUser = {
-          id: firebaseUser.uid,
-          name: displayName,
-          email: firebaseUser.email || '',
-          avatar: firebaseUser.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=E07A5F&color=fff`,
-          role: 'owner',
-          salonId: currentSalon.id,
-          salonName: currentSalon.name,
-          provider: firebaseUser.providerData[0]?.providerId === 'google.com' ? 'google' : 'password'
-        };
-        setCurrentUser(user);
-        setRole('admin');
+        const email = (firebaseUser.email || '').toLowerCase().trim();
+        const matchingSalon = salons.find((s) => {
+          const sEmail = (s.ownerEmail || s.email || '').toLowerCase().trim();
+          const isDemoOwner = email === 'oliver.hartley@gmail.com' && s.id === 'salon-1';
+          return sEmail === email || s.ownerId === firebaseUser.uid || isDemoOwner;
+        });
+
+        // Solo iniciar sesión automáticamente si el usuario ya tiene un salón registrado
+        if (matchingSalon) {
+          const displayName = firebaseUser.displayName || firebaseUser.email?.split('@')[0] || 'Usuario';
+          const user: AuthUser = {
+            id: firebaseUser.uid,
+            name: displayName,
+            email: firebaseUser.email || '',
+            avatar: firebaseUser.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=E07A5F&color=fff`,
+            role: 'owner',
+            salonId: matchingSalon.id,
+            salonName: matchingSalon.name,
+            provider: firebaseUser.providerData[0]?.providerId === 'google.com' ? 'google' : 'password'
+          };
+          setCurrentUser(user);
+          setCurrentSalon(matchingSalon);
+          setRole('admin');
+        }
       }
     });
     return () => unsubscribe();
-  }, [currentSalon.id, currentSalon.name]);
+  }, [salons]);
 
   const addProfessional = (profData: Omit<Professional, 'id'>): Professional => {
     const newProf: Professional = {
@@ -440,44 +503,130 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   // Production Auth Handlers with Firebase
-  const loginWithGoogle = async (): Promise<boolean> => {
-    try {
-      const result = await signInWithPopup(auth, googleProvider);
-      const fbUser = result.user;
-      const displayName = fbUser.displayName || fbUser.email?.split('@')[0] || 'Usuario Google';
+  const loginWithGoogle = async (
+    emailOverride?: string,
+    nameOverride?: string
+  ): Promise<GoogleAuthResponse> => {
+    let googleEmail = '';
+    let googleName = '';
+    let googleUid = '';
+    let googleAvatar = '';
+
+    if (emailOverride) {
+      googleEmail = emailOverride.trim().toLowerCase();
+      googleName = nameOverride?.trim() || googleEmail.split('@')[0].replace('.', ' ').replace(/(^\w|\s\w)/g, (m) => m.toUpperCase());
+      googleUid = 'user-google-' + Date.now();
+      googleAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(googleName)}&background=E07A5F&color=fff`;
+    } else {
+      try {
+        const result = await signInWithPopup(auth, googleProvider);
+        const fbUser = result.user;
+        googleEmail = (fbUser.email || '').trim().toLowerCase();
+        googleName = fbUser.displayName || googleEmail.split('@')[0] || 'Usuario Google';
+        googleUid = fbUser.uid;
+        googleAvatar = fbUser.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(googleName)}&background=E07A5F&color=fff`;
+      } catch (err: any) {
+        console.warn('[Firebase Auth Google Notice]', err);
+
+        if (err.code === 'auth/popup-closed-by-user') {
+          showToast('Ventana Cerrada', 'Se canceló el acceso con Google.', 'info');
+          return { success: false, status: 'cancelled' };
+        }
+        if (err.code === 'auth/popup-blocked') {
+          showToast('Ventana Bloqueada', 'Habilita las ventanas emergentes (popups) para continuar con Google.', 'warning');
+          return { success: false, status: 'fallback_required', error: 'popup_blocked' };
+        }
+
+        // Si Firebase Authentication aún no está habilitado en Firebase Console (configuration-not-found / operation-not-allowed)
+        // o si el dominio aún no está en Authorized Domains, usamos el fallback elegante
+        return {
+          success: false,
+          status: 'fallback_required',
+          error: err.code || err.message
+        };
+      }
+    }
+
+    // Comprobar si existe un salón registrado asociado a esta cuenta de Google
+    const matchingSalon = salons.find((s) => {
+      const sEmail = (s.ownerEmail || s.email || '').toLowerCase().trim();
+      const isDemoOwner = googleEmail === 'oliver.hartley@gmail.com' && s.id === 'salon-1';
+      return sEmail === googleEmail || s.ownerId === googleUid || isDemoOwner;
+    });
+
+    if (matchingSalon) {
+      // La cuenta ya existe: iniciar sesión en su salón
       const user: AuthUser = {
-        id: fbUser.uid,
-        name: displayName,
-        email: fbUser.email || 'usuario@gmail.com',
-        avatar: fbUser.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=E07A5F&color=fff`,
+        id: googleUid || matchingSalon.ownerId || 'user-1',
+        name: googleName,
+        email: googleEmail,
+        avatar: googleAvatar,
         role: 'owner',
-        salonId: currentSalon.id,
-        salonName: currentSalon.name,
+        salonId: matchingSalon.id,
+        salonName: matchingSalon.name,
         provider: 'google'
       };
       setCurrentUser(user);
+      setCurrentSalon(matchingSalon);
       setRole('admin');
       setActiveTab('agenda');
-      showToast('Sesión Real con Google', `Bienvenido(a) ${fbUser.displayName || fbUser.email}`, 'success');
-      return true;
-    } catch (err: any) {
-      console.error('[Firebase Auth Error]', err);
-      let errorMsg = 'No se pudo completar la autenticación con Google.';
-
-      if (err.code === 'auth/popup-closed-by-user') {
-        errorMsg = 'Ventana de Google cerrada antes de seleccionar tu cuenta.';
-      } else if (err.code === 'auth/popup-blocked') {
-        errorMsg = 'El navegador bloqueó la ventana emergente de Google. Habilita los popups en la barra de direcciones.';
-      } else if (err.code === 'auth/unauthorized-domain') {
-        errorMsg = 'Este dominio no está autorizado en Firebase. Añade este dominio en Firebase Console > Authentication > Settings > Authorized Domains.';
-      } else if (err.code === 'auth/configuration-not-found' || err.code === 'auth/operation-not-allowed') {
-        errorMsg = 'Firebase Authentication no está activado aún en Firebase Console. Debes ir a Firebase Console > Authentication > Comenzar y habilitar Google.';
-      } else if (err.message) {
-        errorMsg = `[${err.code || 'Auth'}] ${err.message}`;
+      if (!matchingSalon.onboardingCompleted) {
+        setIsOnboardingOpen(true);
       }
+      showToast('Sesión Iniciada con Google', `Bienvenido(a) a ${matchingSalon.name}`, 'success');
+      return { 
+        success: true, 
+        status: 'logged_in', 
+        googleUser: { uid: googleUid, email: googleEmail, name: googleName, avatar: googleAvatar } 
+      };
+    } else {
+      // Cuenta nueva: crear salón e ir directamente a la pantalla limpia del Wizard
+      const newSalonId = 'salon-' + Date.now();
+      const initialSalonName = '';
+      const newSalon: TenantSalon = {
+        id: newSalonId,
+        name: initialSalonName,
+        slug: 'salon-' + Date.now(),
+        address: '',
+        city: 'Santiago, Chile',
+        phone: '+56 9 ',
+        email: googleEmail,
+        ownerEmail: googleEmail,
+        ownerId: googleUid,
+        createdAt: new Date().toISOString().split('T')[0],
+        onboardingCompleted: false
+      };
 
-      showToast('Error de Autenticación Real', errorMsg, 'error');
-      return false;
+      const newOwner: AuthUser = {
+        id: googleUid,
+        name: googleName,
+        email: googleEmail,
+        avatar: googleAvatar,
+        role: 'owner',
+        salonId: newSalonId,
+        salonName: initialSalonName || 'Mi Salón',
+        provider: 'google'
+      };
+
+      saveDocument('salons', newSalon);
+      setSalons((prev) => [...prev, newSalon]);
+      setCurrentSalon(newSalon);
+      setCurrentUser(newOwner);
+      setRole('admin');
+      setActiveTab('agenda');
+      setIsOnboardingOpen(true);
+      showToast('¡Cuenta Conectada con Google!', `Hola ${googleName}, ¡vamos a configurar tu salón!`, 'success');
+
+      return {
+        success: true,
+        status: 'logged_in',
+        googleUser: {
+          uid: googleUid,
+          email: googleEmail,
+          name: googleName,
+          avatar: googleAvatar
+        }
+      };
     }
   };
 
@@ -503,50 +652,116 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       return true;
     } catch (err: any) {
       console.warn('Firebase email auth fallback:', err);
+      const cleanEmail = email.trim().toLowerCase();
+
+      // Acceso específico para oliver@harliz.com
+      if (cleanEmail === 'oliver@harliz.com') {
+        const matchingSalon = salons.find(s => (s.ownerEmail || '').toLowerCase() === 'oliver@harliz.com') || salons[0];
+        const user: AuthUser = {
+          id: matchingSalon.ownerId || 'user-oliver-harliz',
+          name: 'Oliver Hartley',
+          email: 'oliver@harliz.com',
+          avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80',
+          role: 'owner',
+          salonId: matchingSalon.id,
+          salonName: matchingSalon.name,
+          provider: 'password'
+        };
+        setCurrentUser(user);
+        setCurrentSalon(matchingSalon);
+        setRole('admin');
+        setActiveTab('agenda');
+        showToast('Sesión Iniciada', 'Bienvenido Oliver (oliver@harliz.com)', 'success');
+        return true;
+      }
+
+      // Acceso específico para fran@harliz.com
+      if (cleanEmail === 'fran@harliz.com') {
+        const matchingSalon = salons.find(s => (s.ownerEmail || '').toLowerCase() === 'fran@harliz.com') || salons[1] || salons[0];
+        const user: AuthUser = {
+          id: matchingSalon.ownerId || 'user-fran-harliz',
+          name: 'Francisca Harliz',
+          email: 'fran@harliz.com',
+          avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=200&auto=format&fit=crop&q=80',
+          role: 'owner',
+          salonId: matchingSalon.id,
+          salonName: matchingSalon.name,
+          provider: 'password'
+        };
+        setCurrentUser(user);
+        setCurrentSalon(matchingSalon);
+        setRole('admin');
+        setActiveTab('agenda');
+        showToast('Sesión Iniciada', 'Bienvenida Francisca (fran@harliz.com)', 'success');
+        return true;
+      }
+
+      // Salón registrado previamente
+      const registeredSalon = salons.find(s => (s.ownerEmail || s.email || '').toLowerCase().trim() === cleanEmail);
+      if (registeredSalon) {
+        const user: AuthUser = {
+          id: registeredSalon.ownerId || 'user-email-' + Date.now(),
+          name: registeredSalon.name,
+          email: cleanEmail,
+          avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(cleanEmail.split('@')[0])}&background=E07A5F&color=fff`,
+          role: 'owner',
+          salonId: registeredSalon.id,
+          salonName: registeredSalon.name,
+          provider: 'password'
+        };
+        setCurrentUser(user);
+        setCurrentSalon(registeredSalon);
+        setRole('admin');
+        setActiveTab('agenda');
+        showToast('Sesión Iniciada', `Bienvenido(a) a ${registeredSalon.name}`, 'success');
+        return true;
+      }
+
+      // Demo fallback si es cuenta de prueba
+      const isDemoOwner = cleanEmail === 'oliver.hartley@gmail.com';
+      const isStylist = cleanEmail.includes('valentina') || cleanEmail.includes('stylist') || password.trim().toLowerCase() === 'stylist';
+
+      if (isDemoOwner || isStylist) {
+        const userRole: 'owner' | 'stylist' = isStylist ? 'stylist' : 'owner';
+        const userName = isDemoOwner
+          ? 'Oliver Hartley'
+          : 'Valentina Morales';
+
+        const userAvatar = isDemoOwner
+          ? 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80'
+          : 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=200&auto=format&fit=crop&q=80';
+
+        const user: AuthUser = {
+          id: isDemoOwner ? 'user-1' : 'user-email-' + Date.now(),
+          name: userName,
+          email: email.trim(),
+          avatar: userAvatar,
+          role: userRole,
+          salonId: currentSalon.id,
+          salonName: currentSalon.name,
+          provider: 'password'
+        };
+
+        setCurrentUser(user);
+        if (isStylist) {
+          setRole('stylist');
+          setActiveTab('stylists');
+          setSelectedStylistId('prof-1');
+        } else {
+          setRole('admin');
+          setActiveTab('agenda');
+        }
+        showToast('Sesión Iniciada con Éxito', `Bienvenido(a) ${userName} a ${currentSalon.name}`, 'success');
+        return true;
+      }
+
       if (err.code === 'auth/invalid-credential' || err.code === 'auth/wrong-password' || err.code === 'auth/user-not-found') {
         showToast('Error de Acceso', 'Correo o contraseña incorrectos.', 'error');
         return false;
       }
 
-      // Demo fallback si es cuenta de prueba
-      const cleanEmail = email.trim().toLowerCase();
-      const isOliver = cleanEmail.includes('oliver');
-      const isStylist = cleanEmail.includes('valentina') || cleanEmail.includes('stylist') || password.trim().toLowerCase() === 'stylist';
-      const userRole: 'owner' | 'stylist' = isStylist ? 'stylist' : 'owner';
-      const userName = isOliver
-        ? 'Oliver Hartley'
-        : isStylist
-          ? 'Valentina Morales'
-          : email.split('@')[0].replace('.', ' ').replace(/(^\w|\s\w)/g, (m) => m.toUpperCase());
-
-      const userAvatar = isOliver
-        ? 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80'
-        : isStylist
-          ? 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=200&auto=format&fit=crop&q=80'
-          : 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=200&auto=format&fit=crop&q=80';
-
-      const user: AuthUser = {
-        id: isOliver ? 'user-1' : 'user-email-' + Date.now(),
-        name: userName,
-        email: email.trim(),
-        avatar: userAvatar,
-        role: userRole,
-        salonId: currentSalon.id,
-        salonName: currentSalon.name,
-        provider: 'password'
-      };
-
-      setCurrentUser(user);
-      if (isStylist) {
-        setRole('stylist');
-        setActiveTab('stylists');
-        setSelectedStylistId('prof-1');
-      } else {
-        setRole('admin');
-        setActiveTab('agenda');
-      }
-      showToast('Sesión Iniciada con Éxito', `Bienvenido(a) ${userName} a ${currentSalon.name}`, 'success');
-      return true;
+      showToast('Error de Acceso', 'No se pudo iniciar sesión. Verifica tus credenciales.', 'error');
+      return false;
     }
   };
 
@@ -556,17 +771,20 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     email: string, 
     password: string, 
     phone: string, 
-    city: string = 'Santiago, Chile'
+    city: string = 'Santiago, Chile',
+    isGoogleAuth: boolean = false
   ): Promise<void> => {
     let firebaseUid = 'user-' + Date.now();
-    try {
-      const cred = await createUserWithEmailAndPassword(auth, email.trim(), password);
-      if (cred.user) {
-        firebaseUid = cred.user.uid;
-        await updateProfile(cred.user, { displayName: ownerName.trim() });
+    if (!isGoogleAuth && password && password.length >= 6) {
+      try {
+        const cred = await createUserWithEmailAndPassword(auth, email.trim(), password);
+        if (cred.user) {
+          firebaseUid = cred.user.uid;
+          await updateProfile(cred.user, { displayName: ownerName.trim() });
+        }
+      } catch (err: any) {
+        console.warn('Firebase registration notice:', err);
       }
-    } catch (err: any) {
-      console.warn('Firebase registration notice:', err);
     }
 
     const newSalonId = 'salon-' + Date.now();
@@ -578,6 +796,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       city: city,
       phone: phone,
       email: email.trim(),
+      ownerEmail: email.trim().toLowerCase(),
       ownerId: firebaseUid,
       createdAt: new Date().toISOString().split('T')[0],
       onboardingCompleted: false
@@ -587,11 +806,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       id: firebaseUid,
       name: ownerName.trim(),
       email: email.trim(),
-      avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80',
+      avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(ownerName.trim())}&background=E07A5F&color=fff`,
       role: 'owner',
       salonId: newSalonId,
       salonName: newSalon.name,
-      provider: 'password'
+      provider: isGoogleAuth ? 'google' : 'password'
     };
 
     saveDocument('salons', newSalon);
@@ -619,6 +838,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     showToast('🎉 ¡Salón Configurado!', 'Tu plataforma luu. está lista para trabajar.', 'success');
   };
 
+  const dismissTutorial = (dontShowAgain: boolean = true) => {
+    if (dontShowAgain) {
+      localStorage.setItem('luu_tutorial_dismissed', 'true');
+    }
+    setIsTutorialOpen(false);
+  };
+
   const logout = async (): Promise<void> => {
     try {
       await signOut(auth);
@@ -629,6 +855,58 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     localStorage.removeItem('luu_current_user');
     setRole('admin');
     showToast('Sesión Finalizada', 'Has cerrado sesión correctamente.', 'info');
+  };
+
+  const deleteAccount = async (): Promise<boolean> => {
+    if (!currentUser) return false;
+    const cleanEmail = (currentUser.email || '').trim().toLowerCase();
+
+    // Solo permitido estrictamente para oliver@harliz.com y fran@harliz.com
+    if (cleanEmail !== 'oliver@harliz.com' && cleanEmail !== 'fran@harliz.com') {
+      showToast('Acción No Permitida', 'La eliminación de cuenta no está disponible para este usuario.', 'error');
+      return false;
+    }
+
+    try {
+      // 1. Intentar eliminar usuario de Firebase Auth si está activo
+      if (auth.currentUser) {
+        try {
+          await deleteUser(auth.currentUser);
+        } catch (authErr: any) {
+          console.warn('[Firebase Auth] Error al eliminar usuario en la nube:', authErr);
+        }
+      }
+
+      // 2. Eliminar el salón asociado de Firestore y estado si fue creado por este usuario
+      const userSalonId = currentUser.salonId;
+      if (userSalonId) {
+        deleteDocument('salons', userSalonId);
+      }
+      setSalons((prev) => {
+        const remaining = prev.filter(
+          (s) => s.id !== userSalonId && (s.ownerEmail || '').toLowerCase().trim() !== cleanEmail
+        );
+        return remaining.length > 0 ? remaining : INITIAL_SALONS;
+      });
+
+      // 3. Cerrar sesión y limpiar localStorage
+      await signOut(auth).catch(() => {});
+      setCurrentUser(null);
+      localStorage.removeItem('luu_current_user');
+
+      // 4. Restaurar salón inicial para el siguiente uso
+      setCurrentSalon(INITIAL_SALONS[0]);
+      localStorage.setItem('luu_current_salon', JSON.stringify(INITIAL_SALONS[0]));
+
+      setRole('admin');
+      setActiveTab('agenda');
+      showToast('Cuenta Eliminada', `La cuenta ${cleanEmail} y sus datos han sido eliminados permanentemente.`, 'info');
+      return true;
+    } catch (err: any) {
+      console.error('Error al eliminar cuenta:', err);
+      showToast('Error', 'Ocurrió un error al intentar eliminar la cuenta.', 'error');
+      return false;
+    }
   };
 
   const switchSalon = (salonId: string) => {
@@ -1084,14 +1362,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         loginWithEmail,
         registerSalon,
         logout,
+        deleteAccount,
         switchSalon,
         updateSalonInfo,
-        professionals,
-        services,
-        stations,
-        clients,
-        appointments,
-        inventory,
+        professionals: filteredProfessionals,
+        services: filteredServices,
+        stations: filteredStations,
+        clients: filteredClients,
+        appointments: filteredAppointments,
+        inventory: filteredInventory,
         productSales,
         campaigns,
         whatsAppLogs,
@@ -1109,6 +1388,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         isOnboardingOpen,
         setIsOnboardingOpen,
         completeOnboarding,
+        isTutorialOpen,
+        setIsTutorialOpen,
+        dismissTutorial,
         addProfessional,
         updateProfessional,
         deleteProfessional,

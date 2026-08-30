@@ -10,6 +10,7 @@ export interface TenantSalon {
   city: string;
   phone: string;
   email?: string;
+  ownerEmail?: string;
   instagram?: string;
   openingHours?: string;
   slogan?: string;
@@ -17,6 +18,18 @@ export interface TenantSalon {
   ownerId: string;
   createdAt: string;
   onboardingCompleted?: boolean;
+}
+
+export interface GoogleAuthResponse {
+  success: boolean;
+  status: 'logged_in' | 'needs_registration' | 'fallback_required' | 'cancelled';
+  googleUser?: {
+    uid: string;
+    email: string;
+    name: string;
+    avatar?: string;
+  };
+  error?: string;
 }
 
 export interface Station {

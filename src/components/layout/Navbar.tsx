@@ -12,7 +12,8 @@ import {
   SlidersHorizontal,
   Armchair,
   RotateCcw,
-  LogIn
+  LogIn,
+  HelpCircle
 } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
@@ -47,7 +48,8 @@ export const Navbar: React.FC<NavbarProps> = ({
     setActiveTab,
     currentUser,
     currentSalon,
-    setIsOnboardingOpen
+    setIsOnboardingOpen,
+    setIsTutorialOpen
   } = useApp();
 
   return (
@@ -125,11 +127,23 @@ export const Navbar: React.FC<NavbarProps> = ({
             {currentUser && role !== 'client' && (
               <button
                 onClick={() => setIsOnboardingOpen(true)}
-                className="hidden sm:flex items-center space-x-1 px-2.5 py-1.5 rounded-xl text-xs font-bold bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 shadow-2xs transition-all"
+                className="hidden md:flex items-center space-x-1 px-2.5 py-1.5 rounded-xl text-xs font-bold bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 shadow-2xs transition-all"
                 title="Configurar módulos del salón"
               >
                 <Sparkles className="w-3.5 h-3.5 text-amber-600" />
                 <span>Asistente</span>
+              </button>
+            )}
+
+            {/* Feature Tutorial Button */}
+            {currentUser && role !== 'client' && (
+              <button
+                onClick={() => setIsTutorialOpen(true)}
+                className="flex items-center space-x-1 px-2.5 py-1.5 rounded-xl text-xs font-bold bg-brand-50 hover:bg-brand-100 text-brand-900 border border-brand-200 shadow-2xs transition-all"
+                title="Ver tutorial de funcionalidades"
+              >
+                <HelpCircle className="w-3.5 h-3.5 text-brand-600" />
+                <span className="hidden sm:inline">Tutorial</span>
               </button>
             )}
 

@@ -23,6 +23,7 @@ import { ServicesManager } from './components/services/ServicesManager';
 import { StylistsManager } from './components/stylists/StylistsManager';
 import { AuthScreen } from './components/auth/AuthScreen';
 import { OnboardingWizardModal } from './components/onboarding/OnboardingWizardModal';
+import { TutorialModal } from './components/tutorial/TutorialModal';
 import { Appointment, Client } from './types';
 
 export const App: React.FC = () => {
@@ -219,6 +220,9 @@ export const App: React.FC = () => {
 
       {/* Onboarding Wizard Modal */}
       <OnboardingWizardModal />
+
+      {/* Feature Tutorial Modal (Carrusel de Funcionalidades) */}
+      <TutorialModal />
 
       {/* Toast feedback messages */}
       <ToastContainer />

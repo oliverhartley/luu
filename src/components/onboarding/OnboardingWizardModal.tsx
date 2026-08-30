@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useApp } from '../../context/AppContext';
 import { 
   Scissors, 
@@ -188,15 +188,34 @@ export const OnboardingWizardModal: React.FC = () => {
   const [step, setStep] = useState<number>(0);
 
   // STEP 1: Salon Info Form
-  const [salonName, setSalonName] = useState<string>(currentSalon.name || '');
-  const [salonSlogan, setSalonSlogan] = useState<string>(currentSalon.slogan || 'El templo de la belleza y diseño de autor');
-  const [salonAddress, setSalonAddress] = useState<string>(currentSalon.address || 'Av. Alonso de Córdova 3820');
-  const [salonCity, setSalonCity] = useState<string>(currentSalon.city || 'Santiago, Chile');
-  const [salonPhone, setSalonPhone] = useState<string>(currentSalon.phone || '+56 9 8123 4567');
-  const [salonEmail, setSalonEmail] = useState<string>(currentSalon.email || 'contacto@salon.cl');
-  const [salonInstagram, setSalonInstagram] = useState<string>(currentSalon.instagram || '@tupeluqueria');
-  const [salonHours, setSalonHours] = useState<string>(currentSalon.openingHours || 'Lunes a Sábado 10:00 - 20:00');
-  const [salonLogo, setSalonLogo] = useState<string>(currentSalon.logo || '');
+  const [salonName, setSalonName] = useState<string>(currentSalon?.name || '');
+  const [salonSlogan, setSalonSlogan] = useState<string>(currentSalon?.slogan || 'El templo de la belleza y diseño de autor');
+  const [salonAddress, setSalonAddress] = useState<string>(currentSalon?.address && currentSalon?.address !== 'Dirección por configurar' ? currentSalon.address : '');
+  const [salonCity, setSalonCity] = useState<string>(currentSalon?.city || 'Santiago, Chile');
+  const [salonPhone, setSalonPhone] = useState<string>(currentSalon?.phone || '+56 9 ');
+  const [salonEmail, setSalonEmail] = useState<string>(currentSalon?.email || '');
+  const [salonInstagram, setSalonInstagram] = useState<string>(currentSalon?.instagram || '@tupeluqueria');
+  const [salonHours, setSalonHours] = useState<string>(currentSalon?.openingHours || 'Lunes a Sábado 10:00 - 20:00');
+  const [salonLogo, setSalonLogo] = useState<string>(currentSalon?.logo || '');
+
+  // Track open transition so we only initialize state once when modal opens
+  const wasOpenRef = useRef<boolean>(false);
+
+  useEffect(() => {
+    if (isOnboardingOpen && !wasOpenRef.current) {
+      setStep(0);
+      setSalonName(currentSalon?.name || '');
+      setSalonPhone(currentSalon?.phone || '+56 9 ');
+      setSalonCity(currentSalon?.city || 'Santiago, Chile');
+      setSalonEmail(currentSalon?.email || '');
+      setSalonAddress(currentSalon?.address && currentSalon?.address !== 'Dirección por configurar' ? currentSalon.address : '');
+      setSalonSlogan(currentSalon?.slogan || '');
+      setSalonInstagram(currentSalon?.instagram || '');
+      setSalonHours(currentSalon?.openingHours || 'Lunes a Sábado 10:00 - 20:00');
+      setSalonLogo(currentSalon?.logo || '');
+    }
+    wasOpenRef.current = isOnboardingOpen;
+  }, [isOnboardingOpen]);
 
   // STEP 2: Stylist Form (No comisiones!)
   const [profName, setProfName] = useState<string>('');
@@ -640,11 +659,10 @@ export const OnboardingWizardModal: React.FC = () => {
               <div>
                 <label className="block text-xs font-bold text-charcoal-700 mb-1 flex items-center">
                   <MapPin className="w-3.5 h-3.5 mr-1 text-brand-600" />
-                  Dirección Física Completa *
+                  Dirección Física Completa
                 </label>
                 <input
                   type="text"
-                  required
                   value={salonAddress}
                   onChange={(e) => setSalonAddress(e.target.value)}
                   placeholder="Ej. Av. Alonso de Córdova 3820, Local 4"
@@ -655,11 +673,10 @@ export const OnboardingWizardModal: React.FC = () => {
               {/* City / Country */}
               <div>
                 <label className="block text-xs font-bold text-charcoal-700 mb-1">
-                  Comuna, Ciudad y País *
+                  Comuna, Ciudad y País
                 </label>
                 <input
                   type="text"
-                  required
                   value={salonCity}
                   onChange={(e) => setSalonCity(e.target.value)}
                   placeholder="Ej. Santiago, Chile"
@@ -671,11 +688,10 @@ export const OnboardingWizardModal: React.FC = () => {
               <div>
                 <label className="block text-xs font-bold text-charcoal-700 mb-1 flex items-center">
                   <Phone className="w-3.5 h-3.5 mr-1 text-emerald-600" />
-                  WhatsApp / Teléfono Oficial de Contacto *
+                  WhatsApp / Teléfono Oficial de Contacto
                 </label>
                 <input
                   type="text"
-                  required
                   value={salonPhone}
                   onChange={(e) => setSalonPhone(e.target.value)}
                   placeholder="+56 9 8123 4567"
