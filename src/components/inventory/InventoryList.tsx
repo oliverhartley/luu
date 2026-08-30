@@ -25,13 +25,15 @@ import {
   Check,
   Calendar,
   Layers,
-  ArrowRight
+  ArrowRight,
+  MessageCircle
 } from 'lucide-react';
 import { InventoryProduct, ProductSaleItem } from '../../types';
 import { ProductFormModal } from './ProductFormModal';
 import { BarcodeScannerModal } from './BarcodeScannerModal';
 import { useBarcodeScanner } from '../../hooks/useBarcodeScanner';
 import { enrichProductWithAI } from '../../lib/aiProductAgent';
+import { openWhatsApp, WhatsAppTemplates } from '../../lib/whatsapp';
 
 export const InventoryList: React.FC = () => {
   const { 
@@ -43,6 +45,7 @@ export const InventoryList: React.FC = () => {
     productSales,
     clients,
     professionals,
+    currentSalon,
     showToast 
   } = useApp();
 
@@ -1295,7 +1298,7 @@ export const InventoryList: React.FC = () => {
               ))}
             </div>
 
-            <div className="flex justify-end space-x-2 pt-2 border-t border-brand-100">
+            <div className="flex justify-end space-x-2 pt-2 border-t border-brand-100 flex-wrap gap-y-2">
               <button
                 type="button"
                 onClick={() => setShowSupplierOrderModal(false)}
@@ -1305,10 +1308,25 @@ export const InventoryList: React.FC = () => {
               </button>
               <button
                 type="button"
-                onClick={handleGenerateSupplierOrder}
-                className="px-4 py-1.5 text-xs font-bold bg-amber-600 text-white rounded-xl shadow-sm"
+                onClick={() => {
+                  const msg = WhatsAppTemplates.supplierOrder(currentSalon.name, lowStockItems);
+                  navigator.clipboard.writeText(msg);
+                  openWhatsApp('', msg);
+                  showToast('Orden Lista para WhatsApp', 'Abriendo WhatsApp con la lista de insumos...', 'success');
+                  setShowSupplierOrderModal(false);
+                }}
+                className="px-3.5 py-1.5 text-xs font-bold bg-[#00A884] hover:bg-[#008f70] text-white rounded-xl shadow-sm flex items-center space-x-1.5 transition-all"
+                title="Abrir WhatsApp Web con el pedido redactado para el proveedor"
               >
-                Exportar Orden de Compra
+                <MessageCircle className="w-3.5 h-3.5" />
+                <span>Enviar por WhatsApp</span>
+              </button>
+              <button
+                type="button"
+                onClick={handleGenerateSupplierOrder}
+                className="px-3.5 py-1.5 text-xs font-bold bg-amber-600 hover:bg-amber-700 text-white rounded-xl shadow-sm"
+              >
+                Exportar Orden
               </button>
             </div>
           </div>

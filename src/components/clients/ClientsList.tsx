@@ -12,11 +12,13 @@ import {
   Calendar,
   DollarSign,
   Tag,
-  CreditCard
+  CreditCard,
+  MessageCircle
 } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
 import { Client } from '../../types';
+import { openWhatsApp, WhatsAppTemplates } from '../../lib/whatsapp';
 
 interface ClientsListProps {
   onViewClientProfile: (clientId: string) => void;
@@ -29,7 +31,7 @@ export const ClientsList: React.FC<ClientsListProps> = ({
   onOpenNewFormula,
   onOpenBeautyPass
 }) => {
-  const { clients, addClient } = useApp();
+  const { clients, addClient, currentSalon } = useApp();
 
   const [search, setSearch] = useState<string>('');
   const [selectedTagFilter, setSelectedTagFilter] = useState<string>('all');
@@ -246,11 +248,28 @@ export const ClientsList: React.FC<ClientsListProps> = ({
                         <CreditCard className="w-4 h-4 text-brand-600" />
                       </button>
                     )}
+                    <button
+                      onClick={() => openWhatsApp(client.phone, WhatsAppTemplates.greeting(client.name, currentSalon.name))}
+                      className="text-emerald-600 hover:text-emerald-800 p-1 hover:bg-emerald-50 rounded-lg transition-colors"
+                      title="Abrir chat en WhatsApp Web (wa.me)"
+                    >
+                      <MessageCircle className="w-4 h-4 text-emerald-600" />
+                    </button>
                   </div>
-                  <p className="text-xs text-charcoal-500 flex items-center space-x-1 mt-0.5">
-                    <Phone className="w-3 h-3 text-brand-500" />
-                    <span>{client.phone}</span>
-                  </p>
+                  <div className="flex items-center space-x-2 mt-0.5">
+                    <p className="text-xs text-charcoal-500 flex items-center space-x-1">
+                      <Phone className="w-3 h-3 text-brand-500" />
+                      <span>{client.phone}</span>
+                    </p>
+                    <button
+                      onClick={() => openWhatsApp(client.phone, WhatsAppTemplates.greeting(client.name, currentSalon.name))}
+                      className="text-[10px] font-bold text-emerald-700 hover:text-emerald-900 flex items-center space-x-0.5 px-1.5 py-0.5 bg-emerald-50 hover:bg-emerald-100 rounded-md border border-emerald-200 transition-all"
+                      title="Abrir chat en WhatsApp Web (wa.me)"
+                    >
+                      <MessageCircle className="w-2.5 h-2.5" />
+                      <span>wa.me</span>
+                    </button>
+                  </div>
                   
                   {/* Tags */}
                   <div className="flex flex-wrap gap-1 mt-2">

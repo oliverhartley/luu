@@ -14,9 +14,11 @@ import {
   DollarSign,
   Phone,
   Mail,
-  Award
+  Award,
+  MessageCircle
 } from 'lucide-react';
 import { Client, TechnicalFormula } from '../../types';
+import { openWhatsApp, WhatsAppTemplates } from '../../lib/whatsapp';
 
 interface ClientProfileModalProps {
   clientId: string | null;
@@ -29,7 +31,7 @@ export const ClientProfileModal: React.FC<ClientProfileModalProps> = ({
   onClose,
   onOpenNewFormula
 }) => {
-  const { clients, appointments, role } = useApp();
+  const { clients, appointments, role, currentSalon } = useApp();
 
   const client = clients.find((c) => c.id === clientId);
   const [activeSubTab, setActiveSubTab] = useState<'formulas' | 'history' | 'photos'>('formulas');
@@ -71,9 +73,18 @@ export const ClientProfileModal: React.FC<ClientProfileModalProps> = ({
             </div>
             
             <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-charcoal-600 mt-1.5">
-              <span className="flex items-center space-x-1">
+              <span className="flex items-center space-x-1.5">
                 <Phone className="w-3.5 h-3.5 text-brand-600" />
                 <span>{client.phone}</span>
+                <button
+                  type="button"
+                  onClick={() => openWhatsApp(client.phone, WhatsAppTemplates.greeting(client.name, currentSalon.name))}
+                  className="px-2 py-0.5 rounded-md bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-800 text-[10px] font-bold flex items-center space-x-1 transition-all shadow-xs"
+                  title="Abrir chat en WhatsApp Web (wa.me)"
+                >
+                  <MessageCircle className="w-3 h-3 text-emerald-600" />
+                  <span>wa.me</span>
+                </button>
               </span>
               <span className="flex items-center space-x-1">
                 <Mail className="w-3.5 h-3.5 text-brand-600" />

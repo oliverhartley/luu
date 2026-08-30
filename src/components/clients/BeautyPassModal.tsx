@@ -14,6 +14,7 @@ import {
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
 import { Client } from '../../types';
+import { openWhatsApp, WhatsAppTemplates } from '../../lib/whatsapp';
 
 interface BeautyPassModalProps {
   client: Client | null;
@@ -26,7 +27,7 @@ export const BeautyPassModal: React.FC<BeautyPassModalProps> = ({
   isOpen,
   onClose
 }) => {
-  const { showToast } = useApp();
+  const { showToast, currentSalon } = useApp();
 
   if (!isOpen || !client) return null;
 
@@ -34,8 +35,11 @@ export const BeautyPassModal: React.FC<BeautyPassModalProps> = ({
   const isVip = client.tags.includes('VIP') || client.totalVisits >= 5;
 
   const handleSharePass = () => {
-    navigator.clipboard.writeText(`https://pelu.app/pass/${client.id}`);
-    showToast('Enlace de Beauty Pass Copiado', 'Listo para enviar por WhatsApp a la clienta', 'success');
+    const passUrl = `https://pelu.app/pass/${client.id}`;
+    navigator.clipboard.writeText(passUrl);
+    const msg = WhatsAppTemplates.beautyPass(client.name, currentSalon.name, passUrl);
+    openWhatsApp(client.phone, msg);
+    showToast('Enlace Copiado & WhatsApp Abierto', `Abriendo chat con ${client.name}...`, 'success');
   };
 
   return (
@@ -66,10 +70,14 @@ export const BeautyPassModal: React.FC<BeautyPassModalProps> = ({
           {/* Top Brand & Tier */}
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 rounded-xl bg-white/10 backdrop-blur-md flex items-center justify-center text-brand-300">
-                <Scissors className="w-4 h-4" />
+              <div className="w-8 h-8 rounded-xl bg-white/10 backdrop-blur-md flex items-center justify-center text-brand-300 overflow-hidden p-0.5">
+                {currentSalon.logo ? (
+                  <img src={currentSalon.logo} alt="Logo" className="w-full h-full object-contain rounded-lg" />
+                ) : (
+                  <Scissors className="w-4 h-4" />
+                )}
               </div>
-              <span className="font-serif text-lg font-bold tracking-tight">luu.</span>
+              <span className="font-serif text-lg font-bold tracking-tight">{currentSalon.name}</span>
             </div>
             
             <Badge variant="luxury" className="bg-white/20 text-white border-white/30 backdrop-blur-md text-[10px]">
