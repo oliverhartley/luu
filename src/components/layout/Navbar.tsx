@@ -19,6 +19,7 @@ import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
 import { ThemeSwitcherBar } from '../themes/ThemeSwitcherBar';
 import { UserMenu } from './UserMenu';
+import { isTestEnv } from '../../lib/env';
 
 interface NavbarProps {
   onOpenNewAppointmentModal: () => void;
@@ -70,6 +71,12 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <Badge variant="luxury" className="hidden md:inline-flex">
                   {currentSalon.name}
                 </Badge>
+                {isTestEnv() && (
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-wider uppercase bg-amber-500/15 text-amber-800 border border-amber-400/40 shadow-xs" title="Ambiente de TEST: Datos 100% funcionales y aislados de Producción">
+                    <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+                    TEST
+                  </span>
+                )}
               </div>
               <p className="text-[11px] text-charcoal-500 hidden sm:block">
                 Beauty-Tech & CRM Multi-Salón

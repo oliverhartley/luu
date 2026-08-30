@@ -11,11 +11,16 @@ import {
   ShieldCheck,
   Scissors,
   Trash2,
-  HelpCircle
+  HelpCircle,
+  Database,
+  Copy,
+  RefreshCw
 } from 'lucide-react';
 import { Avatar } from '../ui/avatar';
 import { Badge } from '../ui/badge';
 import { DeleteAccountModal } from './DeleteAccountModal';
+import { isTestEnv, getAppEnvironment } from '../../lib/env';
+import { cloneProdToTest } from '../../lib/firestoreSync';
 
 export const UserMenu: React.FC<{ onOpenRegisterSalon?: () => void }> = ({
   onOpenRegisterSalon
@@ -35,11 +40,32 @@ export const UserMenu: React.FC<{ onOpenRegisterSalon?: () => void }> = ({
 
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState<boolean>(false);
+  const [isCloning, setIsCloning] = useState<boolean>(false);
+  const [cloneStatus, setCloneStatus] = useState<string | null>(null);
 
   if (!currentUser) return null;
 
   const userEmail = (currentUser.email || '').toLowerCase().trim();
   const isEligibleForAccountDeletion = userEmail === 'oliver@harliz.com' || userEmail === 'fran@harliz.com';
+
+  const handleCloneFromProd = async () => {
+    if (!window.confirm('¿Deseas clonar los datos actuales de Producción hacia tu ambiente de TEST? Esto reemplazará tus datos de prueba con una copia fresca de producción sin alterar producción.')) {
+      return;
+    }
+    setIsCloning(true);
+    setCloneStatus(null);
+    try {
+      const res = await cloneProdToTest();
+      setCloneStatus(res.message);
+      if (res.success) {
+        setTimeout(() => window.location.reload(), 1500);
+      }
+    } catch (e: any) {
+      setCloneStatus('Error al clonar');
+    } finally {
+      setIsCloning(false);
+    }
+  };
 
   return (
     <div className="relative">
@@ -179,6 +205,46 @@ export const UserMenu: React.FC<{ onOpenRegisterSalon?: () => void }> = ({
                 <Sparkles className="w-4 h-4 text-amber-600" />
                 <span>Asistente de Configuración</span>
               </button>
+            </div>
+
+            {/* Environment Status Card */}
+            <div className="pt-2 border-t border-brand-100">
+              <div className={`p-2.5 rounded-xl border text-left ${
+                isTestEnv() 
+                  ? 'bg-amber-50/80 border-amber-200/80 text-amber-900' 
+                  : 'bg-emerald-50/60 border-emerald-200/70 text-emerald-900'
+              }`}>
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-[11px] font-bold flex items-center gap-1.5">
+                    {isTestEnv() ? '🧪 Entorno TEST' : '🟢 Entorno Producción'}
+                  </span>
+                  <span className="text-[9px] font-semibold px-1.5 py-0.5 rounded-md bg-white/70">
+                    {isTestEnv() ? 'test_*' : 'live'}
+                  </span>
+                </div>
+                <p className="text-[10px] leading-tight opacity-80">
+                  {isTestEnv() 
+                    ? '100% funcional. Datos aislados de lo que Francisca revisa.' 
+                    : 'Base de datos principal activa.'}
+                </p>
+
+                {isTestEnv() && isEligibleForAccountDeletion && (
+                  <button
+                    type="button"
+                    onClick={handleCloneFromProd}
+                    disabled={isCloning}
+                    className="mt-2 w-full flex items-center justify-center space-x-1.5 py-1 px-2 rounded-lg text-[10px] font-bold text-amber-900 bg-white/90 hover:bg-white border border-amber-300/70 shadow-2xs transition-all disabled:opacity-50"
+                  >
+                    <RefreshCw className={`w-3 h-3 ${isCloning ? 'animate-spin text-amber-600' : ''}`} />
+                    <span>{isCloning ? 'Clonando datos...' : 'Clonar datos de Producción a Test'}</span>
+                  </button>
+                )}
+                {cloneStatus && (
+                  <p className="text-[9px] text-amber-800 font-semibold mt-1 text-center">
+                    {cloneStatus}
+                  </p>
+                )}
+              </div>
             </div>
 
             {/* Logout Action */}
