@@ -11,7 +11,8 @@ import {
   Smartphone, 
   Plus, 
   ArrowRight,
-  X
+  X,
+  Palette
 } from 'lucide-react';
 import { Badge } from '../ui/badge';
 
@@ -22,6 +23,7 @@ interface CommandPaletteProps {
   onOpenColorCalculator: () => void;
   onOpenWhatsAppSimulator: () => void;
   onViewClientProfile: (clientId: string) => void;
+  onOpenLogoStudio?: () => void;
 }
 
 export const CommandPalette: React.FC<CommandPaletteProps> = ({
@@ -30,7 +32,8 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
   onOpenNewAppointment,
   onOpenColorCalculator,
   onOpenWhatsAppSimulator,
-  onViewClientProfile
+  onViewClientProfile,
+  onOpenLogoStudio
 }) => {
   const { clients, appointments, services, setActiveTab } = useApp();
   const [query, setQuery] = useState<string>('');
@@ -162,6 +165,24 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                   Venta POS
                 </span>
               </button>
+
+              {onOpenLogoStudio && (
+                <button
+                  onClick={() => {
+                    onClose();
+                    onOpenLogoStudio();
+                  }}
+                  className="w-full flex items-center justify-between p-2.5 rounded-2xl hover:bg-brand-50 text-xs font-semibold text-charcoal-800 transition-all"
+                >
+                  <span className="flex items-center space-x-2.5">
+                    <Palette className="w-4 h-4 text-brand-600" />
+                    <span>Diseñar Logo con IA (Google Imagen 3)</span>
+                  </span>
+                  <span className="text-[10px] bg-brand-100 text-brand-800 px-2 py-0.5 rounded-md">
+                    Logo IA
+                  </span>
+                </button>
+              )}
 
               <button
                 onClick={() => {

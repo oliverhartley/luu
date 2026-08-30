@@ -14,7 +14,8 @@ import {
   HelpCircle,
   Database,
   Copy,
-  RefreshCw
+  RefreshCw,
+  Palette
 } from 'lucide-react';
 import { Avatar } from '../ui/avatar';
 import { Badge } from '../ui/badge';
@@ -22,8 +23,14 @@ import { DeleteAccountModal } from './DeleteAccountModal';
 import { isTestEnv, getAppEnvironment } from '../../lib/env';
 import { cloneProdToTest } from '../../lib/firestoreSync';
 
-export const UserMenu: React.FC<{ onOpenRegisterSalon?: () => void }> = ({
-  onOpenRegisterSalon
+interface UserMenuProps {
+  onOpenRegisterSalon?: () => void;
+  onOpenLogoStudio?: () => void;
+}
+
+export const UserMenu: React.FC<UserMenuProps> = ({
+  onOpenRegisterSalon,
+  onOpenLogoStudio
 }) => {
   const { 
     currentUser, 
@@ -206,6 +213,23 @@ export const UserMenu: React.FC<{ onOpenRegisterSalon?: () => void }> = ({
                 <span>Asistente de Configuración</span>
               </button>
             </div>
+
+            {/* AI Logo Studio Action */}
+            {onOpenLogoStudio && (
+              <div className="pt-2 border-t border-brand-100">
+                <button
+                  type="button"
+                  onClick={() => {
+                    onOpenLogoStudio();
+                    setIsOpen(false);
+                  }}
+                  className="w-full flex items-center space-x-2 p-2 rounded-xl text-xs font-bold text-brand-900 bg-gradient-to-r from-brand-50 to-roseGold/20 hover:from-brand-100 border border-brand-200 transition-all"
+                >
+                  <Palette className="w-4 h-4 text-brand-600" />
+                  <span>Diseñar Logo con IA</span>
+                </button>
+              </div>
+            )}
 
             {/* Environment Status Card */}
             <div className="pt-2 border-t border-brand-100">
