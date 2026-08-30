@@ -380,7 +380,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       const fbUser = result.user;
       const user: AuthUser = {
         id: fbUser.uid,
-        name: fbUser.displayName || 'Oliver Hartley',
+        name: fbUser.displayName || fbUser.email?.split('@')[0] || 'Usuario Google',
         email: fbUser.email || 'usuario@gmail.com',
         avatar: fbUser.photoURL || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80',
         role: 'owner',
@@ -391,30 +391,26 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       setCurrentUser(user);
       setRole('admin');
       setActiveTab('agenda');
-      showToast('Sesión Iniciada con Google', `Bienvenido(a) a ${currentSalon.name}`, 'success');
+      showToast('Sesión Real con Google', `Bienvenido(a) ${fbUser.displayName || fbUser.email}`, 'success');
       return true;
     } catch (err: any) {
-      console.warn('Google sign in notice / fallback:', err);
+      console.error('[Firebase Auth Error]', err);
+      let errorMsg = 'No se pudo completar la autenticación con Google.';
+
       if (err.code === 'auth/popup-closed-by-user') {
-        showToast('Acceso Cancelado', 'Se cerró la ventana de Google.', 'info');
-        return false;
+        errorMsg = 'Ventana de Google cerrada antes de seleccionar tu cuenta.';
+      } else if (err.code === 'auth/popup-blocked') {
+        errorMsg = 'El navegador bloqueó la ventana emergente de Google. Habilita los popups en la barra de direcciones.';
+      } else if (err.code === 'auth/unauthorized-domain') {
+        errorMsg = 'Este dominio no está autorizado en Firebase. Añade este dominio en Firebase Console > Authentication > Settings > Authorized Domains.';
+      } else if (err.code === 'auth/configuration-not-found' || err.code === 'auth/operation-not-allowed') {
+        errorMsg = 'Firebase Authentication no está activado aún en Firebase Console. Debes ir a Firebase Console > Authentication > Comenzar y habilitar Google.';
+      } else if (err.message) {
+        errorMsg = `[${err.code || 'Auth'}] ${err.message}`;
       }
-      // Modo demo fallback si no hay red o está restringido
-      const user: AuthUser = {
-        id: 'user-google-' + Date.now(),
-        name: 'Oliver Hartley',
-        email: 'oliver.hartley@gmail.com',
-        avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80',
-        role: 'owner',
-        salonId: currentSalon.id,
-        salonName: currentSalon.name,
-        provider: 'google'
-      };
-      setCurrentUser(user);
-      setRole('admin');
-      setActiveTab('agenda');
-      showToast('Sesión Iniciada', `Bienvenido a ${currentSalon.name}`, 'success');
-      return true;
+
+      showToast('Error de Autenticación Real', errorMsg, 'error');
+      return false;
     }
   };
 
