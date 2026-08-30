@@ -294,11 +294,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
       if (firebaseUser) {
+        const displayName = firebaseUser.displayName || firebaseUser.email?.split('@')[0] || 'Usuario';
         const user: AuthUser = {
           id: firebaseUser.uid,
-          name: firebaseUser.displayName || firebaseUser.email?.split('@')[0] || 'Usuario',
+          name: displayName,
           email: firebaseUser.email || '',
-          avatar: firebaseUser.photoURL || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80',
+          avatar: firebaseUser.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=E07A5F&color=fff`,
           role: 'owner',
           salonId: currentSalon.id,
           salonName: currentSalon.name,
@@ -378,11 +379,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     try {
       const result = await signInWithPopup(auth, googleProvider);
       const fbUser = result.user;
+      const displayName = fbUser.displayName || fbUser.email?.split('@')[0] || 'Usuario Google';
       const user: AuthUser = {
         id: fbUser.uid,
-        name: fbUser.displayName || fbUser.email?.split('@')[0] || 'Usuario Google',
+        name: displayName,
         email: fbUser.email || 'usuario@gmail.com',
-        avatar: fbUser.photoURL || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80',
+        avatar: fbUser.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=E07A5F&color=fff`,
         role: 'owner',
         salonId: currentSalon.id,
         salonName: currentSalon.name,
