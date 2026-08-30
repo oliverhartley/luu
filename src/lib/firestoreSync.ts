@@ -10,6 +10,29 @@ import { db } from './firebase';
 import { getCollectionName, isTestEnv } from './env';
 
 /**
+ * Limpia recursivamente campos con valor 'undefined' para que Cloud Firestore
+ * no rechace la operación con 'Unsupported field value: undefined'.
+ */
+export function sanitizeForFirestore<T>(data: T): T {
+  if (data === null || data === undefined) {
+    return data;
+  }
+  if (Array.isArray(data)) {
+    return data.map((item) => sanitizeForFirestore(item)) as unknown as T;
+  }
+  if (typeof data === 'object') {
+    const cleanObj: any = {};
+    for (const [key, value] of Object.entries(data)) {
+      if (value !== undefined) {
+        cleanObj[key] = sanitizeForFirestore(value);
+      }
+    }
+    return cleanObj;
+  }
+  return data;
+}
+
+/**
  * Carga o siembra los datos iniciales de una colección en Cloud Firestore
  * Utiliza getCollectionName para aislar automáticamente 'test_' de 'prod'
  */
@@ -35,7 +58,7 @@ export async function loadOrSeedCollection<T extends { id: string }>(
     const batch = writeBatch(db);
     initialData.forEach((item) => {
       const docRef = doc(db, actualCollection, item.id);
-      batch.set(docRef, item);
+      batch.set(docRef, sanitizeForFirestore(item));
     });
     await batch.commit();
     return initialData;
@@ -47,6 +70,7 @@ export async function loadOrSeedCollection<T extends { id: string }>(
 
 /**
  * Guarda o actualiza un documento individual en Firestore de forma no bloqueante
+ * Sanitiza automáticamente cualquier valor 'undefined' para evitar rechazos.
  */
 export async function saveDocument<T extends { id: string }>(
   baseCollectionName: string, 
@@ -54,8 +78,9 @@ export async function saveDocument<T extends { id: string }>(
 ): Promise<void> {
   const actualCollection = getCollectionName(baseCollectionName);
   try {
+    const sanitized = sanitizeForFirestore(item);
     const docRef = doc(db, actualCollection, item.id);
-    await setDoc(docRef, item, { merge: true });
+    await setDoc(docRef, sanitized, { merge: true });
   } catch (error) {
     console.warn(`[Firestore] Error al guardar en ${actualCollection}/${item.id}:`, error);
   }
@@ -105,7 +130,7 @@ export async function cloneProdToTest(): Promise<{ success: boolean; message: st
         const batch = writeBatch(db);
         prodSnapshot.forEach((docSnapshot) => {
           const testDocRef = doc(db, `test_${name}`, docSnapshot.id);
-          batch.set(testDocRef, docSnapshot.data());
+          batch.set(testDocRef, sanitizeForFirestore(docSnapshot.data()));
         });
         await batch.commit();
       }

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useApp } from '../../context/AppContext';
 import { X, Plus, Trash2, Calendar, Clock, User, Scissors, Check, Sparkles } from 'lucide-react';
 import { AppointmentItem } from '../../types';
@@ -14,6 +14,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({ isOpen, onCl
     services, 
     professionals, 
     selectedDate, 
+    setSelectedDate,
     addAppointment,
     addClient 
   } = useApp();
@@ -23,6 +24,12 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({ isOpen, onCl
   const [newClientName, setNewClientName] = useState<string>('');
   const [newClientPhone, setNewClientPhone] = useState<string>('+56 9 ');
   const [date, setDate] = useState<string>(selectedDate);
+
+  useEffect(() => {
+    if (isOpen) {
+      setDate(selectedDate);
+    }
+  }, [isOpen, selectedDate]);
   const [startTime, setStartTime] = useState<string>('11:00');
   const [notes, setNotes] = useState<string>('');
 
@@ -154,6 +161,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({ isOpen, onCl
       notes: notes.trim() ? notes : undefined
     });
 
+    setSelectedDate(date);
     onClose();
   };
 
