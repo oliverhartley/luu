@@ -147,7 +147,8 @@ export async function enrichProductWithAI(params: {
   }
 
   // 2. Intentar llamar a Gemini AI en vivo si existe API key configurada
-  const geminiKey = typeof window !== 'undefined' ? localStorage.getItem('luu_gemini_api_key') : null;
+  const envKey = import.meta.env.VITE_GEMINI_API_KEY;
+  const geminiKey = envKey || (typeof window !== 'undefined' ? localStorage.getItem('luu_gemini_api_key') : null);
   if (geminiKey) {
     try {
       const liveResult = await callLiveGeminiAPI(geminiKey, params);
@@ -200,9 +201,12 @@ Responde ÚNICAMENTE un objeto JSON válido con esta estructura exacta (sin text
   "features": ["✨ Beneficio 1", "🌿 Beneficio 2", "🛡️ Beneficio 3", "💧 Beneficio 4"]
 }`;
 
-  const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+  const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 
+      'Content-Type': 'application/json',
+      'x-goog-api-key': apiKey
+    },
     body: JSON.stringify({
       contents: [{ parts: [{ text: promptText }] }],
       generationConfig: { temperature: 0.4, responseMimeType: 'application/json' }
