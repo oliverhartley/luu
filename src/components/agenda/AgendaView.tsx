@@ -40,7 +40,9 @@ export const AgendaView: React.FC<AgendaViewProps> = ({
     setSelectedProfessionalFilter,
     checkInAppointment,
     updateAppointmentStatus,
-    role
+    role,
+    currentSalon,
+    setIsOnboardingOpen
   } = useApp();
 
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -102,6 +104,29 @@ export const AgendaView: React.FC<AgendaViewProps> = ({
   return (
     <div className="space-y-6 animate-fade-in">
       
+      {/* Pending Onboarding Banner */}
+      {currentSalon?.onboardingCompleted === false && (
+        <div className="bg-gradient-to-r from-brand-500 via-roseGold to-brand-600 text-white p-4 sm:p-5 rounded-3xl shadow-lg flex flex-col sm:flex-row items-center justify-between gap-4 animate-fade-in">
+          <div className="flex items-center space-x-3.5">
+            <div className="w-10 h-10 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-white shrink-0">
+              <Sparkles className="w-5 h-5" />
+            </div>
+            <div>
+              <h4 className="font-serif font-bold text-sm sm:text-base">¡Completa la Configuración de tu Salón!</h4>
+              <p className="text-xs text-white/90">
+                Configura tus peluqueras, sillones, servicios y productos con nuestro asistente en solo 3 minutos.
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={() => setIsOnboardingOpen(true)}
+            className="px-4 py-2 rounded-xl text-xs font-bold bg-white text-brand-900 hover:bg-white/90 shadow-sm shrink-0"
+          >
+            Abrir Asistente ✨
+          </button>
+        </div>
+      )}
+
       {/* Top Banner with KPIs */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
         

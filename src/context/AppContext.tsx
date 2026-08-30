@@ -23,7 +23,8 @@ import {
   AppointmentStatus,
   TenantSalon,
   AuthUser,
-  ProductSale
+  ProductSale,
+  Station
 } from '../types';
 import { 
   INITIAL_PROFESSIONALS, 
@@ -31,9 +32,10 @@ import {
   INITIAL_CLIENTS, 
   INITIAL_APPOINTMENTS, 
   INITIAL_INVENTORY, 
-  INITIAL_PRODUCT_SALES,
+  INITIAL_PRODUCT_SALES, 
   INITIAL_CAMPAIGNS, 
-  INITIAL_WHATSAPP_LOGS 
+  INITIAL_WHATSAPP_LOGS,
+  INITIAL_STATIONS
 } from '../data/mockData';
 
 interface Toast {
@@ -51,8 +53,13 @@ export const INITIAL_SALONS: TenantSalon[] = [
     address: 'Av. Alonso de Córdova 3820',
     city: 'Santiago, Chile',
     phone: '+56 9 8123 4567',
+    email: 'contacto@luu-vitacura.cl',
+    instagram: '@luu.vitacura',
+    openingHours: 'Lun a Sáb 10:00 - 20:00',
+    slogan: 'El templo de la colorimetría y diseño de autor',
     ownerId: 'user-1',
-    createdAt: '2026-01-15'
+    createdAt: '2026-01-15',
+    onboardingCompleted: true
   },
   {
     id: 'salon-2',
@@ -61,8 +68,12 @@ export const INITIAL_SALONS: TenantSalon[] = [
     address: 'Av. Providencia 2150, Local 12',
     city: 'Santiago, Chile',
     phone: '+56 9 9876 5432',
+    email: 'hola@atelierprovidencia.cl',
+    instagram: '@atelier.providencia',
+    openingHours: 'Mar a Sáb 09:30 - 19:30',
     ownerId: 'user-2',
-    createdAt: '2026-03-20'
+    createdAt: '2026-03-20',
+    onboardingCompleted: true
   }
 ];
 
@@ -88,9 +99,11 @@ interface AppContextType {
   registerSalon: (salonName: string, ownerName: string, email: string, password: string, phone: string, city?: string) => Promise<void>;
   logout: () => Promise<void>;
   switchSalon: (salonId: string) => void;
+  updateSalonInfo: (info: Partial<TenantSalon>) => void;
   
   professionals: Professional[];
   services: Service[];
+  stations: Station[];
   clients: Client[];
   appointments: Appointment[];
   inventory: InventoryProduct[];
@@ -109,10 +122,18 @@ interface AppContextType {
   showToast: (title: string, message?: string, type?: Toast['type']) => void;
   removeToast: (id: string) => void;
   
+  // Onboarding Wizard
+  isOnboardingOpen: boolean;
+  setIsOnboardingOpen: (open: boolean) => void;
+  completeOnboarding: () => void;
+  
   // Actions
   addProfessional: (professional: Omit<Professional, 'id'>) => Professional;
   updateProfessional: (professional: Professional) => void;
   deleteProfessional: (id: string) => void;
+  addStation: (station: Omit<Station, 'id'>) => Station;
+  updateStation: (station: Station) => void;
+  deleteStation: (id: string) => void;
   addService: (service: Omit<Service, 'id'>) => Service;
   updateService: (service: Service) => void;
   deleteService: (id: string) => void;
@@ -171,6 +192,22 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [services, setServices] = useState<Service[]>(() => {
     const saved = localStorage.getItem('pelu_services');
     return saved ? JSON.parse(saved) : INITIAL_SERVICES;
+  });
+
+  const [stations, setStations] = useState<Station[]>(() => {
+    const saved = localStorage.getItem('pelu_stations');
+    return saved ? JSON.parse(saved) : INITIAL_STATIONS;
+  });
+
+  const [isOnboardingOpen, setIsOnboardingOpen] = useState<boolean>(() => {
+    const savedSalon = localStorage.getItem('luu_current_salon');
+    if (savedSalon) {
+      try {
+        const parsed = JSON.parse(savedSalon);
+        return parsed.onboardingCompleted === false;
+      } catch (e) {}
+    }
+    return false;
   });
 
   const [clients, setClients] = useState<Client[]>(() => {
@@ -262,6 +299,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   }, [professionals]);
 
   useEffect(() => {
+    localStorage.setItem('pelu_stations', JSON.stringify(stations));
+  }, [stations]);
+
+  useEffect(() => {
     localStorage.setItem('pelu_selected_stylist', selectedStylistId);
   }, [selectedStylistId]);
 
@@ -335,6 +376,30 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setProfessionals((prev) => prev.filter((p) => p.id !== id));
     deleteDocument('professionals', id);
     showToast('Peluquera Eliminada', prof?.name, 'info');
+  };
+
+  const addStation = (stationData: Omit<Station, 'id'>): Station => {
+    const newStation: Station = {
+      ...stationData,
+      id: 'st-' + Date.now(),
+      salonId: currentSalon.id
+    };
+    setStations((prev) => [...prev, newStation]);
+    saveDocument('stations', newStation);
+    showToast('Sillón Creado', newStation.name, 'success');
+    return newStation;
+  };
+
+  const updateStation = (updated: Station) => {
+    setStations((prev) => prev.map((s) => (s.id === updated.id ? updated : s)));
+    saveDocument('stations', updated);
+    showToast('Sillón Actualizado', updated.name, 'info');
+  };
+
+  const deleteStation = (id: string) => {
+    setStations((prev) => prev.filter((s) => s.id !== id));
+    deleteDocument('stations', id);
+    showToast('Sillón Eliminado', undefined, 'info');
   };
 
   const addService = (serviceData: Omit<Service, 'id'>): Service => {
@@ -512,8 +577,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       address: 'Dirección por configurar',
       city: city,
       phone: phone,
+      email: email.trim(),
       ownerId: firebaseUid,
-      createdAt: new Date().toISOString().split('T')[0]
+      createdAt: new Date().toISOString().split('T')[0],
+      onboardingCompleted: false
     };
 
     const newOwner: AuthUser = {
@@ -533,7 +600,23 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setCurrentUser(newOwner);
     setRole('admin');
     setActiveTab('agenda');
-    showToast('¡Peluquería Registrada con Éxito!', `Bienvenido a la red luu., ${ownerName}`, 'success');
+    setIsOnboardingOpen(true);
+    showToast('¡Peluquería Registrada con Éxito!', `Bienvenido a luu., ${ownerName}. Vamos a configurar tu salón.`, 'success');
+  };
+
+  const updateSalonInfo = (info: Partial<TenantSalon>) => {
+    setCurrentSalon((prev) => {
+      const updated = { ...prev, ...info };
+      setSalons((sList) => sList.map((s) => (s.id === updated.id ? updated : s)));
+      saveDocument('salons', updated);
+      return updated;
+    });
+  };
+
+  const completeOnboarding = () => {
+    updateSalonInfo({ onboardingCompleted: true });
+    setIsOnboardingOpen(false);
+    showToast('🎉 ¡Salón Configurado!', 'Tu plataforma luu. está lista para trabajar.', 'success');
   };
 
   const logout = async (): Promise<void> => {
@@ -973,6 +1056,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     localStorage.clear();
     setProfessionals(INITIAL_PROFESSIONALS);
     setSelectedStylistId(INITIAL_PROFESSIONALS[0]?.id || 'prof-1');
+    setStations(INITIAL_STATIONS);
     setClients(INITIAL_CLIENTS);
     setAppointments(INITIAL_APPOINTMENTS);
     setInventory(INITIAL_INVENTORY);
@@ -984,6 +1068,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setCurrentUser(null);
     setRole('admin');
     setActiveTab('agenda');
+    setIsOnboardingOpen(false);
     showToast('Datos de Demo Restaurados', 'Se han restablecido los valores iniciales de prueba.', 'info');
   };
 
@@ -1000,8 +1085,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         registerSalon,
         logout,
         switchSalon,
+        updateSalonInfo,
         professionals,
         services,
+        stations,
         clients,
         appointments,
         inventory,
@@ -1019,9 +1106,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         toasts,
         showToast,
         removeToast,
+        isOnboardingOpen,
+        setIsOnboardingOpen,
+        completeOnboarding,
         addProfessional,
         updateProfessional,
         deleteProfessional,
+        addStation,
+        updateStation,
+        deleteStation,
         addService,
         updateService,
         deleteService,

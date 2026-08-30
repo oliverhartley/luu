@@ -46,7 +46,8 @@ export const Navbar: React.FC<NavbarProps> = ({
     resetDemoData,
     setActiveTab,
     currentUser,
-    currentSalon
+    currentSalon,
+    setIsOnboardingOpen
   } = useApp();
 
   return (
@@ -118,6 +119,18 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <Plus className="w-4 h-4" />
                 <span className="hidden xs:inline">Nueva Cita</span>
               </Button>
+            )}
+
+            {/* Setup Wizard Button */}
+            {currentUser && role !== 'client' && (
+              <button
+                onClick={() => setIsOnboardingOpen(true)}
+                className="hidden sm:flex items-center space-x-1 px-2.5 py-1.5 rounded-xl text-xs font-bold bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 shadow-2xs transition-all"
+                title="Configurar módulos del salón"
+              >
+                <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+                <span>Asistente</span>
+              </button>
             )}
 
             {/* Portal Switcher Button for Client Testing */}

@@ -16,83 +16,12 @@ import { Card, CardHeader, CardTitle, CardContent } from '../ui/card';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
 
-interface Station {
-  id: string;
-  name: string;
-  category: 'hair_color' | 'hair_cut' | 'wash_spa' | 'nails' | 'lashes';
-  assignedProfessionalName: string;
-  assignedProfessionalAvatar: string;
-  currentClientName?: string;
-  currentServiceName?: string;
-  status: 'occupied' | 'ready' | 'sanitizing';
-  timeRemainingMinutes?: number;
-  chairNumber: number;
-}
+import { Station } from '../../types';
 
 export const SalonFloorPlan: React.FC<{
   onOpenAppointmentDetails?: (clientName: string) => void;
 }> = ({ onOpenAppointmentDetails }) => {
-  const { appointments, selectedDate } = useApp();
-
-  const stations: Station[] = [
-    {
-      id: 'st-1',
-      name: 'Sillón 1 · Colorimetría & Balayage',
-      category: 'hair_color',
-      chairNumber: 1,
-      assignedProfessionalName: 'Valentina Morales',
-      assignedProfessionalAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80',
-      currentClientName: 'Isidora Paz Benítez',
-      currentServiceName: 'Retoque de Raíz & Baño de Brillo (Tiempo de pose)',
-      status: 'occupied',
-      timeRemainingMinutes: 25
-    },
-    {
-      id: 'st-2',
-      name: 'Sillón 2 · Corte de Autor & Styling',
-      category: 'hair_cut',
-      chairNumber: 2,
-      assignedProfessionalName: 'Javiera Silva',
-      assignedProfessionalAvatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=200&auto=format&fit=crop&q=80',
-      currentClientName: 'Florencia Valenzuela',
-      currentServiceName: 'Corte de Autor & Styling Ondas',
-      status: 'occupied',
-      timeRemainingMinutes: 15
-    },
-    {
-      id: 'st-3',
-      name: 'Estación 3 · Lavacabezas & Spa Capilar',
-      category: 'wash_spa',
-      chairNumber: 3,
-      assignedProfessionalName: 'Staff Rotativo',
-      assignedProfessionalAvatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=200&auto=format&fit=crop&q=80',
-      status: 'ready'
-    },
-    {
-      id: 'st-4',
-      name: 'Mesa 4 · Manicura Rusa & Nail Art',
-      category: 'nails',
-      chairNumber: 4,
-      assignedProfessionalName: 'Camila Soto',
-      assignedProfessionalAvatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=200&auto=format&fit=crop&q=80',
-      currentClientName: 'María Jesús Correa',
-      currentServiceName: 'Manicura Rusa Combinada + Esmalte OPI',
-      status: 'occupied',
-      timeRemainingMinutes: 30
-    },
-    {
-      id: 'st-5',
-      name: 'Cabina 5 · Lash & Brow Studio',
-      category: 'lashes',
-      chairNumber: 5,
-      assignedProfessionalName: 'Sofía Castro',
-      assignedProfessionalAvatar: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=200&auto=format&fit=crop&q=80',
-      currentClientName: 'Catalina Rivas',
-      currentServiceName: 'Lifting de Pestañas con Keratina & Tinte',
-      status: 'occupied',
-      timeRemainingMinutes: 40
-    }
-  ];
+  const { stations, setIsOnboardingOpen } = useApp();
 
   const occupiedCount = stations.filter((s) => s.status === 'occupied').length;
 
@@ -121,10 +50,33 @@ export const SalonFloorPlan: React.FC<{
         </div>
       </div>
 
+      {/* Empty State if no stations */}
+      {stations.length === 0 && (
+        <div className="bg-white rounded-3xl border border-dashed border-brand-300 p-8 text-center space-y-3">
+          <div className="w-14 h-14 rounded-2xl bg-brand-50 text-brand-600 flex items-center justify-center mx-auto shadow-sm">
+            <Armchair className="w-7 h-7" />
+          </div>
+          <h4 className="font-serif text-lg font-bold text-charcoal-900">Aún no has configurado sillones o puestos</h4>
+          <p className="text-xs text-charcoal-500 max-w-md mx-auto">
+            Organiza las estaciones de corte, color, lavacabezas o mesas de manicura para monitorear la ocupación de tu salón en vivo.
+          </p>
+          <Button
+            variant="luxury"
+            onClick={() => setIsOnboardingOpen(true)}
+            className="text-xs"
+          >
+            <Sparkles className="w-4 h-4 mr-1.5" />
+            Configurar Sillones en el Asistente
+          </Button>
+        </div>
+      )}
+
       {/* Grid of Stations */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {stations.map((st) => {
           const isOccupied = st.status === 'occupied';
+          const stationTitle = st.name.includes('·') ? st.name.split('·')[1].trim() : st.name;
+          const stationSubtitle = st.name.includes('·') ? st.name.split('·')[0].trim() : `Puesto #${st.chairNumber}`;
 
           return (
             <div
@@ -132,9 +84,24 @@ export const SalonFloorPlan: React.FC<{
               className={`p-4 rounded-3xl border transition-all relative overflow-hidden flex flex-col justify-between ${
                 isOccupied
                   ? 'bg-white border-brand-200/90 shadow-md ring-1 ring-brand-100'
-                  : 'bg-[#FAF8F5] border-dashed border-charcoal-300 opacity-80'
+                  : 'bg-[#FAF8F5] border-dashed border-charcoal-300 opacity-90'
               }`}
             >
+              {/* Optional Station Photo Banner */}
+              {st.photoUrl && (
+                <div className="h-28 -mx-4 -mt-4 mb-3 overflow-hidden relative">
+                  <img
+                    src={st.photoUrl}
+                    alt={st.name}
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                  <span className="absolute bottom-2 left-3 text-[10px] font-bold text-white bg-black/40 backdrop-blur-md px-2 py-0.5 rounded-lg">
+                    Foto del Puesto
+                  </span>
+                </div>
+              )}
+
               {/* Top Station Tag */}
               <div>
                 <div className="flex items-center justify-between mb-3">
@@ -143,8 +110,8 @@ export const SalonFloorPlan: React.FC<{
                       #{st.chairNumber}
                     </div>
                     <div>
-                      <h5 className="font-bold text-xs text-charcoal-950">{st.name.split('·')[1]}</h5>
-                      <span className="text-[10px] text-charcoal-500">{st.name.split('·')[0]}</span>
+                      <h5 className="font-bold text-xs text-charcoal-950">{stationTitle}</h5>
+                      <span className="text-[10px] text-charcoal-500">{stationSubtitle}</span>
                     </div>
                   </div>
 
@@ -152,18 +119,26 @@ export const SalonFloorPlan: React.FC<{
                     variant={isOccupied ? 'luxury' : 'success'}
                     className="text-[10px]"
                   >
-                    {isOccupied ? `Ocupado · ${st.timeRemainingMinutes} min` : 'Disponible'}
+                    {isOccupied ? `Ocupado · ${st.timeRemainingMinutes || 20} min` : 'Disponible'}
                   </Badge>
                 </div>
 
                 {/* Professional Assigned */}
                 <div className="flex items-center space-x-2 py-2 border-y border-brand-100/70 text-xs">
-                  <img
-                    src={st.assignedProfessionalAvatar}
-                    alt={st.assignedProfessionalName}
-                    className="w-6 h-6 rounded-full object-cover"
-                  />
-                  <span className="font-semibold text-charcoal-800">{st.assignedProfessionalName}</span>
+                  {st.assignedProfessionalAvatar ? (
+                    <img
+                      src={st.assignedProfessionalAvatar}
+                      alt={st.assignedProfessionalName}
+                      className="w-6 h-6 rounded-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-6 h-6 rounded-full bg-brand-200 text-brand-800 flex items-center justify-center text-[10px] font-bold">
+                      {st.assignedProfessionalName ? st.assignedProfessionalName.charAt(0) : 'R'}
+                    </div>
+                  )}
+                  <span className="font-semibold text-charcoal-800">
+                    {st.assignedProfessionalName || 'Staff Rotativo'}
+                  </span>
                 </div>
 
                 {/* Current Client Status */}
@@ -181,7 +156,7 @@ export const SalonFloorPlan: React.FC<{
                     </p>
                   </div>
                 ) : (
-                  <div className="mt-3 py-4 text-center text-xs text-charcoal-400 italic">
+                  <div className="mt-3 py-3 text-center text-xs text-charcoal-400 italic">
                     Estación libre y desinfectada
                   </div>
                 )}
@@ -192,7 +167,7 @@ export const SalonFloorPlan: React.FC<{
                 <div className="mt-3 pt-2 border-t border-brand-100 flex items-center justify-between text-xs">
                   <span className="text-[10px] text-charcoal-500 font-medium flex items-center">
                     <Clock className="w-3 h-3 mr-1 text-brand-500" />
-                    Fin estimado en {st.timeRemainingMinutes} min
+                    Fin estimado en {st.timeRemainingMinutes || 20} min
                   </span>
                   <button
                     onClick={() => onOpenAppointmentDetails && onOpenAppointmentDetails(st.currentClientName || '')}

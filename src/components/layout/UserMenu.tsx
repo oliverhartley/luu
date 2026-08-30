@@ -25,7 +25,8 @@ export const UserMenu: React.FC<{ onOpenRegisterSalon?: () => void }> = ({
     logout, 
     role, 
     setRole,
-    setActiveTab 
+    setActiveTab,
+    setIsOnboardingOpen 
   } = useApp();
 
   const [isOpen, setIsOpen] = useState<boolean>(false);
@@ -142,6 +143,20 @@ export const UserMenu: React.FC<{ onOpenRegisterSalon?: () => void }> = ({
                   Estilista
                 </button>
               </div>
+            </div>
+
+            {/* Onboarding Wizard Action */}
+            <div className="pt-2 border-t border-brand-100">
+              <button
+                onClick={() => {
+                  setIsOnboardingOpen(true);
+                  setIsOpen(false);
+                }}
+                className="w-full flex items-center space-x-2 p-2 rounded-xl text-xs font-bold text-brand-900 bg-brand-50 hover:bg-brand-100 border border-brand-200 transition-all"
+              >
+                <Sparkles className="w-4 h-4 text-brand-600" />
+                <span>Asistente de Configuración</span>
+              </button>
             </div>
 
             {/* Logout Action */}

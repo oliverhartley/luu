@@ -9,9 +9,30 @@ export interface TenantSalon {
   address: string;
   city: string;
   phone: string;
+  email?: string;
+  instagram?: string;
+  openingHours?: string;
+  slogan?: string;
   logo?: string;
   ownerId: string;
   createdAt: string;
+  onboardingCompleted?: boolean;
+}
+
+export interface Station {
+  id: string;
+  salonId?: string;
+  name: string;
+  category: 'hair_color' | 'hair_cut' | 'wash_spa' | 'nails' | 'lashes' | 'general';
+  chairNumber: number;
+  assignedProfessionalId?: string;
+  assignedProfessionalName?: string;
+  assignedProfessionalAvatar?: string;
+  photoUrl?: string;
+  currentClientName?: string;
+  currentServiceName?: string;
+  status: 'occupied' | 'ready' | 'sanitizing';
+  timeRemainingMinutes?: number;
 }
 
 export interface AuthUser {

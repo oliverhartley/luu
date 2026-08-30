@@ -1,4 +1,4 @@
-import { Professional, Service, Client, Appointment, InventoryProduct, MarketingCampaign, WhatsAppMessageSimulation, ProductSale } from '../types';
+import { Professional, Service, Client, Appointment, InventoryProduct, MarketingCampaign, WhatsAppMessageSimulation, ProductSale, Station } from '../types';
 
 export const INITIAL_PROFESSIONALS: Professional[] = [
   {
@@ -686,5 +686,69 @@ export const INITIAL_WHATSAPP_LOGS: WhatsAppMessageSimulation[] = [
     message: '🎉 ¡Feliz casi cumpleaños María Jesús! 🎂 En Pelu queremos celebrarte. Tienes un 20% de descuento de regalo en cualquier servicio durante tu mes. ¡Ven a consentirte!',
     timestamp: 'Hoy, 08:30',
     status: 'delivered'
+  }
+];
+
+export const INITIAL_STATIONS: Station[] = [
+  {
+    id: 'st-1',
+    name: 'Sillón 1 · Colorimetría & Balayage',
+    category: 'hair_color',
+    chairNumber: 1,
+    assignedProfessionalId: 'prof-1',
+    assignedProfessionalName: 'Valentina Morales',
+    assignedProfessionalAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80',
+    currentClientName: 'Isidora Paz Benítez',
+    currentServiceName: 'Retoque de Raíz & Baño de Brillo (Tiempo de pose)',
+    status: 'occupied',
+    timeRemainingMinutes: 25
+  },
+  {
+    id: 'st-2',
+    name: 'Sillón 2 · Corte de Autor & Styling',
+    category: 'hair_cut',
+    chairNumber: 2,
+    assignedProfessionalId: 'prof-3',
+    assignedProfessionalName: 'Javiera Silva',
+    assignedProfessionalAvatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=200&auto=format&fit=crop&q=80',
+    currentClientName: 'Florencia Valenzuela',
+    currentServiceName: 'Corte de Autor & Styling Ondas',
+    status: 'occupied',
+    timeRemainingMinutes: 15
+  },
+  {
+    id: 'st-3',
+    name: 'Estación 3 · Lavacabezas & Spa Capilar',
+    category: 'wash_spa',
+    chairNumber: 3,
+    assignedProfessionalName: 'Staff Rotativo',
+    assignedProfessionalAvatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=200&auto=format&fit=crop&q=80',
+    status: 'ready'
+  },
+  {
+    id: 'st-4',
+    name: 'Mesa 4 · Manicura Rusa & Nail Art',
+    category: 'nails',
+    chairNumber: 4,
+    assignedProfessionalId: 'prof-2',
+    assignedProfessionalName: 'Camila Soto',
+    assignedProfessionalAvatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=200&auto=format&fit=crop&q=80',
+    currentClientName: 'María Jesús Correa',
+    currentServiceName: 'Manicura Rusa Combinada + Esmalte OPI',
+    status: 'occupied',
+    timeRemainingMinutes: 30
+  },
+  {
+    id: 'st-5',
+    name: 'Cabina 5 · Lash & Brow Studio',
+    category: 'lashes',
+    chairNumber: 5,
+    assignedProfessionalId: 'prof-4',
+    assignedProfessionalName: 'Sofía Castro',
+    assignedProfessionalAvatar: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=200&auto=format&fit=crop&q=80',
+    currentClientName: 'Catalina Rivas',
+    currentServiceName: 'Lifting de Pestañas con Keratina & Tinte',
+    status: 'occupied',
+    timeRemainingMinutes: 40
   }
 ];

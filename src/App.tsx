@@ -22,6 +22,7 @@ import { SalonFloorPlan } from './components/salon-floor/SalonFloorPlan';
 import { ServicesManager } from './components/services/ServicesManager';
 import { StylistsManager } from './components/stylists/StylistsManager';
 import { AuthScreen } from './components/auth/AuthScreen';
+import { OnboardingWizardModal } from './components/onboarding/OnboardingWizardModal';
 import { Appointment, Client } from './types';
 
 export const App: React.FC = () => {
@@ -215,6 +216,9 @@ export const App: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Onboarding Wizard Modal */}
+      <OnboardingWizardModal />
 
       {/* Toast feedback messages */}
       <ToastContainer />
