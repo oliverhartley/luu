@@ -1,5 +1,17 @@
 {
   "projects": {
     "default": "pelu-harliz-green-df830"
+  },
+  "targets": {
+    "pelu-harliz-green-df830": {
+      "hosting": {
+        "prod": [
+          "pelu-harliz-green-df830"
+        ],
+        "test": [
+          "luu-cl-test"
+        ]
+      }
+    }
   }
 }

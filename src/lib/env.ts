@@ -26,6 +26,8 @@ export function getAppEnvironment(): AppEnvironment {
     if (
       host === 'localhost' ||
       host === '127.0.0.1' ||
+      host === 'test.luu.cl' ||
+      host.includes('luu-cl-test') ||
       host.includes('--test') ||
       host.startsWith('test.') ||
       host.includes('preview')

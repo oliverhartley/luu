@@ -10,8 +10,8 @@
     "build:prod": "tsc && vite build --mode production",
     "preview": "vite preview",
     "deploy": "gcloud run deploy luu --source . --region us-central1 --allow-unauthenticated",
-    "deploy:test": "npm run build:test && npx firebase-tools hosting:channel:deploy test --project pelu-harliz-green-df830 --expires 30d",
-    "deploy:prod": "npm run build:prod && npx firebase-tools deploy --only hosting --project pelu-harliz-green-df830",
+    "deploy:test": "npm run build:test && npx firebase-tools deploy --only hosting:test --project pelu-harliz-green-df830",
+    "deploy:prod": "npm run build:prod && npx firebase-tools deploy --only hosting:prod --project pelu-harliz-green-df830",
     "deploy:firebase": "npm run deploy:prod"
   },
   "dependencies": {
