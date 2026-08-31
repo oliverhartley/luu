@@ -1,6 +1,6 @@
 /**
  * Servicio de Generación de Logos e Identidad Visual para Salones
- * Configurado con estilos alegres, isotipos temáticos reales y colores descriptivos
+ * Configurado con estética POP, alegre, colorida y 100% acogedora
  */
 
 export interface DescriptiveColor {
@@ -9,6 +9,7 @@ export interface DescriptiveColor {
   emoji: string;
   primary: string;
   accent: string;
+  secondary: string;
   bg: string;
 }
 
@@ -46,156 +47,164 @@ export interface GeneratedLogo {
 }
 
 /**
- * Colores descriptivos y evocadores pedidos por Oliver (ej: Azul Océano, Verde Lechuga, etc.)
+ * Colores POP, intensos y vibrantes pedidos por Oliver
  */
 export const DESCRIPTIVE_COLORS: DescriptiveColor[] = [
+  {
+    id: 'naranja_coral',
+    name: 'Naranja Melocotón / Coral Vivo',
+    emoji: '🍊',
+    primary: '#FF5722',
+    accent: '#FFD166',
+    secondary: '#FF007F',
+    bg: '#FFF5EB'
+  },
   {
     id: 'verde_lechuga',
     name: 'Verde Lechuga / Menta Fresca',
     emoji: '🥬',
-    primary: '#2E7D32',
-    accent: '#66BB6A',
-    bg: '#F1F8E9'
+    primary: '#00B074',
+    accent: '#CCFF00',
+    secondary: '#06D6A0',
+    bg: '#E8FDF5'
   },
   {
     id: 'azul_oceano',
     name: 'Azul Océano / Brisa Marina',
     emoji: '🌊',
-    primary: '#1565C0',
-    accent: '#42A5F5',
-    bg: '#E3F2FD'
+    primary: '#0077B6',
+    accent: '#48CAE4',
+    secondary: '#7209B7',
+    bg: '#EBF8FF'
   },
   {
     id: 'rosa_chicle',
     name: 'Rosa Chicle / Algodón Dulce',
     emoji: '🌸',
-    primary: '#D81B60',
-    accent: '#EC407A',
-    bg: '#FCE4EC'
+    primary: '#FF2A85',
+    accent: '#FFD166',
+    secondary: '#9B5DE5',
+    bg: '#FFF0F6'
   },
   {
     id: 'lavanda_silvestre',
     name: 'Lavanda Silvestre / Lila Pastel',
     emoji: '💜',
-    primary: '#7B1FA2',
-    accent: '#AB47BC',
-    bg: '#F3E5F5'
+    primary: '#8338EC',
+    accent: '#FF006E',
+    secondary: '#3A86FF',
+    bg: '#F5EEFF'
   },
   {
     id: 'amarillo_sol',
     name: 'Amarillo Sol / Mostaza Alegre',
     emoji: '☀️',
-    primary: '#E65100',
-    accent: '#FBC02D',
-    bg: '#FFFDE7'
-  },
-  {
-    id: 'naranja_coral',
-    name: 'Naranja Melocotón / Coral Vivo',
-    emoji: '🍊',
-    primary: '#D84315',
-    accent: '#FF7043',
-    bg: '#FBE9E7'
+    primary: '#FF9F1C',
+    accent: '#FFE400',
+    secondary: '#E71D36',
+    bg: '#FFFBEB'
   },
   {
     id: 'negro_glam',
-    name: 'Negro Glam & Champagne',
+    name: 'Negro Glam & Neón Dorado',
     emoji: '🖤',
-    primary: '#1A1A1A',
-    accent: '#C5A059',
-    bg: '#FAF8F5'
+    primary: '#18181B',
+    accent: '#F59E0B',
+    secondary: '#EC4899',
+    bg: '#FAFAFA'
   },
   {
     id: 'caramelo_miel',
     name: 'Caramelo & Miel Cálida',
     emoji: '☕',
-    primary: '#6D4C41',
-    accent: '#BCAAA4',
-    bg: '#EFEBE9'
+    primary: '#C05C2E',
+    accent: '#F4A261',
+    secondary: '#E76F51',
+    bg: '#FDF6EE'
   }
 ];
 
 /**
- * Isotipos específicos y con sentido para peluquerías y salones
+ * Isotipos temáticos con personalidad alegre y cero aburrida
  */
 export const SALON_ISOTYPES: LogoIsotype[] = [
   {
-    id: 'tijeras_peine',
-    name: 'Tijeras & Peine de Estilista',
-    emoji: '✂️',
-    description: 'El clásico indiscutido del corte profesional'
+    id: 'flor_organica',
+    name: 'Flor Pop & Margarita Radiante',
+    emoji: '🌸',
+    description: 'Flor alegre retro-pop con centro brillante y destellos'
   },
   {
     id: 'peinado_ondas',
-    name: 'Peinado & Melena Ondulada',
+    name: 'Peinado & Melena con Movimiento',
     emoji: '💇‍♀️',
-    description: 'Cabello voluminoso con movimiento alegre y moderno'
+    description: 'Cabello voluminoso, trenza chic y brillo capilar'
   },
   {
-    id: 'flor_organica',
-    name: 'Flor & Botánica de Belleza',
-    emoji: '🌸',
-    description: 'Pétalos suaves y bienestar natural para salón o spa'
+    id: 'tijeras_peine',
+    name: 'Tijeras & Peine Pop',
+    emoji: '✂️',
+    description: 'Tijeras dinámicas con destellos de corte y peine amigable'
   },
   {
     id: 'unas_manicure',
     name: 'Uñas & Esmalte Chic',
     emoji: '💅',
-    description: 'Pincelada de color y manos cuidadas'
+    description: 'Frasco de esmalte brillante con gotita pop y estrellas'
   },
   {
     id: 'espejo_tocador',
-    name: 'Espejo Tocador & Destellos',
+    name: 'Espejo Glam & Destellos',
     emoji: '🪞',
-    description: 'Espejo de salón vintage con reflejos mágicos'
+    description: 'Espejo de tocador con reflejos mágicos de salón'
   },
   {
     id: 'monograma_pop',
-    name: 'Inicial de Marca Pop & Dinámica',
+    name: 'Inicial de Autor & Estrellas',
     emoji: '⚡',
-    description: 'La inicial de tu salón con estrellas y aire vanguardista'
+    description: 'Letra inicial pop con relámpago y estrellas vibrantes'
   }
 ];
 
 /**
- * Estilos visuales pedidos (Alegre, Colorido, Minimalista, etc.)
+ * Estilos visuales con energía y enfoque salonero moderno
  */
 export const SALON_STYLES: LogoStyle[] = [
-  {
-    id: 'alegre',
-    name: 'Alegre & Juguetón',
-    emoji: '✨',
-    description: 'Trazos amigables, destellos chispeantes y calidez'
-  },
   {
     id: 'colorido',
     name: 'Colorido & Vibrante',
     emoji: '🎨',
-    description: 'Degradados vivos, energía moderna y colores llamativos'
+    description: 'Colores intensos, sombras pop y máxima energía'
+  },
+  {
+    id: 'alegre',
+    name: 'Alegre & Juguetón',
+    emoji: '✨',
+    description: 'Curvas suaves, destellos chispeantes y calidez total'
   },
   {
     id: 'minimalista',
-    name: 'Minimalista & Limpio',
+    name: 'Minimalista Pop',
     emoji: '🤍',
-    description: 'Líneas finas, estética escandinava moderna y aire despejado'
+    description: 'Líneas limpias, tipografía gruesa y estética moderna'
   },
   {
     id: 'elegante',
-    name: 'Elegante & Boutique',
+    name: 'Boutique Chic',
     emoji: '👑',
-    description: 'Tipografía de alta gama, serifa fina y aire exclusivo'
+    description: 'Alta cosmética con toques dorados y aire glam'
   },
   {
     id: 'boho',
-    name: 'Boho & Natural',
+    name: 'Boho & Calidez Solar',
     emoji: '🌿',
-    description: 'Formas orgánicas, arcos suaves y espíritu artesanal'
+    description: 'Arcos cálidos, sol sonriente y naturaleza'
   },
   {
     id: 'urbano',
     name: 'Urbano & Trendy',
     emoji: '⚡',
-    description: 'Tipografía bold, estilo salón contemporáneo y audaz'
+    description: 'Estilo sticker neo-brutalista, stickers y audacia'
   }
 ];
 
@@ -232,90 +241,109 @@ export function svgToDataUri(svgString: string): string {
 }
 
 /**
- * Renderiza el dibujo vectorial específico del isotipo seleccionado
+ * Dibuja un isotipo POP, llamativo, con colores contrastados y destellos
  */
-function renderIsotypePath(isotypeId: string, primaryColor: string, accentColor: string, initialLetter: string, scale: number = 1): string {
+function renderPopIsotype(
+  isotypeId: string, 
+  primary: string, 
+  accent: string, 
+  secondary: string, 
+  initial: string, 
+  scale: number = 1
+): string {
   switch (isotypeId) {
+    case 'flor_organica':
+      return `
+        <g transform="scale(${scale})">
+          <!-- Flor Pop tipo Margarita Retro con 5 petalos coloridos -->
+          <circle cx="0" cy="-30" r="18" fill="${primary}"/>
+          <circle cx="28" cy="-9" r="18" fill="${primary}"/>
+          <circle cx="18" cy="24" r="18" fill="${primary}"/>
+          <circle cx="-18" cy="24" r="18" fill="${primary}"/>
+          <circle cx="-28" cy="-9" r="18" fill="${primary}"/>
+          <!-- Centro de la flor brillante -->
+          <circle cx="0" cy="0" r="19" fill="${accent}" stroke="#FFFFFF" stroke-width="4.5"/>
+          <circle cx="-5" cy="-6" r="4" fill="#FFFFFF"/>
+          <!-- Destellos de alegria -->
+          <path d="M34,-26 L36,-20 L42,-18 L36,-16 L34,-10 L32,-16 L26,-18 L32,-20 Z" fill="${secondary}"/>
+          <path d="M-34,-26 L-32,-20 L-26,-18 L-32,-16 L-34,-10 L-36,-16 L-42,-18 L-36,-20 Z" fill="${accent}"/>
+          <circle cx="36" cy="18" r="4" fill="${secondary}"/>
+          <circle cx="-36" cy="18" r="3.5" fill="${accent}"/>
+        </g>
+      `;
+
     case 'peinado_ondas':
       return `
         <g transform="scale(${scale})">
-          <!-- Melena ondulada y peinado alegre con destellos -->
-          <path d="M-24,-30 C-32,-10 -28,15 -14,28 C-4,38 12,38 22,26 C30,16 32,-8 20,-26 C12,-36 -12,-38 -24,-30 Z" fill="${accentColor}" fill-opacity="0.2" stroke="${primaryColor}" stroke-width="2"/>
-          <path d="M-16,-20 C-6,-24 8,-22 16,-12 C24,-2 18,12 8,20 C-2,28 -12,24 -18,14 C-24,4 -20,-10 -10,-18" fill="none" stroke="${primaryColor}" stroke-width="2.5" stroke-linecap="round"/>
-          <path d="M-4,-14 C2,-18 10,-16 12,-10 C14,-4 8,2 2,6" fill="none" stroke="${accentColor}" stroke-width="2" stroke-linecap="round"/>
-          <!-- Horquilla o lazo chic -->
-          <circle cx="16" cy="-20" r="4" fill="${accentColor}"/>
-          <path d="M13,-20 L23,-28" stroke="${primaryColor}" stroke-width="1.8" stroke-linecap="round"/>
-          <!-- Destellos de brillo capilar -->
-          <path d="M26,-4 L32,-8 M-26,-10 L-32,-14" stroke="${accentColor}" stroke-width="2" stroke-linecap="round"/>
-          <circle cx="28" cy="8" r="2.5" fill="${accentColor}"/>
+          <!-- Melena POP con volumen y movimiento libre -->
+          <path d="M-30,-22 C-38,-4 -34,22 -18,34 C-4,44 14,44 26,30 C36,18 38,-10 24,-30 C14,-42 -14,-42 -26,-32 Z" fill="${primary}"/>
+          <!-- Mechones ondulados con color de acento -->
+          <path d="M-18,-14 C-8,-20 8,-18 16,-8 C24,2 18,18 8,26 C-2,34 -14,30 -20,18" fill="none" stroke="${accent}" stroke-width="4.5" stroke-linecap="round"/>
+          <path d="M-6,-6 C2,-10 10,-8 14,-2 C16,4 12,12 4,16" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round"/>
+          <!-- Horquilla / Gancho Chic -->
+          <rect x="14" y="-24" width="16" height="7" rx="3.5" fill="${secondary}" transform="rotate(-25 22 -20)"/>
+          <circle cx="28" cy="-28" r="4" fill="${accent}"/>
+          <!-- Destellos -->
+          <path d="M36,-6 L39,-1 L44,0 L39,2 L37,7 L35,2 L30,0 L35,-1 Z" fill="${accent}"/>
+          <circle cx="-32" cy="-14" r="3.5" fill="${secondary}"/>
         </g>
       `;
 
     case 'tijeras_peine':
       return `
         <g transform="scale(${scale})">
-          <!-- Peine de estilista -->
-          <rect x="-32" y="-6" width="64" height="12" rx="3" fill="${accentColor}" fill-opacity="0.3" stroke="${primaryColor}" stroke-width="1.8"/>
-          <line x1="-24" y1="-6" x2="-24" y2="4" stroke="${primaryColor}" stroke-width="1.5"/>
-          <line x1="-16" y1="-6" x2="-16" y2="4" stroke="${primaryColor}" stroke-width="1.5"/>
-          <line x1="-8" y1="-6" x2="-8" y2="4" stroke="${primaryColor}" stroke-width="1.5"/>
-          <line x1="0" y1="-6" x2="0" y2="4" stroke="${primaryColor}" stroke-width="1.5"/>
-          <line x1="8" y1="-6" x2="8" y2="4" stroke="${primaryColor}" stroke-width="1.5"/>
-          <line x1="16" y1="-6" x2="16" y2="4" stroke="${primaryColor}" stroke-width="1.5"/>
-          <line x1="24" y1="-6" x2="24" y2="4" stroke="${primaryColor}" stroke-width="1.5"/>
-          <!-- Tijeras profesionales cruzadas -->
-          <circle cx="-16" cy="24" r="8" fill="none" stroke="${primaryColor}" stroke-width="2.2"/>
-          <circle cx="16" cy="24" r="8" fill="none" stroke="${primaryColor}" stroke-width="2.2"/>
-          <path d="M-10,18 L12,-26 M10,18 L-12,-26" stroke="${primaryColor}" stroke-width="2.5" stroke-linecap="round"/>
-          <circle cx="0" cy="-4" r="3.5" fill="${accentColor}"/>
-          <!-- Destello de filo brillante -->
-          <path d="M-14,-28 L-18,-34 M14,-28 L18,-34" stroke="${accentColor}" stroke-width="2" stroke-linecap="round"/>
-        </g>
-      `;
-
-    case 'flor_organica':
-      return `
-        <g transform="scale(${scale})">
-          <!-- Flor de loto / orquidea organica de belleza -->
-          <circle cx="0" cy="0" r="8" fill="${accentColor}"/>
-          <!-- Petalos delicados -->
-          <path d="M0,-8 C-16,-24 0,-40 0,-40 C0,-40 16,-24 0,-8 Z" fill="${accentColor}" fill-opacity="0.4" stroke="${primaryColor}" stroke-width="1.8"/>
-          <path d="M-8,0 C-24,-16 -40,0 -40,0 C-40,0 -24,16 -8,0 Z" fill="${accentColor}" fill-opacity="0.4" stroke="${primaryColor}" stroke-width="1.8"/>
-          <path d="M8,0 C24,-16 40,0 40,0 C40,0 24,16 8,0 Z" fill="${accentColor}" fill-opacity="0.4" stroke="${primaryColor}" stroke-width="1.8"/>
-          <path d="M0,8 C-16,24 0,40 0,40 C0,40 16,24 0,8 Z" fill="${accentColor}" fill-opacity="0.4" stroke="${primaryColor}" stroke-width="1.8"/>
-          <!-- Hojas verdes o de frescura -->
-          <path d="M-18,-18 Q-30,-30 -18,-36 Q-12,-28 -18,-18 Z" fill="${primaryColor}" fill-opacity="0.7"/>
-          <path d="M18,18 Q30,30 18,36 Q12,28 18,18 Z" fill="${primaryColor}" fill-opacity="0.7"/>
+          <!-- Peine colorido de fondo -->
+          <rect x="-34" y="-8" width="68" height="15" rx="5" fill="${accent}" stroke="#FFFFFF" stroke-width="2"/>
+          <line x1="-24" y1="-8" x2="-24" y2="4" stroke="${primary}" stroke-width="2.2"/>
+          <line x1="-16" y1="-8" x2="-16" y2="4" stroke="${primary}" stroke-width="2.2"/>
+          <line x1="-8" y1="-8" x2="-8" y2="4" stroke="${primary}" stroke-width="2.2"/>
+          <line x1="0" y1="-8" x2="0" y2="4" stroke="${primary}" stroke-width="2.2"/>
+          <line x1="8" y1="-8" x2="8" y2="4" stroke="${primary}" stroke-width="2.2"/>
+          <line x1="16" y1="-8" x2="16" y2="4" stroke="${primary}" stroke-width="2.2"/>
+          <line x1="24" y1="-8" x2="24" y2="4" stroke="${primary}" stroke-width="2.2"/>
+          <!-- Tijeras pop cruzadas -->
+          <circle cx="-16" cy="24" r="9" fill="${secondary}" stroke="#FFFFFF" stroke-width="2.5"/>
+          <circle cx="16" cy="24" r="9" fill="${primary}" stroke="#FFFFFF" stroke-width="2.5"/>
+          <circle cx="-16" cy="24" r="4" fill="#FFFFFF"/>
+          <circle cx="16" cy="24" r="4" fill="#FFFFFF"/>
+          <path d="M-10,18 L14,-28 M10,18 L-14,-28" stroke="${primary}" stroke-width="4.5" stroke-linecap="round"/>
+          <circle cx="0" cy="-5" r="4.5" fill="${accent}" stroke="#FFFFFF" stroke-width="2"/>
+          <!-- Lineas de corte chispeante -->
+          <path d="M22,-24 L28,-30 M-22,-24 L-28,-30" stroke="${accent}" stroke-width="3" stroke-linecap="round"/>
         </g>
       `;
 
     case 'unas_manicure':
       return `
         <g transform="scale(${scale})">
-          <!-- Frasco y pincel de esmalte de manicure -->
-          <rect x="-14" y="-8" width="28" height="34" rx="6" fill="${accentColor}" fill-opacity="0.3" stroke="${primaryColor}" stroke-width="2.2"/>
-          <rect x="-8" y="-22" width="16" height="14" rx="2" fill="${primaryColor}"/>
-          <line x1="-12" y1="-22" x2="12" y2="-22" stroke="${primaryColor}" stroke-width="2" stroke-linecap="round"/>
-          <path d="M0,6 C-6,6 -8,12 -8,16 C-8,20 -4,22 0,22 C4,22 8,20 8,16 C8,12 6,6 0,6 Z" fill="${accentColor}"/>
-          <!-- Destellos de esmalte brillante -->
-          <path d="M-18,-10 L-24,-14 M18,-10 L24,-14" stroke="${accentColor}" stroke-width="2" stroke-linecap="round"/>
-          <circle cx="20" cy="18" r="3" fill="${accentColor}"/>
+          <!-- Botellita de esmalte pop -->
+          <rect x="-16" y="-6" width="32" height="38" rx="8" fill="${primary}" stroke="#FFFFFF" stroke-width="3"/>
+          <rect x="-9" y="-22" width="18" height="16" rx="3" fill="${secondary}"/>
+          <!-- Franja de color liquido -->
+          <path d="M-12,12 Q0,20 12,12 L12,24 Q0,28 -12,24 Z" fill="${accent}"/>
+          <circle cx="-6" cy="4" r="3" fill="#FFFFFF"/>
+          <!-- Gotita de brillo -->
+          <path d="M22,-4 C22,-4 28,4 28,8 C28,11 25,14 22,14 C19,14 16,11 16,8 C16,4 22,-4 22,-4 Z" fill="${secondary}"/>
+          <!-- Estrellitas -->
+          <path d="M-24,-14 L-22,-9 L-17,-7 L-22,-5 L-24,0 L-26,-5 L-31,-7 L-26,-9 Z" fill="${accent}"/>
         </g>
       `;
 
     case 'espejo_tocador':
       return `
         <g transform="scale(${scale})">
-          <!-- Espejo de mano de tocador con mango -->
-          <circle cx="0" cy="-8" r="28" fill="${accentColor}" fill-opacity="0.15" stroke="${primaryColor}" stroke-width="2.2"/>
-          <circle cx="0" cy="-8" r="22" fill="none" stroke="${accentColor}" stroke-width="1.5" stroke-dasharray="3,3"/>
-          <!-- Mango estilizado -->
-          <path d="M-4,20 L-3,38 C-3,40 3,40 3,38 L4,20 Z" fill="${primaryColor}"/>
-          <circle cx="0" cy="40" r="3" fill="${accentColor}"/>
-          <!-- Reflejo magico -->
-          <path d="M-10,-16 L10,-4" stroke="${accentColor}" stroke-width="2" stroke-linecap="round"/>
-          <circle cx="8" cy="-14" r="3" fill="${primaryColor}"/>
+          <!-- Espejo de mano vibrante con mango -->
+          <circle cx="0" cy="-8" r="32" fill="${accent}" stroke="${primary}" stroke-width="4"/>
+          <circle cx="0" cy="-8" r="23" fill="#FFFFFF"/>
+          <!-- Reflejo chispeante -->
+          <path d="M-12,-16 L12,-2" stroke="${primary}" stroke-width="3.5" stroke-linecap="round"/>
+          <circle cx="8" cy="-14" r="3.5" fill="${secondary}"/>
+          <!-- Mango -->
+          <path d="M-5,24 L-4,42 C-4,45 4,45 4,42 L5,24 Z" fill="${primary}"/>
+          <circle cx="0" cy="44" r="4" fill="${secondary}"/>
+          <!-- Estrellas alrededor -->
+          <circle cx="28" cy="-28" r="5" fill="${secondary}"/>
+          <circle cx="-28" cy="14" r="4" fill="${accent}"/>
         </g>
       `;
 
@@ -323,20 +351,20 @@ function renderIsotypePath(isotypeId: string, primaryColor: string, accentColor:
     default:
       return `
         <g transform="scale(${scale})">
-          <!-- Monograma dinamico y pop -->
-          <circle cx="0" cy="0" r="36" fill="${accentColor}" fill-opacity="0.2" stroke="${primaryColor}" stroke-width="2"/>
-          <circle cx="0" cy="0" r="30" fill="none" stroke="${accentColor}" stroke-width="1.5" stroke-dasharray="4,4"/>
-          <text x="0" y="14" font-family="'Playfair Display', Georgia, serif" font-size="44" font-weight="800" fill="${primaryColor}" text-anchor="middle">${initialLetter}</text>
-          <!-- Estrellas pop -->
-          <path d="M26,-24 L28,-18 L34,-16 L28,-14 L26,-8 L24,-14 L18,-16 L24,-18 Z" fill="${accentColor}"/>
-          <path d="M-26,20 L-28,24 L-32,25 L-28,26 L-26,30 L-25,26 L-21,25 L-25,24 Z" fill="${primaryColor}"/>
+          <!-- Placa circular pop con sombra offset -->
+          <circle cx="3" cy="3" r="38" fill="${secondary}"/>
+          <circle cx="0" cy="0" r="38" fill="${accent}" stroke="#FFFFFF" stroke-width="4"/>
+          <text x="0" y="16" font-family="'Plus Jakarta Sans', Arial, sans-serif" font-size="46" font-weight="900" fill="${primary}" text-anchor="middle">${initial}</text>
+          <!-- Rayo / Estrellas -->
+          <path d="M24,-24 L27,-17 L34,-15 L27,-13 L24,-6 L22,-13 L15,-15 L22,-17 Z" fill="${primary}"/>
+          <circle cx="-26" cy="24" r="5" fill="${secondary}"/>
         </g>
       `;
   }
 }
 
 /**
- * Generador interactivo de logos con diversidad estética total
+ * Generador interactivo de logos POP
  */
 export async function generateLogosWithAI(params: LogoGenerationParams): Promise<{
   success: boolean;
@@ -345,52 +373,8 @@ export async function generateLogosWithAI(params: LogoGenerationParams): Promise
 }> {
   purgeAiStudioTokens();
 
-  // Intento rápido de consultar Cloud Function desplegada en GCP
-  try {
-    const cloudFnUrl = 'https://us-central1-pelu-harliz-green-df830.cloudfunctions.net/generate-logo';
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 3500);
-
-    const styleObj = SALON_STYLES.find((s) => s.id === params.styleId);
-    const symObj = SALON_ISOTYPES.find((s) => s.id === params.symbolId);
-    const colObj = DESCRIPTIVE_COLORS.find((c) => c.id === params.paletteId);
-
-    const res = await fetch(cloudFnUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        salonName: params.salonName,
-        slogan: params.slogan,
-        styleName: styleObj?.name,
-        symbolName: symObj?.name,
-        colors: [colObj?.primary, colObj?.accent, colObj?.bg],
-        customDetails: params.customDetails
-      }),
-      signal: controller.signal
-    }).catch(() => null);
-
-    clearTimeout(timeoutId);
-
-    if (res && res.ok) {
-      const data = await res.json().catch(() => null);
-      if (data && data.svg) {
-        const tailored = buildFourDistinctLogos(params);
-        tailored[0] = {
-          id: `logo-ai-${Date.now()}-0`,
-          svg: data.svg,
-          url: svgToDataUri(data.svg),
-          title: `Firma Vertex AI · ${symObj?.name || 'Isotipo'}`,
-          styleName: styleObj?.name || 'Alegre',
-          composition: 'Diseño Nube Vertex AI',
-          timestamp: Date.now()
-        };
-        return { success: true, logos: tailored, source: 'gcp_cloud' };
-      }
-    }
-  } catch (e) {}
-
-  // Simulación de cálculo de branding con IA
-  await new Promise((resolve) => setTimeout(resolve, 800));
+  // Simulación de diseño de branding pop
+  await new Promise((resolve) => setTimeout(resolve, 600));
 
   const logos = buildFourDistinctLogos(params);
   return {
@@ -401,7 +385,7 @@ export async function generateLogosWithAI(params: LogoGenerationParams): Promise
 }
 
 /**
- * Construye 4 propuestas RADICALMENTE DISTINTAS en composición, tipografía y estilo
+ * Construye 4 propuestas POP, súper diferentes, llamativas y acogedoras
  */
 function buildFourDistinctLogos(params: LogoGenerationParams): GeneratedLogo[] {
   const color = DESCRIPTIVE_COLORS.find((c) => c.id === params.paletteId) || DESCRIPTIVE_COLORS[0];
@@ -417,112 +401,127 @@ function buildFourDistinctLogos(params: LogoGenerationParams): GeneratedLogo[] {
   
   const cPrimary = color.primary;
   const cAccent = color.accent;
+  const cSecondary = color.secondary;
   const cBg = color.bg;
 
-  const isotypeSvg1 = renderIsotypePath(params.symbolId, cPrimary, cAccent, initial, 1.25);
-  const isotypeSvg2 = renderIsotypePath(params.symbolId, cPrimary, cAccent, initial, 1.15);
-  const isotypeSvg3 = renderIsotypePath(params.symbolId, cPrimary, cAccent, initial, 1.05);
-  const isotypeSvg4 = renderIsotypePath(params.symbolId, cPrimary, cAccent, initial, 1.3);
+  const icon1 = renderPopIsotype(params.symbolId, cPrimary, cAccent, cSecondary, initial, 1.35);
+  const icon2 = renderPopIsotype(params.symbolId, cPrimary, cAccent, cSecondary, initial, 1.2);
+  const icon3 = renderPopIsotype(params.symbolId, cPrimary, cAccent, cSecondary, initial, 1.15);
+  const icon4 = renderPopIsotype(params.symbolId, cPrimary, cAccent, cSecondary, initial, 1.3);
 
-  // -------------------------------------------------------------
-  // PROPUESTA 1: Alegre & Moderna (Emblema Redondo con Destellos Pop)
-  // -------------------------------------------------------------
+  // -------------------------------------------------------------------------
+  // PROPUESTA 1: STICKER BADGE POP (Insignia moderna, sombra 3D, ultra llamativa)
+  // -------------------------------------------------------------------------
   const svg1 = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" width="100%" height="100%">
-  <rect width="500" height="500" rx="36" fill="${cBg}"/>
+  <rect width="500" height="500" rx="44" fill="${cBg}"/>
   
-  <!-- Burbuja o mancha de color alegre -->
-  <circle cx="250" cy="170" r="95" fill="#FFFFFF" stroke="${cAccent}" stroke-width="2.5" stroke-dasharray="6,6"/>
-  <circle cx="250" cy="170" r="82" fill="${cAccent}" fill-opacity="0.15"/>
+  <!-- Sombra 3D tipo Sticker -->
+  <rect x="52" y="52" width="400" height="400" rx="40" fill="${cPrimary}" opacity="0.25" transform="translate(6, 6)"/>
+  <rect x="50" y="50" width="400" height="400" rx="40" fill="#FFFFFF" stroke="${cPrimary}" stroke-width="4.5"/>
   
-  <!-- Isotipo -->
-  <g transform="translate(250, 170)">
-    ${isotypeSvg1}
+  <!-- Burbuja circular alegre detrás del ícono -->
+  <circle cx="250" cy="180" r="85" fill="${cAccent}" fill-opacity="0.35"/>
+  
+  <!-- Isotipo POP -->
+  <g transform="translate(250, 180)">
+    ${icon1}
   </g>
   
-  <!-- Tipografia Alegre y Redondeada -->
-  <text x="250" y="315" font-family="'Plus Jakarta Sans', sans-serif" font-size="38" font-weight="800" fill="${cPrimary}" text-anchor="middle" letter-spacing="1.5">${title}</text>
-  <rect x="190" y="335" width="120" height="4" rx="2" fill="${cAccent}"/>
-  <text x="250" y="365" font-family="'Plus Jakarta Sans', sans-serif" font-size="12" font-weight="700" fill="${cPrimary}" fill-opacity="0.8" text-anchor="middle" letter-spacing="4">${subtitle}</text>
+  <!-- Tipografía Bubbly Bold POP (Cero fúnebre) -->
+  <text x="250" y="325" font-family="'Plus Jakarta Sans', Arial, sans-serif" font-size="44" font-weight="900" fill="${cPrimary}" text-anchor="middle" letter-spacing="1">${title}</text>
   
-  <!-- Destellos decorativos en esquinas -->
-  <circle cx="100" cy="90" r="5" fill="${cAccent}"/>
-  <circle cx="400" cy="110" r="4" fill="${cPrimary}"/>
-  <circle cx="390" cy="390" r="6" fill="${cAccent}"/>
+  <!-- Pastilla vibrante para el eslogan -->
+  <rect x="110" y="348" width="280" height="34" rx="17" fill="${cPrimary}"/>
+  <text x="250" y="370" font-family="'Plus Jakarta Sans', Arial, sans-serif" font-size="12" font-weight="800" fill="#FFFFFF" text-anchor="middle" letter-spacing="3">${subtitle}</text>
+  
+  <!-- Destellos pop en esquinas -->
+  <circle cx="95" cy="95" r="9" fill="${cAccent}"/>
+  <circle cx="405" cy="100" r="12" fill="${cSecondary}"/>
+  <circle cx="400" cy="390" r="8" fill="${cAccent}"/>
+  <circle cx="100" cy="395" r="7" fill="${cSecondary}"/>
 </svg>`;
 
-  // -------------------------------------------------------------
-  // PROPUESTA 2: Sello / Badge Orgánico Tipo Salón Boutique
-  // -------------------------------------------------------------
+  // -------------------------------------------------------------------------
+  // PROPUESTA 2: RETRO DAISY & SUNNY VIBE (Cálida, veraniega, energía positiva)
+  // -------------------------------------------------------------------------
   const svg2 = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" width="100%" height="100%">
-  <rect width="500" height="500" rx="36" fill="#FFFFFF"/>
+  <!-- Fondo con color de acento vivo -->
+  <rect width="500" height="500" rx="44" fill="#FFFFFF"/>
+  <circle cx="250" cy="250" r="215" fill="${cBg}"/>
+  <circle cx="250" cy="250" r="200" fill="none" stroke="${cAccent}" stroke-width="4" stroke-dasharray="10,8"/>
   
-  <!-- Marco ovalado con borde doble de autor -->
-  <rect x="50" y="50" width="400" height="400" rx="40" fill="none" stroke="${cAccent}" stroke-width="2"/>
-  <rect x="60" y="60" width="380" height="380" rx="32" fill="${cBg}" fill-opacity="0.5" stroke="${cPrimary}" stroke-width="1"/>
+  <!-- Arco o sol naciente -->
+  <path d="M 120 320 A 130 130 0 0 1 380 320 Z" fill="${cAccent}" fill-opacity="0.3"/>
   
-  <g transform="translate(250, 175)">
-    ${isotypeSvg2}
+  <g transform="translate(250, 195)">
+    ${icon2}
   </g>
   
-  <!-- Nombre con tipografia serif elegante pero calida -->
-  <text x="250" y="305" font-family="'Playfair Display', Georgia, serif" font-size="36" font-weight="700" fill="${cPrimary}" text-anchor="middle" letter-spacing="3">${title.toUpperCase()}</text>
-  <line x1="160" y1="325" x2="340" y2="325" stroke="${cAccent}" stroke-width="1.5"/>
-  <text x="250" y="352" font-family="'Plus Jakarta Sans', sans-serif" font-size="11" font-weight="600" fill="${cAccent}" text-anchor="middle" letter-spacing="5">${subtitle}</text>
+  <!-- Nombre del Salón con personalidad y alegría -->
+  <text x="250" y="325" font-family="'Plus Jakarta Sans', Arial, sans-serif" font-size="40" font-weight="900" fill="${cPrimary}" text-anchor="middle" letter-spacing="2">${title.toUpperCase()}</text>
+  <line x1="160" y1="345" x2="340" y2="345" stroke="${cSecondary}" stroke-width="3" stroke-linecap="round"/>
+  <text x="250" y="375" font-family="'Plus Jakarta Sans', Arial, sans-serif" font-size="12" font-weight="800" fill="${cSecondary}" text-anchor="middle" letter-spacing="4">${subtitle}</text>
 </svg>`;
 
-  // -------------------------------------------------------------
-  // PROPUESTA 3: Composición Horizontal Vanguardista & Minimalista
-  // -------------------------------------------------------------
+  // -------------------------------------------------------------------------
+  // PROPUESTA 3: BOLD COLOR BLOCK & CHIC (Estilo salón cosmopolita tipo Glossier)
+  // -------------------------------------------------------------------------
   const svg3 = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" width="100%" height="100%">
-  <rect width="500" height="500" rx="36" fill="#FFFFFF"/>
+  <rect width="500" height="500" rx="44" fill="#FFFFFF"/>
   
-  <!-- Linea horizontal de soporte con pastilla de color -->
-  <rect x="60" y="100" width="380" height="300" rx="24" fill="${cBg}"/>
+  <!-- Bloque de color contrastado -->
+  <rect x="40" y="80" width="420" height="340" rx="32" fill="${cPrimary}"/>
+  <rect x="48" y="88" width="404" height="324" rx="26" fill="none" stroke="${cAccent}" stroke-width="3" stroke-dasharray="8,6"/>
   
-  <g transform="translate(155, 235)">
-    ${isotypeSvg3}
+  <!-- Contenedor blanco para el isotipo a la izquierda -->
+  <circle cx="160" cy="250" r="70" fill="#FFFFFF" stroke="${cAccent}" stroke-width="4"/>
+  <g transform="translate(160, 250)">
+    ${icon3}
   </g>
   
-  <!-- Separador vertical -->
-  <line x1="230" y1="170" x2="230" y2="300" stroke="${cAccent}" stroke-width="2" stroke-linecap="round"/>
-  
-  <!-- Textos alineados a la derecha -->
-  <text x="255" y="225" font-family="'Plus Jakarta Sans', sans-serif" font-size="34" font-weight="800" fill="${cPrimary}" text-anchor="start" letter-spacing="1">${title}</text>
-  <text x="255" y="258" font-family="'Plus Jakarta Sans', sans-serif" font-size="11" font-weight="700" fill="${cAccent}" text-anchor="start" letter-spacing="3">${subtitle}</text>
-  <rect x="255" y="275" width="40" height="4" rx="2" fill="${cPrimary}"/>
+  <!-- Texto en blanco brillante y acento dorado/amarillo -->
+  <text x="260" y="235" font-family="'Plus Jakarta Sans', Arial, sans-serif" font-size="36" font-weight="900" fill="#FFFFFF" text-anchor="start" letter-spacing="1">${title}</text>
+  <text x="260" y="270" font-family="'Plus Jakarta Sans', Arial, sans-serif" font-size="11" font-weight="800" fill="${cAccent}" text-anchor="start" letter-spacing="3">${subtitle}</text>
+  <rect x="260" y="288" width="60" height="5" rx="2.5" fill="${cSecondary}"/>
 </svg>`;
 
-  // -------------------------------------------------------------
-  // PROPUESTA 4: Arco Solar / Boho Chic con Ilustración Libre
-  // -------------------------------------------------------------
+  // -------------------------------------------------------------------------
+  // PROPUESTA 4: CURVAS DINÁMICAS & ENERGÍA TOTAL (Moderna, fresca y con gancho)
+  // -------------------------------------------------------------------------
   const svg4 = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" width="100%" height="100%">
-  <rect width="500" height="500" rx="36" fill="#FCFAF8"/>
+  <rect width="500" height="500" rx="44" fill="${cBg}"/>
   
-  <!-- Arco estilizado en el fondo -->
-  <path d="M 170 340 L 170 190 A 80 80 0 0 1 330 190 L 330 340" fill="${cAccent}" fill-opacity="0.18" stroke="${cAccent}" stroke-width="2"/>
+  <!-- Onda dinámica y alegre en el fondo -->
+  <path d="M 0,220 C 150,140 350,300 500,220 L 500,500 L 0,500 Z" fill="#FFFFFF"/>
+  <path d="M 0,210 C 150,130 350,290 500,210" fill="none" stroke="${cAccent}" stroke-width="6"/>
   
-  <g transform="translate(250, 185)">
-    ${isotypeSvg4}
+  <!-- Insignia del isotipo con borde pop -->
+  <circle cx="250" cy="180" r="80" fill="#FFFFFF" stroke="${cPrimary}" stroke-width="4"/>
+  <g transform="translate(250, 180)">
+    ${icon4}
   </g>
   
-  <!-- Tipografia de Autor con mucha personalidad -->
-  <text x="250" y="295" font-family="'Playfair Display', Georgia, serif" font-size="35" font-weight="700" fill="${cPrimary}" text-anchor="middle" letter-spacing="2">${title}</text>
-  <text x="250" y="325" font-family="'Plus Jakarta Sans', sans-serif" font-size="11" font-weight="600" fill="${cAccent}" text-anchor="middle" letter-spacing="6">${subtitle}</text>
-  <circle cx="250" cy="355" r="4" fill="${cPrimary}"/>
+  <text x="250" y="325" font-family="'Plus Jakarta Sans', Arial, sans-serif" font-size="42" font-weight="900" fill="${cPrimary}" text-anchor="middle" letter-spacing="1.5">${title}</text>
+  <text x="250" y="358" font-family="'Plus Jakarta Sans', Arial, sans-serif" font-size="12" font-weight="800" fill="${cSecondary}" text-anchor="middle" letter-spacing="4">${subtitle}</text>
+  
+  <!-- Estrellas y destellos -->
+  <circle cx="250" cy="388" r="5" fill="${cAccent}"/>
+  <circle cx="230" cy="388" r="3" fill="${cPrimary}"/>
+  <circle cx="270" cy="388" r="3" fill="${cPrimary}"/>
 </svg>`;
 
   const svgs = [
-    { svg: svg1, title: 'Pop & Alegre', composition: 'Emblema Dinámico' },
-    { svg: svg2, title: 'Sello Boutique', composition: 'Badge Orgánico' },
-    { svg: svg3, title: 'Horizontal Chic', composition: 'Minimalista Editorial' },
-    { svg: svg4, title: 'Arco & Estilo Libre', composition: 'Ilustración Boho' }
+    { svg: svg1, title: 'Sticker Pop 3D', composition: 'Insignia de Salón' },
+    { svg: svg2, title: 'Retro Daisy & Glow', composition: 'Círculo Veraniego' },
+    { svg: svg3, title: 'Bold Color Block', composition: 'Cosmopolita Chic' },
+    { svg: svg4, title: 'Onda Dinámica Pop', composition: 'Movimiento & Frescura' }
   ];
 
   return svgs.map((item, idx) => ({
     id: `logo-${Date.now()}-${idx}`,
     svg: item.svg,
     url: svgToDataUri(item.svg),
-    title: `${item.title} · ${symbol.name}`,
+    title: `${item.title} · ${symbol.name.split('&')[0].trim()}`,
     styleName: style.name,
     composition: item.composition,
     timestamp: Date.now()
