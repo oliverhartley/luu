@@ -1,25 +1,29 @@
 /**
  * Servicio de Generación de Logos e Identidad Visual para Salones
- * Integrado con Google Cloud Platform (GCP - Vertex AI)
+ * Configurado con estilos alegres, isotipos temáticos reales y colores descriptivos
  */
 
-export interface LogoStyleOption {
+export interface DescriptiveColor {
   id: string;
   name: string;
-  description: string;
-  badge: string;
+  emoji: string;
+  primary: string;
+  accent: string;
+  bg: string;
 }
 
-export interface LogoSymbolOption {
+export interface LogoIsotype {
   id: string;
   name: string;
+  emoji: string;
   description: string;
 }
 
-export interface LogoColorPalette {
+export interface LogoStyle {
   id: string;
   name: string;
-  colors: string[];
+  emoji: string;
+  description: string;
 }
 
 export interface LogoGenerationParams {
@@ -35,98 +39,163 @@ export interface GeneratedLogo {
   id: string;
   svg: string;
   url: string;
-  promptUsed: string;
-  timestamp: number;
   title: string;
   styleName: string;
+  composition: string;
+  timestamp: number;
 }
 
-export const LOGO_STYLES: LogoStyleOption[] = [
+/**
+ * Colores descriptivos y evocadores pedidos por Oliver (ej: Azul Océano, Verde Lechuga, etc.)
+ */
+export const DESCRIPTIVE_COLORS: DescriptiveColor[] = [
   {
-    id: 'minimalist',
-    name: 'Minimalista & Elegante',
-    description: 'Líneas limpias, trazos finos, estética escandinava moderna',
-    badge: 'Más Popular'
+    id: 'verde_lechuga',
+    name: 'Verde Lechuga / Menta Fresca',
+    emoji: '🥬',
+    primary: '#2E7D32',
+    accent: '#66BB6A',
+    bg: '#F1F8E9'
   },
   {
-    id: 'luxury_gold',
-    name: 'Oro Champagne & Lujo',
-    description: 'Detalles dorados metálicos, ambiente de alta gama y sofisticación',
-    badge: 'Premium'
+    id: 'azul_oceano',
+    name: 'Azul Océano / Brisa Marina',
+    emoji: '🌊',
+    primary: '#1565C0',
+    accent: '#42A5F5',
+    bg: '#E3F2FD'
   },
   {
-    id: 'botanical',
-    name: 'Botánico & Orgánico',
-    description: 'Hojas delicadas, naturaleza, bienestar y cosmética natural',
-    badge: 'Natural'
+    id: 'rosa_chicle',
+    name: 'Rosa Chicle / Algodón Dulce',
+    emoji: '🌸',
+    primary: '#D81B60',
+    accent: '#EC407A',
+    bg: '#FCE4EC'
   },
   {
-    id: 'editorial',
-    name: 'Editorial Vogue Chic',
-    description: 'Tipografía serif sofisticada con isotipo sutil y moderno',
-    badge: 'Tendencia'
+    id: 'lavanda_silvestre',
+    name: 'Lavanda Silvestre / Lila Pastel',
+    emoji: '💜',
+    primary: '#7B1FA2',
+    accent: '#AB47BC',
+    bg: '#F3E5F5'
+  },
+  {
+    id: 'amarillo_sol',
+    name: 'Amarillo Sol / Mostaza Alegre',
+    emoji: '☀️',
+    primary: '#E65100',
+    accent: '#FBC02D',
+    bg: '#FFFDE7'
+  },
+  {
+    id: 'naranja_coral',
+    name: 'Naranja Melocotón / Coral Vivo',
+    emoji: '🍊',
+    primary: '#D84315',
+    accent: '#FF7043',
+    bg: '#FBE9E7'
+  },
+  {
+    id: 'negro_glam',
+    name: 'Negro Glam & Champagne',
+    emoji: '🖤',
+    primary: '#1A1A1A',
+    accent: '#C5A059',
+    bg: '#FAF8F5'
+  },
+  {
+    id: 'caramelo_miel',
+    name: 'Caramelo & Miel Cálida',
+    emoji: '☕',
+    primary: '#6D4C41',
+    accent: '#BCAAA4',
+    bg: '#EFEBE9'
+  }
+];
+
+/**
+ * Isotipos específicos y con sentido para peluquerías y salones
+ */
+export const SALON_ISOTYPES: LogoIsotype[] = [
+  {
+    id: 'tijeras_peine',
+    name: 'Tijeras & Peine de Estilista',
+    emoji: '✂️',
+    description: 'El clásico indiscutido del corte profesional'
+  },
+  {
+    id: 'peinado_ondas',
+    name: 'Peinado & Melena Ondulada',
+    emoji: '💇‍♀️',
+    description: 'Cabello voluminoso con movimiento alegre y moderno'
+  },
+  {
+    id: 'flor_organica',
+    name: 'Flor & Botánica de Belleza',
+    emoji: '🌸',
+    description: 'Pétalos suaves y bienestar natural para salón o spa'
+  },
+  {
+    id: 'unas_manicure',
+    name: 'Uñas & Esmalte Chic',
+    emoji: '💅',
+    description: 'Pincelada de color y manos cuidadas'
+  },
+  {
+    id: 'espejo_tocador',
+    name: 'Espejo Tocador & Destellos',
+    emoji: '🪞',
+    description: 'Espejo de salón vintage con reflejos mágicos'
+  },
+  {
+    id: 'monograma_pop',
+    name: 'Inicial de Marca Pop & Dinámica',
+    emoji: '⚡',
+    description: 'La inicial de tu salón con estrellas y aire vanguardista'
+  }
+];
+
+/**
+ * Estilos visuales pedidos (Alegre, Colorido, Minimalista, etc.)
+ */
+export const SALON_STYLES: LogoStyle[] = [
+  {
+    id: 'alegre',
+    name: 'Alegre & Juguetón',
+    emoji: '✨',
+    description: 'Trazos amigables, destellos chispeantes y calidez'
+  },
+  {
+    id: 'colorido',
+    name: 'Colorido & Vibrante',
+    emoji: '🎨',
+    description: 'Degradados vivos, energía moderna y colores llamativos'
+  },
+  {
+    id: 'minimalista',
+    name: 'Minimalista & Limpio',
+    emoji: '🤍',
+    description: 'Líneas finas, estética escandinava moderna y aire despejado'
+  },
+  {
+    id: 'elegante',
+    name: 'Elegante & Boutique',
+    emoji: '👑',
+    description: 'Tipografía de alta gama, serifa fina y aire exclusivo'
   },
   {
     id: 'boho',
-    name: 'Boho & Calidez Solar',
-    description: 'Arcos suaves, tonos terracota, espíritu libre y acogedor',
-    badge: 'Cálido'
-  }
-];
-
-export const LOGO_SYMBOLS: LogoSymbolOption[] = [
-  {
-    id: 'scissors_flower',
-    name: 'Tijeras Estilizadas & Botánica',
-    description: 'Tijeras de precisión entrelazadas con hojas finas'
+    name: 'Boho & Natural',
+    emoji: '🌿',
+    description: 'Formas orgánicas, arcos suaves y espíritu artesanal'
   },
   {
-    id: 'woman_silhouette',
-    name: 'Silueta Femenina de Trazo Fino',
-    description: 'Perfil femenino en una sola línea continua con cabello ondulado'
-  },
-  {
-    id: 'monogram',
-    name: 'Monograma / Inicial de Autor',
-    description: 'Letra inicial de autor enmarcada en monograma de lujo'
-  },
-  {
-    id: 'hair_wave',
-    name: 'Onda Capilar & Movimiento',
-    description: 'Ondas fluidas de seda capilar en trazo geométrico infinito'
-  },
-  {
-    id: 'sun_arch',
-    name: 'Arco & Destello Solar',
-    description: 'Arco arquitectónico minimalista con destellos de brillo'
-  }
-];
-
-export const LOGO_PALETTES: LogoColorPalette[] = [
-  {
-    id: 'rhode_neutral',
-    name: 'Rhode Neutrals',
-    colors: ['#2B2824', '#D4B895', '#F5EFEB']
-  },
-  {
-    id: 'rose_gold',
-    name: 'Rose Gold & Blush',
-    colors: ['#D67B7F', '#E8B4B8', '#FAF2F3']
-  },
-  {
-    id: 'emerald_gold',
-    name: 'Verde Matcha & Dorado',
-    colors: ['#2F4F4F', '#C5A059', '#F4F7F4']
-  },
-  {
-    id: 'noir_luxury',
-    name: 'Noir & Oro Platino',
-    colors: ['#171717', '#E5C07B', '#FFFFFF']
-  },
-  {
-    id: 'terracotta_sand',
-    name: 'Terracota & Arena',
-    colors: ['#C86D51', '#E6BA95', '#FBF6F0']
+    id: 'urbano',
+    name: 'Urbano & Trendy',
+    emoji: '⚡',
+    description: 'Tipografía bold, estilo salón contemporáneo y audaz'
   }
 ];
 
@@ -163,81 +232,111 @@ export function svgToDataUri(svgString: string): string {
 }
 
 /**
- * Dibuja el isotipo vectorial específico de acuerdo al símbolo seleccionado
+ * Renderiza el dibujo vectorial específico del isotipo seleccionado
  */
-function renderSymbolVector(symbolId: string, cDark: string, cAccent: string, initial: string, scale: number = 1): string {
-  switch (symbolId) {
-    case 'woman_silhouette':
+function renderIsotypePath(isotypeId: string, primaryColor: string, accentColor: string, initialLetter: string, scale: number = 1): string {
+  switch (isotypeId) {
+    case 'peinado_ondas':
       return `
         <g transform="scale(${scale})">
-          <!-- Silueta femenina de trazo continuo con cabello fluido -->
-          <path d="M-6,-28 C-2,-28 10,-20 13,-12 C16,-4 13,8 7,16 C1,24 -4,32 -6,38" fill="none" stroke="${cDark}" stroke-width="2.2" stroke-linecap="round"/>
-          <path d="M8,-10 C12,-10 16,-6 18,-2 C16,0 14,2 12,4 C10,6 12,10 14,12 C10,14 8,18 6,24 C4,30 8,36 12,40" fill="none" stroke="${cAccent}" stroke-width="2" stroke-linecap="round"/>
-          <!-- Perfil y pestana fina -->
-          <path d="M9,-6 Q13,-7 15,-4" stroke="${cDark}" stroke-width="1.8" fill="none" stroke-linecap="round"/>
-          <path d="M-8,-26 C-20,-18 -26,0 -18,16 C-12,28 -2,38 6,42" fill="none" stroke="${cAccent}" stroke-width="2.2" stroke-linecap="round"/>
-          <circle cx="20" cy="-14" r="2.5" fill="${cAccent}"/>
-          <circle cx="-16" cy="-6" r="2" fill="${cAccent}"/>
+          <!-- Melena ondulada y peinado alegre con destellos -->
+          <path d="M-24,-30 C-32,-10 -28,15 -14,28 C-4,38 12,38 22,26 C30,16 32,-8 20,-26 C12,-36 -12,-38 -24,-30 Z" fill="${accentColor}" fill-opacity="0.2" stroke="${primaryColor}" stroke-width="2"/>
+          <path d="M-16,-20 C-6,-24 8,-22 16,-12 C24,-2 18,12 8,20 C-2,28 -12,24 -18,14 C-24,4 -20,-10 -10,-18" fill="none" stroke="${primaryColor}" stroke-width="2.5" stroke-linecap="round"/>
+          <path d="M-4,-14 C2,-18 10,-16 12,-10 C14,-4 8,2 2,6" fill="none" stroke="${accentColor}" stroke-width="2" stroke-linecap="round"/>
+          <!-- Horquilla o lazo chic -->
+          <circle cx="16" cy="-20" r="4" fill="${accentColor}"/>
+          <path d="M13,-20 L23,-28" stroke="${primaryColor}" stroke-width="1.8" stroke-linecap="round"/>
+          <!-- Destellos de brillo capilar -->
+          <path d="M26,-4 L32,-8 M-26,-10 L-32,-14" stroke="${accentColor}" stroke-width="2" stroke-linecap="round"/>
+          <circle cx="28" cy="8" r="2.5" fill="${accentColor}"/>
         </g>
       `;
 
-    case 'scissors_flower':
+    case 'tijeras_peine':
       return `
         <g transform="scale(${scale})">
-          <!-- Tijeras de precision y detalles botanicos -->
-          <circle cx="-16" cy="20" r="7.5" fill="none" stroke="${cAccent}" stroke-width="2"/>
-          <circle cx="16" cy="20" r="7.5" fill="none" stroke="${cAccent}" stroke-width="2"/>
-          <path d="M-10,14 L12,-24 M10,14 L-12,-24" stroke="${cDark}" stroke-width="2.2" stroke-linecap="round"/>
-          <circle cx="0" cy="-5" r="3" fill="${cAccent}"/>
-          <!-- Hojas botanicas estilizadas -->
-          <path d="M-12,-8 Q-22,-14 -14,-20 Q-10,-15 -10,-8 Z" fill="${cAccent}" fill-opacity="0.3" stroke="${cAccent}" stroke-width="1"/>
-          <path d="M12,-8 Q22,-14 14,-20 Q10,-15 10,-8 Z" fill="${cAccent}" fill-opacity="0.3" stroke="${cAccent}" stroke-width="1"/>
-          <path d="M0,-26 L0,-32" stroke="${cAccent}" stroke-width="1.5" stroke-linecap="round"/>
-          <circle cx="0" cy="-33" r="2" fill="${cAccent}"/>
+          <!-- Peine de estilista -->
+          <rect x="-32" y="-6" width="64" height="12" rx="3" fill="${accentColor}" fill-opacity="0.3" stroke="${primaryColor}" stroke-width="1.8"/>
+          <line x1="-24" y1="-6" x2="-24" y2="4" stroke="${primaryColor}" stroke-width="1.5"/>
+          <line x1="-16" y1="-6" x2="-16" y2="4" stroke="${primaryColor}" stroke-width="1.5"/>
+          <line x1="-8" y1="-6" x2="-8" y2="4" stroke="${primaryColor}" stroke-width="1.5"/>
+          <line x1="0" y1="-6" x2="0" y2="4" stroke="${primaryColor}" stroke-width="1.5"/>
+          <line x1="8" y1="-6" x2="8" y2="4" stroke="${primaryColor}" stroke-width="1.5"/>
+          <line x1="16" y1="-6" x2="16" y2="4" stroke="${primaryColor}" stroke-width="1.5"/>
+          <line x1="24" y1="-6" x2="24" y2="4" stroke="${primaryColor}" stroke-width="1.5"/>
+          <!-- Tijeras profesionales cruzadas -->
+          <circle cx="-16" cy="24" r="8" fill="none" stroke="${primaryColor}" stroke-width="2.2"/>
+          <circle cx="16" cy="24" r="8" fill="none" stroke="${primaryColor}" stroke-width="2.2"/>
+          <path d="M-10,18 L12,-26 M10,18 L-12,-26" stroke="${primaryColor}" stroke-width="2.5" stroke-linecap="round"/>
+          <circle cx="0" cy="-4" r="3.5" fill="${accentColor}"/>
+          <!-- Destello de filo brillante -->
+          <path d="M-14,-28 L-18,-34 M14,-28 L18,-34" stroke="${accentColor}" stroke-width="2" stroke-linecap="round"/>
         </g>
       `;
 
-    case 'monogram':
+    case 'flor_organica':
       return `
         <g transform="scale(${scale})">
-          <!-- Monograma inicial de autor en relieve -->
-          <circle cx="0" cy="0" r="38" fill="${cAccent}" fill-opacity="0.12" stroke="${cAccent}" stroke-width="1.5"/>
-          <circle cx="0" cy="0" r="34" fill="none" stroke="${cDark}" stroke-width="0.8" stroke-dasharray="3,3"/>
-          <text x="0" y="14" font-family="'Playfair Display', Georgia, serif" font-size="42" font-weight="700" fill="${cDark}" text-anchor="middle">${initial}</text>
-          <circle cx="0" cy="-28" r="3" fill="${cAccent}"/>
-          <circle cx="0" cy="28" r="3" fill="${cAccent}"/>
+          <!-- Flor de loto / orquidea organica de belleza -->
+          <circle cx="0" cy="0" r="8" fill="${accentColor}"/>
+          <!-- Petalos delicados -->
+          <path d="M0,-8 C-16,-24 0,-40 0,-40 C0,-40 16,-24 0,-8 Z" fill="${accentColor}" fill-opacity="0.4" stroke="${primaryColor}" stroke-width="1.8"/>
+          <path d="M-8,0 C-24,-16 -40,0 -40,0 C-40,0 -24,16 -8,0 Z" fill="${accentColor}" fill-opacity="0.4" stroke="${primaryColor}" stroke-width="1.8"/>
+          <path d="M8,0 C24,-16 40,0 40,0 C40,0 24,16 8,0 Z" fill="${accentColor}" fill-opacity="0.4" stroke="${primaryColor}" stroke-width="1.8"/>
+          <path d="M0,8 C-16,24 0,40 0,40 C0,40 16,24 0,8 Z" fill="${accentColor}" fill-opacity="0.4" stroke="${primaryColor}" stroke-width="1.8"/>
+          <!-- Hojas verdes o de frescura -->
+          <path d="M-18,-18 Q-30,-30 -18,-36 Q-12,-28 -18,-18 Z" fill="${primaryColor}" fill-opacity="0.7"/>
+          <path d="M18,18 Q30,30 18,36 Q12,28 18,18 Z" fill="${primaryColor}" fill-opacity="0.7"/>
         </g>
       `;
 
-    case 'hair_wave':
+    case 'unas_manicure':
       return `
         <g transform="scale(${scale})">
-          <!-- Onda capilar infinita y fluida -->
-          <path d="M-28,10 C-18,-20 18,-20 28,10 C18,30 -18,30 -28,10 Z" fill="${cAccent}" fill-opacity="0.25" stroke="${cAccent}" stroke-width="1.8"/>
-          <path d="M-20,4 C-10,-12 10,-12 20,4 C10,18 -10,18 -20,4 Z" fill="none" stroke="${cDark}" stroke-width="2.2" stroke-linecap="round"/>
-          <circle cx="0" cy="-4" r="4" fill="${cAccent}"/>
-          <path d="M-6,-18 L6,-18" stroke="${cAccent}" stroke-width="1.5" stroke-linecap="round"/>
+          <!-- Frasco y pincel de esmalte de manicure -->
+          <rect x="-14" y="-8" width="28" height="34" rx="6" fill="${accentColor}" fill-opacity="0.3" stroke="${primaryColor}" stroke-width="2.2"/>
+          <rect x="-8" y="-22" width="16" height="14" rx="2" fill="${primaryColor}"/>
+          <line x1="-12" y1="-22" x2="12" y2="-22" stroke="${primaryColor}" stroke-width="2" stroke-linecap="round"/>
+          <path d="M0,6 C-6,6 -8,12 -8,16 C-8,20 -4,22 0,22 C4,22 8,20 8,16 C8,12 6,6 0,6 Z" fill="${accentColor}"/>
+          <!-- Destellos de esmalte brillante -->
+          <path d="M-18,-10 L-24,-14 M18,-10 L24,-14" stroke="${accentColor}" stroke-width="2" stroke-linecap="round"/>
+          <circle cx="20" cy="18" r="3" fill="${accentColor}"/>
         </g>
       `;
 
-    case 'sun_arch':
+    case 'espejo_tocador':
+      return `
+        <g transform="scale(${scale})">
+          <!-- Espejo de mano de tocador con mango -->
+          <circle cx="0" cy="-8" r="28" fill="${accentColor}" fill-opacity="0.15" stroke="${primaryColor}" stroke-width="2.2"/>
+          <circle cx="0" cy="-8" r="22" fill="none" stroke="${accentColor}" stroke-width="1.5" stroke-dasharray="3,3"/>
+          <!-- Mango estilizado -->
+          <path d="M-4,20 L-3,38 C-3,40 3,40 3,38 L4,20 Z" fill="${primaryColor}"/>
+          <circle cx="0" cy="40" r="3" fill="${accentColor}"/>
+          <!-- Reflejo magico -->
+          <path d="M-10,-16 L10,-4" stroke="${accentColor}" stroke-width="2" stroke-linecap="round"/>
+          <circle cx="8" cy="-14" r="3" fill="${primaryColor}"/>
+        </g>
+      `;
+
+    case 'monograma_pop':
     default:
       return `
         <g transform="scale(${scale})">
-          <!-- Arco arquitectonico y destello solar -->
-          <path d="M-28,26 L-28,0 A28,28 0 0,1 28,0 L28,26" fill="none" stroke="${cAccent}" stroke-width="2"/>
-          <circle cx="0" cy="-2" r="12" fill="${cAccent}" fill-opacity="0.3" stroke="${cDark}" stroke-width="1.5"/>
-          <line x1="0" y1="-20" x2="0" y2="-26" stroke="${cAccent}" stroke-width="2" stroke-linecap="round"/>
-          <line x1="-12" y1="-14" x2="-16" y2="-18" stroke="${cAccent}" stroke-width="2" stroke-linecap="round"/>
-          <line x1="12" y1="-14" x2="16" y2="-18" stroke="${cAccent}" stroke-width="2" stroke-linecap="round"/>
-          <circle cx="0" cy="-2" r="4" fill="${cDark}"/>
+          <!-- Monograma dinamico y pop -->
+          <circle cx="0" cy="0" r="36" fill="${accentColor}" fill-opacity="0.2" stroke="${primaryColor}" stroke-width="2"/>
+          <circle cx="0" cy="0" r="30" fill="none" stroke="${accentColor}" stroke-width="1.5" stroke-dasharray="4,4"/>
+          <text x="0" y="14" font-family="'Playfair Display', Georgia, serif" font-size="44" font-weight="800" fill="${primaryColor}" text-anchor="middle">${initialLetter}</text>
+          <!-- Estrellas pop -->
+          <path d="M26,-24 L28,-18 L34,-16 L28,-14 L26,-8 L24,-14 L18,-16 L24,-18 Z" fill="${accentColor}"/>
+          <path d="M-26,20 L-28,24 L-32,25 L-28,26 L-26,30 L-25,26 L-21,25 L-25,24 Z" fill="${primaryColor}"/>
         </g>
       `;
   }
 }
 
 /**
- * Invoca Google Cloud Vertex AI o la síntesis visual avanzada de GCP
+ * Generador interactivo de logos con diversidad estética total
  */
 export async function generateLogosWithAI(params: LogoGenerationParams): Promise<{
   success: boolean;
@@ -246,15 +345,15 @@ export async function generateLogosWithAI(params: LogoGenerationParams): Promise
 }> {
   purgeAiStudioTokens();
 
-  // Intentar conectar con la Cloud Function de Google Cloud en GCP si está disponible
+  // Intento rápido de consultar Cloud Function desplegada en GCP
   try {
     const cloudFnUrl = 'https://us-central1-pelu-harliz-green-df830.cloudfunctions.net/generate-logo';
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 4500);
+    const timeoutId = setTimeout(() => controller.abort(), 3500);
 
-    const styleObj = LOGO_STYLES.find((s) => s.id === params.styleId);
-    const symObj = LOGO_SYMBOLS.find((s) => s.id === params.symbolId);
-    const palObj = LOGO_PALETTES.find((p) => p.id === params.paletteId);
+    const styleObj = SALON_STYLES.find((s) => s.id === params.styleId);
+    const symObj = SALON_ISOTYPES.find((s) => s.id === params.symbolId);
+    const colObj = DESCRIPTIVE_COLORS.find((c) => c.id === params.paletteId);
 
     const res = await fetch(cloudFnUrl, {
       method: 'POST',
@@ -264,8 +363,7 @@ export async function generateLogosWithAI(params: LogoGenerationParams): Promise
         slogan: params.slogan,
         styleName: styleObj?.name,
         symbolName: symObj?.name,
-        paletteName: palObj?.name,
-        colors: palObj?.colors,
+        colors: [colObj?.primary, colObj?.accent, colObj?.bg],
         customDetails: params.customDetails
       }),
       signal: controller.signal
@@ -276,28 +374,25 @@ export async function generateLogosWithAI(params: LogoGenerationParams): Promise
     if (res && res.ok) {
       const data = await res.json().catch(() => null);
       if (data && data.svg) {
-        const tailored = generateCustomLogos(params);
-        // Colocar el logo generado directamente por Vertex AI como Opción 1 de autor
+        const tailored = buildFourDistinctLogos(params);
         tailored[0] = {
-          id: `logo-vertex-${Date.now()}-0`,
+          id: `logo-ai-${Date.now()}-0`,
           svg: data.svg,
           url: svgToDataUri(data.svg),
-          title: 'Vertex AI Signature',
-          styleName: styleObj?.name || 'Vanguardia',
-          promptUsed: `Google Cloud Vertex AI (Gemini 2.5 Flash) para ${params.salonName}`,
+          title: `Firma Vertex AI · ${symObj?.name || 'Isotipo'}`,
+          styleName: styleObj?.name || 'Alegre',
+          composition: 'Diseño Nube Vertex AI',
           timestamp: Date.now()
         };
         return { success: true, logos: tailored, source: 'gcp_cloud' };
       }
     }
-  } catch (e) {
-    // Si Cloud Function está terminando despliegue, continúa con el motor visual de GCP
-  }
+  } catch (e) {}
 
-  // Simulación de procesamiento de síntesis de identidad con IA
-  await new Promise((resolve) => setTimeout(resolve, 1400));
+  // Simulación de cálculo de branding con IA
+  await new Promise((resolve) => setTimeout(resolve, 800));
 
-  const logos = generateCustomLogos(params);
+  const logos = buildFourDistinctLogos(params);
   return {
     success: true,
     logos,
@@ -306,12 +401,12 @@ export async function generateLogosWithAI(params: LogoGenerationParams): Promise
 }
 
 /**
- * Genera 4 propuestas que responden al 100% a las opciones seleccionadas
+ * Construye 4 propuestas RADICALMENTE DISTINTAS en composición, tipografía y estilo
  */
-function generateCustomLogos(params: LogoGenerationParams): GeneratedLogo[] {
-  const palette = LOGO_PALETTES.find((p) => p.id === params.paletteId) || LOGO_PALETTES[0];
-  const style = LOGO_STYLES.find((s) => s.id === params.styleId) || LOGO_STYLES[0];
-  const symbol = LOGO_SYMBOLS.find((s) => s.id === params.symbolId) || LOGO_SYMBOLS[0];
+function buildFourDistinctLogos(params: LogoGenerationParams): GeneratedLogo[] {
+  const color = DESCRIPTIVE_COLORS.find((c) => c.id === params.paletteId) || DESCRIPTIVE_COLORS[0];
+  const style = SALON_STYLES.find((s) => s.id === params.styleId) || SALON_STYLES[0];
+  const symbol = SALON_ISOTYPES.find((s) => s.id === params.symbolId) || SALON_ISOTYPES[0];
 
   const rawTitle = (params.salonName || 'Pelu OBi').trim();
   const rawSubtitle = (params.slogan || 'Hair & Beauty Atelier').trim();
@@ -320,89 +415,116 @@ function generateCustomLogos(params: LogoGenerationParams): GeneratedLogo[] {
   const initial = escapeXml(rawTitle.charAt(0).toUpperCase() || 'P');
   const subtitle = escapeXml(rawSubtitle.toUpperCase());
   
-  const cDark = palette.colors[0];
-  const cAccent = palette.colors[1];
-  const cLight = palette.colors[2] || '#FFFFFF';
+  const cPrimary = color.primary;
+  const cAccent = color.accent;
+  const cBg = color.bg;
 
-  // Obtener el isotipo vectorial según el símbolo elegido
-  const symbolMarkupVar1 = renderSymbolVector(params.symbolId, cDark, cAccent, initial, 1.25);
-  const symbolMarkupVar2 = renderSymbolVector(params.symbolId, cDark, cAccent, initial, 1.1);
-  const symbolMarkupVar3 = renderSymbolVector(params.symbolId, cLight, cAccent, initial, 1.3);
-  const symbolMarkupVar4 = renderSymbolVector(params.symbolId, cDark, cAccent, initial, 1.2);
+  const isotypeSvg1 = renderIsotypePath(params.symbolId, cPrimary, cAccent, initial, 1.25);
+  const isotypeSvg2 = renderIsotypePath(params.symbolId, cPrimary, cAccent, initial, 1.15);
+  const isotypeSvg3 = renderIsotypePath(params.symbolId, cPrimary, cAccent, initial, 1.05);
+  const isotypeSvg4 = renderIsotypePath(params.symbolId, cPrimary, cAccent, initial, 1.3);
 
-  // Variante 1: Emblema Central de Autor (focalizado en el símbolo elegido)
+  // -------------------------------------------------------------
+  // PROPUESTA 1: Alegre & Moderna (Emblema Redondo con Destellos Pop)
+  // -------------------------------------------------------------
   const svg1 = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" width="100%" height="100%">
-  <rect width="500" height="500" rx="32" fill="#FFFFFF"/>
-  <circle cx="250" cy="250" r="230" fill="none" stroke="${cAccent}" stroke-width="1.5" stroke-dasharray="4,4"/>
-  <circle cx="250" cy="250" r="216" fill="none" stroke="${cDark}" stroke-width="2"/>
+  <rect width="500" height="500" rx="36" fill="${cBg}"/>
   
-  <g transform="translate(250, 160)">
-    ${symbolMarkupVar1}
+  <!-- Burbuja o mancha de color alegre -->
+  <circle cx="250" cy="170" r="95" fill="#FFFFFF" stroke="${cAccent}" stroke-width="2.5" stroke-dasharray="6,6"/>
+  <circle cx="250" cy="170" r="82" fill="${cAccent}" fill-opacity="0.15"/>
+  
+  <!-- Isotipo -->
+  <g transform="translate(250, 170)">
+    ${isotypeSvg1}
   </g>
   
-  <text x="250" y="295" font-family="'Playfair Display', Georgia, serif" font-size="34" font-weight="700" fill="${cDark}" text-anchor="middle" letter-spacing="4">${title.toUpperCase()}</text>
-  <line x1="160" y1="315" x2="340" y2="315" stroke="${cAccent}" stroke-width="1.5"/>
-  <text x="250" y="342" font-family="'Inter', sans-serif" font-size="11" font-weight="600" fill="${cAccent}" text-anchor="middle" letter-spacing="5">${subtitle}</text>
-  <circle cx="250" cy="375" r="3" fill="${cAccent}"/>
+  <!-- Tipografia Alegre y Redondeada -->
+  <text x="250" y="315" font-family="'Plus Jakarta Sans', sans-serif" font-size="38" font-weight="800" fill="${cPrimary}" text-anchor="middle" letter-spacing="1.5">${title}</text>
+  <rect x="190" y="335" width="120" height="4" rx="2" fill="${cAccent}"/>
+  <text x="250" y="365" font-family="'Plus Jakarta Sans', sans-serif" font-size="12" font-weight="700" fill="${cPrimary}" fill-opacity="0.8" text-anchor="middle" letter-spacing="4">${subtitle}</text>
+  
+  <!-- Destellos decorativos en esquinas -->
+  <circle cx="100" cy="90" r="5" fill="${cAccent}"/>
+  <circle cx="400" cy="110" r="4" fill="${cPrimary}"/>
+  <circle cx="390" cy="390" r="6" fill="${cAccent}"/>
 </svg>`;
 
-  // Variante 2: Sello Editorial & Arco de Belleza
+  // -------------------------------------------------------------
+  // PROPUESTA 2: Sello / Badge Orgánico Tipo Salón Boutique
+  // -------------------------------------------------------------
   const svg2 = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" width="100%" height="100%">
-  <rect width="500" height="500" rx="32" fill="#FCFAF8"/>
-  <path d="M 160 360 L 160 190 A 90 90 0 0 1 340 190 L 340 360" fill="none" stroke="${cAccent}" stroke-width="1.5"/>
+  <rect width="500" height="500" rx="36" fill="#FFFFFF"/>
+  
+  <!-- Marco ovalado con borde doble de autor -->
+  <rect x="50" y="50" width="400" height="400" rx="40" fill="none" stroke="${cAccent}" stroke-width="2"/>
+  <rect x="60" y="60" width="380" height="380" rx="32" fill="${cBg}" fill-opacity="0.5" stroke="${cPrimary}" stroke-width="1"/>
+  
+  <g transform="translate(250, 175)">
+    ${isotypeSvg2}
+  </g>
+  
+  <!-- Nombre con tipografia serif elegante pero calida -->
+  <text x="250" y="305" font-family="'Playfair Display', Georgia, serif" font-size="36" font-weight="700" fill="${cPrimary}" text-anchor="middle" letter-spacing="3">${title.toUpperCase()}</text>
+  <line x1="160" y1="325" x2="340" y2="325" stroke="${cAccent}" stroke-width="1.5"/>
+  <text x="250" y="352" font-family="'Plus Jakarta Sans', sans-serif" font-size="11" font-weight="600" fill="${cAccent}" text-anchor="middle" letter-spacing="5">${subtitle}</text>
+</svg>`;
+
+  // -------------------------------------------------------------
+  // PROPUESTA 3: Composición Horizontal Vanguardista & Minimalista
+  // -------------------------------------------------------------
+  const svg3 = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" width="100%" height="100%">
+  <rect width="500" height="500" rx="36" fill="#FFFFFF"/>
+  
+  <!-- Linea horizontal de soporte con pastilla de color -->
+  <rect x="60" y="100" width="380" height="300" rx="24" fill="${cBg}"/>
+  
+  <g transform="translate(155, 235)">
+    ${isotypeSvg3}
+  </g>
+  
+  <!-- Separador vertical -->
+  <line x1="230" y1="170" x2="230" y2="300" stroke="${cAccent}" stroke-width="2" stroke-linecap="round"/>
+  
+  <!-- Textos alineados a la derecha -->
+  <text x="255" y="225" font-family="'Plus Jakarta Sans', sans-serif" font-size="34" font-weight="800" fill="${cPrimary}" text-anchor="start" letter-spacing="1">${title}</text>
+  <text x="255" y="258" font-family="'Plus Jakarta Sans', sans-serif" font-size="11" font-weight="700" fill="${cAccent}" text-anchor="start" letter-spacing="3">${subtitle}</text>
+  <rect x="255" y="275" width="40" height="4" rx="2" fill="${cPrimary}"/>
+</svg>`;
+
+  // -------------------------------------------------------------
+  // PROPUESTA 4: Arco Solar / Boho Chic con Ilustración Libre
+  // -------------------------------------------------------------
+  const svg4 = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" width="100%" height="100%">
+  <rect width="500" height="500" rx="36" fill="#FCFAF8"/>
+  
+  <!-- Arco estilizado en el fondo -->
+  <path d="M 170 340 L 170 190 A 80 80 0 0 1 330 190 L 330 340" fill="${cAccent}" fill-opacity="0.18" stroke="${cAccent}" stroke-width="2"/>
   
   <g transform="translate(250, 185)">
-    ${symbolMarkupVar2}
+    ${isotypeSvg4}
   </g>
   
-  <text x="250" y="280" font-family="'Playfair Display', Georgia, serif" font-size="32" font-weight="600" fill="${cDark}" text-anchor="middle" letter-spacing="5">${title}</text>
-  <text x="250" y="310" font-family="'Inter', sans-serif" font-size="10" font-weight="500" fill="${cAccent}" text-anchor="middle" letter-spacing="6">${subtitle}</text>
-  <line x1="210" y1="330" x2="290" y2="330" stroke="${cDark}" stroke-width="1"/>
-</svg>`;
-
-  // Variante 3: Luxury Noir & Relieve
-  const svg3 = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" width="100%" height="100%">
-  <rect width="500" height="500" rx="32" fill="${cDark}"/>
-  <rect x="30" y="30" width="440" height="440" rx="24" fill="none" stroke="${cAccent}" stroke-width="1.5"/>
-  <rect x="40" y="40" width="420" height="420" rx="20" fill="none" stroke="${cAccent}" stroke-width="0.8" stroke-dasharray="4,4"/>
-  
-  <g transform="translate(250, 165)">
-    ${symbolMarkupVar3}
-  </g>
-  
-  <text x="250" y="295" font-family="'Playfair Display', Georgia, serif" font-size="36" font-weight="700" fill="#FFFFFF" text-anchor="middle" letter-spacing="6">${title.toUpperCase()}</text>
-  <line x1="170" y1="320" x2="330" y2="320" stroke="${cAccent}" stroke-width="1.5"/>
-  <text x="250" y="348" font-family="'Inter', sans-serif" font-size="11" font-weight="600" fill="${cAccent}" text-anchor="middle" letter-spacing="7">${subtitle}</text>
-</svg>`;
-
-  // Variante 4: Vanguardia & Geometria Pura
-  const svg4 = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" width="100%" height="100%">
-  <rect width="500" height="500" rx="32" fill="#FAF8F5"/>
-  <circle cx="250" cy="180" r="55" fill="none" stroke="${cAccent}" stroke-width="1.5"/>
-  
-  <g transform="translate(250, 180)">
-    ${symbolMarkupVar4}
-  </g>
-  
-  <text x="250" y="290" font-family="'Playfair Display', Georgia, serif" font-size="35" font-weight="700" fill="${cDark}" text-anchor="middle" letter-spacing="4">${title}</text>
-  <text x="250" y="322" font-family="'Inter', sans-serif" font-size="10" font-weight="600" fill="${cAccent}" text-anchor="middle" letter-spacing="8">${subtitle}</text>
-  <circle cx="250" cy="355" r="4" fill="${cDark}"/>
+  <!-- Tipografia de Autor con mucha personalidad -->
+  <text x="250" y="295" font-family="'Playfair Display', Georgia, serif" font-size="35" font-weight="700" fill="${cPrimary}" text-anchor="middle" letter-spacing="2">${title}</text>
+  <text x="250" y="325" font-family="'Plus Jakarta Sans', sans-serif" font-size="11" font-weight="600" fill="${cAccent}" text-anchor="middle" letter-spacing="6">${subtitle}</text>
+  <circle cx="250" cy="355" r="4" fill="${cPrimary}"/>
 </svg>`;
 
   const svgs = [
-    { svg: svg1, title: `${symbol.name} · Clásico` },
-    { svg: svg2, title: `${symbol.name} · Arco Chic` },
-    { svg: svg3, title: `${symbol.name} · Noir Luxury` },
-    { svg: svg4, title: `${symbol.name} · Monoline` }
+    { svg: svg1, title: 'Pop & Alegre', composition: 'Emblema Dinámico' },
+    { svg: svg2, title: 'Sello Boutique', composition: 'Badge Orgánico' },
+    { svg: svg3, title: 'Horizontal Chic', composition: 'Minimalista Editorial' },
+    { svg: svg4, title: 'Arco & Estilo Libre', composition: 'Ilustración Boho' }
   ];
 
   return svgs.map((item, idx) => ({
-    id: `logo-gcp-${Date.now()}-${idx}`,
+    id: `logo-${Date.now()}-${idx}`,
     svg: item.svg,
     url: svgToDataUri(item.svg),
-    title: item.title,
+    title: `${item.title} · ${symbol.name}`,
     styleName: style.name,
-    promptUsed: `Google Cloud Vertex AI para ${rawTitle} con ${symbol.name}`,
+    composition: item.composition,
     timestamp: Date.now()
   }));
 }

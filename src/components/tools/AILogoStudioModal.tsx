@@ -8,19 +8,17 @@ import {
   RefreshCw, 
   Eye, 
   CheckCircle2, 
-  Smartphone, 
   CreditCard, 
   Building2, 
-  SlidersHorizontal,
   Cloud
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
 import { 
-  LOGO_STYLES, 
-  LOGO_SYMBOLS, 
-  LOGO_PALETTES, 
+  SALON_STYLES, 
+  SALON_ISOTYPES, 
+  DESCRIPTIVE_COLORS, 
   GeneratedLogo, 
   generateLogosWithAI,
   purgeAiStudioTokens
@@ -40,9 +38,9 @@ export const AILogoStudioModal: React.FC<AILogoStudioModalProps> = ({
   // Configuration form state
   const [salonName, setSalonName] = useState<string>(currentSalon?.name || 'Pelu OBi');
   const [slogan, setSlogan] = useState<string>(currentSalon?.slogan || 'Hair & Beauty Atelier');
-  const [selectedStyleId, setSelectedStyleId] = useState<string>(LOGO_STYLES[0].id);
-  const [selectedSymbolId, setSelectedSymbolId] = useState<string>(LOGO_SYMBOLS[0].id);
-  const [selectedPaletteId, setSelectedPaletteId] = useState<string>(LOGO_PALETTES[0].id);
+  const [selectedStyleId, setSelectedStyleId] = useState<string>(SALON_STYLES[0].id);
+  const [selectedSymbolId, setSelectedSymbolId] = useState<string>(SALON_ISOTYPES[0].id);
+  const [selectedPaletteId, setSelectedPaletteId] = useState<string>(DESCRIPTIVE_COLORS[0].id);
   const [customDetails, setCustomDetails] = useState<string>('');
 
   // Generation state
@@ -125,194 +123,204 @@ export const AILogoStudioModal: React.FC<AILogoStudioModalProps> = ({
     URL.revokeObjectURL(url);
   };
 
+  const currentStyle = SALON_STYLES.find(s => s.id === selectedStyleId) || SALON_STYLES[0];
+  const currentSymbol = SALON_ISOTYPES.find(s => s.id === selectedSymbolId) || SALON_ISOTYPES[0];
+  const currentColor = DESCRIPTIVE_COLORS.find(c => c.id === selectedPaletteId) || DESCRIPTIVE_COLORS[0];
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-charcoal-950/80 backdrop-blur-md animate-fade-in">
       <div 
-        className="fixed inset-0"
-        onClick={onClose}
-      />
-
-      <div className="relative z-10 bg-[#FCFAF8] rounded-3xl max-w-5xl w-full max-h-[92vh] flex flex-col shadow-2xl border border-brand-200 overflow-hidden animate-scale-up">
-        
-        {/* Top Modal Header */}
-        <div className="px-6 py-4 bg-white border-b border-brand-100 flex items-center justify-between">
+        className="bg-[#FAF8F5] w-full max-w-6xl max-h-[95vh] rounded-3xl shadow-2xl border border-brand-200/60 overflow-hidden flex flex-col"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="px-6 py-4 bg-white border-b border-brand-100 flex items-center justify-between flex-shrink-0">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-brand-600 to-roseGold flex items-center justify-center text-white shadow-md shadow-brand-500/20 shrink-0">
+            <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-brand-500 to-brand-600 flex items-center justify-center shadow-md shadow-brand-500/20 text-white">
               <Sparkles className="w-5 h-5" />
             </div>
             <div>
               <div className="flex items-center space-x-2">
-                <h2 className="font-serif font-bold text-lg sm:text-xl text-charcoal-950">
-                  Estudio de Logo & Identidad con IA
+                <h2 className="font-serif text-lg font-bold text-charcoal-900">
+                  Estudio de Logo & Identidad de Salón
                 </h2>
-                <Badge variant="luxury" className="bg-brand-50 text-brand-800 border-brand-200 text-[10px]">
-                  Google Cloud Generative Studio
+                <Badge variant="luxury" className="text-[10px] bg-brand-50 text-brand-700 border-brand-200">
+                  Google Cloud AI
                 </Badge>
               </div>
               <p className="text-xs text-charcoal-500">
-                Genera la identidad gráfica y monograma oficial para tu salón con Google Cloud Platform.
+                Diseña isotipos alegres, modernos y memorables personalizados para tu salón.
               </p>
             </div>
           </div>
 
           <div className="flex items-center space-x-2">
-            {/* GCP Cloud Active Badge */}
-            <div className="hidden sm:flex items-center space-x-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-              <Cloud className="w-3.5 h-3.5 text-emerald-600" />
+            <div className="hidden sm:flex items-center space-x-1.5 px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-[11px] font-bold text-emerald-700">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <Cloud className="w-3.5 h-3.5" />
               <span>GCP Activo</span>
             </div>
 
-            <button
+            <button 
               onClick={onClose}
-              className="p-2 text-charcoal-400 hover:text-charcoal-800 rounded-full hover:bg-brand-50 transition-all"
+              className="p-2 rounded-xl text-charcoal-400 hover:text-charcoal-700 hover:bg-brand-50 transition-all"
             >
               <X className="w-5 h-5" />
             </button>
           </div>
         </div>
 
-        {/* Main Content Layout (2 columns) */}
+        {/* Modal Body */}
         <div className="flex-1 overflow-y-auto p-4 sm:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
-          
-          {/* LEFT COLUMN: Brand Studio Controls (5 cols) */}
+          {/* Left Column: Personalización del Salón */}
           <div className="lg:col-span-5 space-y-4">
-            
-            {/* Basic Info */}
+            {/* 1. Nombre y Eslogan */}
             <div className="bg-white p-4 rounded-2xl border border-brand-100 shadow-sm space-y-3">
               <h3 className="font-bold text-xs uppercase tracking-wider text-charcoal-600 flex items-center space-x-2">
-                <SlidersHorizontal className="w-3.5 h-3.5 text-brand-600" />
-                <span>1. Datos del Salón</span>
+                <span className="w-2 h-2 rounded-full bg-brand-500" />
+                <span>1. Nombre de tu Peluquería o Salón</span>
               </h3>
-              
+
               <div className="space-y-2.5">
                 <div>
                   <label className="block text-xs font-semibold text-charcoal-700 mb-1">
-                    Nombre de Marca
+                    Nombre del Salón
                   </label>
                   <input
                     type="text"
                     value={salonName}
                     onChange={(e) => setSalonName(e.target.value)}
-                    placeholder="Ej: Luu Studio, Pelu OBi..."
-                    className="w-full px-3 py-2 rounded-xl border border-brand-200 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/20 bg-white"
+                    onBlur={() => handleGenerate(salonName, slogan)}
+                    placeholder="Ej: Pelu OBi, Studio Belleza..."
+                    className="w-full px-3 py-2 rounded-xl border border-brand-200 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-brand-500/20 bg-white"
                   />
                 </div>
 
                 <div>
                   <label className="block text-xs font-semibold text-charcoal-700 mb-1">
-                    Eslogan o Subtítulo
+                    Eslogan o Subtítulo (Opcional)
                   </label>
                   <input
                     type="text"
                     value={slogan}
                     onChange={(e) => setSlogan(e.target.value)}
-                    placeholder="Ej: Colorimetría de Autor & Spa"
+                    onBlur={() => handleGenerate(salonName, slogan)}
+                    placeholder="Ej: Hair & Beauty Atelier, Peluquería & Spa..."
                     className="w-full px-3 py-2 rounded-xl border border-brand-200 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/20 bg-white"
                   />
                 </div>
               </div>
             </div>
 
-            {/* Aesthetic Style Selector */}
+            {/* 2. Isotipo o Símbolo */}
             <div className="bg-white p-4 rounded-2xl border border-brand-100 shadow-sm space-y-3">
-              <h3 className="font-bold text-xs uppercase tracking-wider text-charcoal-600 flex items-center space-x-2">
-                <Palette className="w-3.5 h-3.5 text-brand-600" />
-                <span>2. Estilo Visual de Marca</span>
-              </h3>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                {LOGO_STYLES.map((style) => (
-                  <button
-                    key={style.id}
-                    onClick={() => {
-                      setSelectedStyleId(style.id);
-                      handleGenerate(undefined, undefined, style.id, undefined, undefined);
-                    }}
-                    className={`text-left p-2.5 rounded-xl border transition-all relative ${
-                      selectedStyleId === style.id
-                        ? 'border-brand-500 bg-brand-50/50 shadow-sm'
-                        : 'border-brand-100 hover:border-brand-200 bg-white'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="font-bold text-xs text-charcoal-900">{style.name}</span>
-                      {selectedStyleId === style.id && (
-                        <Check className="w-3.5 h-3.5 text-brand-600" />
-                      )}
-                    </div>
-                    <p className="text-[10px] text-charcoal-500 mt-1 line-clamp-2 leading-tight">
-                      {style.description}
-                    </p>
-                  </button>
-                ))}
+              <div className="flex items-center justify-between">
+                <h3 className="font-bold text-xs uppercase tracking-wider text-charcoal-600 flex items-center space-x-2">
+                  <span className="w-2 h-2 rounded-full bg-brand-500" />
+                  <span>2. Símbolo o Isotipo Principal</span>
+                </h3>
+                <span className="text-[10px] font-bold text-brand-600">
+                  {currentSymbol.emoji} {currentSymbol.name.split(' ')[0]}
+                </span>
               </div>
-            </div>
 
-            {/* Iconic Element */}
-            <div className="bg-white p-4 rounded-2xl border border-brand-100 shadow-sm space-y-3">
-              <h3 className="font-bold text-xs uppercase tracking-wider text-charcoal-600 flex items-center space-x-2">
-                <Sparkles className="w-3.5 h-3.5 text-brand-600" />
-                <span>3. Símbolo o Isotipo Principal</span>
-              </h3>
-
-              <div className="flex flex-wrap gap-1.5">
-                {LOGO_SYMBOLS.map((sym) => (
+              <div className="grid grid-cols-2 gap-2">
+                {SALON_ISOTYPES.map((sym) => (
                   <button
                     key={sym.id}
                     onClick={() => {
                       setSelectedSymbolId(sym.id);
                       handleGenerate(undefined, undefined, undefined, sym.id, undefined);
                     }}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all ${
+                    className={`p-2.5 rounded-xl text-left border transition-all relative ${
                       selectedSymbolId === sym.id
-                        ? 'bg-charcoal-900 text-white border-charcoal-900 shadow-sm'
-                        : 'bg-[#FAF8F5] text-charcoal-700 border-brand-200 hover:bg-brand-50'
+                        ? 'bg-brand-50/70 border-brand-500 shadow-sm ring-2 ring-brand-500/20'
+                        : 'bg-[#FAF8F5] border-brand-100 hover:border-brand-200'
                     }`}
                   >
-                    {sym.name}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Color Palette */}
-            <div className="bg-white p-4 rounded-2xl border border-brand-100 shadow-sm space-y-3">
-              <h3 className="font-bold text-xs uppercase tracking-wider text-charcoal-600 flex items-center space-x-2">
-                <Palette className="w-3.5 h-3.5 text-brand-600" />
-                <span>4. Paleta de Color de Marca</span>
-              </h3>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                {LOGO_PALETTES.map((pal) => (
-                  <button
-                    key={pal.id}
-                    onClick={() => {
-                      setSelectedPaletteId(pal.id);
-                      handleGenerate(undefined, undefined, undefined, undefined, pal.id);
-                    }}
-                    className={`p-2.5 rounded-xl border flex items-center justify-between transition-all ${
-                      selectedPaletteId === pal.id
-                        ? 'border-brand-500 bg-brand-50/40 shadow-sm'
-                        : 'border-brand-100 bg-white hover:border-brand-200'
-                    }`}
-                  >
-                    <span className="text-xs font-semibold text-charcoal-800">{pal.name}</span>
-                    <div className="flex items-center -space-x-1">
-                      {pal.colors.map((c, i) => (
-                        <span 
-                          key={i} 
-                          className="w-4 h-4 rounded-full border border-white shadow-2xs" 
-                          style={{ backgroundColor: c }}
-                        />
-                      ))}
+                    <div className="flex items-center space-x-2">
+                      <span className="text-xl">{sym.emoji}</span>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-xs font-bold text-charcoal-900 truncate">{sym.name}</p>
+                      </div>
                     </div>
                   </button>
                 ))}
               </div>
             </div>
 
-            {/* Action button: Generate */}
+            {/* 3. Estilo Visual */}
+            <div className="bg-white p-4 rounded-2xl border border-brand-100 shadow-sm space-y-3">
+              <div className="flex items-center justify-between">
+                <h3 className="font-bold text-xs uppercase tracking-wider text-charcoal-600 flex items-center space-x-2">
+                  <span className="w-2 h-2 rounded-full bg-brand-500" />
+                  <span>3. Estilo de tu Marca</span>
+                </h3>
+                <span className="text-[10px] font-bold text-brand-600">
+                  {currentStyle.emoji} {currentStyle.name}
+                </span>
+              </div>
+
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                {SALON_STYLES.map((style) => (
+                  <button
+                    key={style.id}
+                    onClick={() => {
+                      setSelectedStyleId(style.id);
+                      handleGenerate(undefined, undefined, style.id, undefined, undefined);
+                    }}
+                    className={`p-2 rounded-xl text-center border transition-all ${
+                      selectedStyleId === style.id
+                        ? 'bg-charcoal-900 text-white border-charcoal-900 shadow-sm'
+                        : 'bg-white text-charcoal-700 border-brand-100 hover:border-brand-300'
+                    }`}
+                  >
+                    <div className="text-base">{style.emoji}</div>
+                    <p className="text-[11px] font-bold mt-0.5 truncate">{style.name}</p>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* 4. Color Principal Descriptivo */}
+            <div className="bg-white p-4 rounded-2xl border border-brand-100 shadow-sm space-y-3">
+              <div className="flex items-center justify-between">
+                <h3 className="font-bold text-xs uppercase tracking-wider text-charcoal-600 flex items-center space-x-2">
+                  <Palette className="w-3.5 h-3.5 text-brand-600" />
+                  <span>4. Color Principal (Descriptivo)</span>
+                </h3>
+                <span className="text-[10px] font-bold text-brand-700">
+                  {currentColor.emoji} {currentColor.name}
+                </span>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                {DESCRIPTIVE_COLORS.map((col) => (
+                  <button
+                    key={col.id}
+                    onClick={() => {
+                      setSelectedPaletteId(col.id);
+                      handleGenerate(undefined, undefined, undefined, undefined, col.id);
+                    }}
+                    className={`p-2.5 rounded-xl border flex items-center space-x-2.5 transition-all text-left ${
+                      selectedPaletteId === col.id
+                        ? 'border-brand-500 bg-brand-50/50 shadow-sm ring-2 ring-brand-500/20'
+                        : 'border-brand-100 bg-white hover:border-brand-200'
+                    }`}
+                  >
+                    <span 
+                      className="w-5 h-5 rounded-full flex-shrink-0 border-2 border-white shadow-sm" 
+                      style={{ backgroundColor: col.primary }}
+                    />
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[11px] font-bold text-charcoal-800 truncate">{col.name}</p>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Botón de Regenerar manual */}
             <Button
               onClick={() => handleGenerate()}
               disabled={isGenerating}
@@ -321,7 +329,7 @@ export const AILogoStudioModal: React.FC<AILogoStudioModalProps> = ({
               {isGenerating ? (
                 <>
                   <RefreshCw className="w-4 h-4 animate-spin text-white" />
-                  <span>Diseñando propuestas con GCP...</span>
+                  <span>Google Cloud diseñando propuestas...</span>
                 </>
               ) : (
                 <>
@@ -332,21 +340,20 @@ export const AILogoStudioModal: React.FC<AILogoStudioModalProps> = ({
             </Button>
           </div>
 
-          {/* RIGHT COLUMN: Gallery & Live Mockups (7 cols) */}
+          {/* Right Column: 4 Propuestas Diseñadas + Maquetas Reales */}
           <div className="lg:col-span-7 space-y-5">
-            
-            {/* Generated Options Grid */}
+            {/* Header de resultados */}
             <div className="bg-white p-5 rounded-3xl border border-brand-100 shadow-sm space-y-4">
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="font-bold text-charcoal-900 text-sm flex items-center space-x-2">
                     <span>Propuestas Diseñadas</span>
-                    <Badge variant="luxury" className="text-[10px] bg-emerald-50 text-emerald-800 border-emerald-200">
-                      GCP Cloud AI
+                    <Badge variant="luxury" className="text-[10px] bg-brand-50 text-brand-700">
+                      {currentStyle.name} · {currentColor.name.split('/')[0]}
                     </Badge>
                   </h3>
-                  <p className="text-xs text-charcoal-500 mt-0.5">
-                    Haz clic en una opción para seleccionarla y previsualizarla en maquetas reales.
+                  <p className="text-xs text-charcoal-500">
+                    Haz clic en una opción para seleccionarla y ver cómo luce en tu salón.
                   </p>
                 </div>
 
@@ -355,14 +362,14 @@ export const AILogoStudioModal: React.FC<AILogoStudioModalProps> = ({
                   size="sm"
                   onClick={() => handleGenerate()}
                   disabled={isGenerating}
-                  className="text-xs"
+                  className="rounded-xl text-xs font-bold"
                 >
                   <RefreshCw className={`w-3.5 h-3.5 mr-1.5 ${isGenerating ? 'animate-spin' : ''}`} />
                   Regenerar
                 </Button>
               </div>
 
-              {/* 4 Cards Grid with Base64 Vector SVGs */}
+              {/* 4 Cards Grid with Distinct Compositions */}
               <div className="grid grid-cols-2 gap-3 sm:gap-4">
                 {isGenerating ? (
                   Array.from({ length: 4 }).map((_, idx) => (
@@ -373,10 +380,10 @@ export const AILogoStudioModal: React.FC<AILogoStudioModalProps> = ({
                       <Sparkles className="w-6 h-6 text-brand-600 animate-spin" />
                       <div>
                         <p className="text-xs font-bold text-charcoal-900">
-                          {LOGO_SYMBOLS.find(s => s.id === selectedSymbolId)?.name || 'Isotipo'}
+                          {currentSymbol.emoji} Diseñando {currentSymbol.name}...
                         </p>
                         <p className="text-[11px] text-brand-700 font-medium mt-0.5">
-                          Opción {idx + 1} ({LOGO_STYLES.find(s => s.id === selectedStyleId)?.name || 'Estilo'})
+                          Opción {idx + 1} ({currentStyle.name})
                         </p>
                       </div>
                       <span className="text-[9px] px-2 py-0.5 rounded-md bg-emerald-100/80 text-emerald-900 font-bold border border-emerald-300">
@@ -460,14 +467,14 @@ export const AILogoStudioModal: React.FC<AILogoStudioModalProps> = ({
                         : 'text-charcoal-500 hover:text-charcoal-900'
                     }`}
                   >
-                    <Smartphone className="w-3.5 h-3.5" />
+                    <span>💬</span>
                     <span>WhatsApp</span>
                   </button>
                 </div>
               </div>
 
               {/* Mockup Canvas */}
-              <div className="min-h-[200px] flex items-center justify-center p-4 bg-[#FAF7F2] rounded-2xl border border-brand-100">
+              <div className="min-h-[190px] flex items-center justify-center p-4 bg-[#FAF7F2] rounded-2xl border border-brand-100">
                 {selectedLogo ? (
                   <>
                     {/* Mockup 1: Beauty Pass Card */}
@@ -487,8 +494,8 @@ export const AILogoStudioModal: React.FC<AILogoStudioModalProps> = ({
                           <Badge variant="luxury" className="bg-white/20 text-white text-[9px]">VIP Member</Badge>
                         </div>
                         <div className="pt-2 border-t border-white/10 flex items-center justify-between text-xs text-brand-100 font-mono">
-                          <span>Valentina Silva</span>
-                          <span>1.450 Pts</span>
+                          <span>Francisca Herrera</span>
+                          <span>1.850 Pts</span>
                         </div>
                       </div>
                     )}
@@ -525,7 +532,7 @@ export const AILogoStudioModal: React.FC<AILogoStudioModalProps> = ({
                             <span className="text-[10px] text-emerald-600 font-bold">12:30</span>
                           </div>
                           <p className="text-[11px] text-charcoal-600 truncate mt-0.5">
-                            ✨ ¡Hola Camila! Tu cita para Balayage está confirmada...
+                            ✨ ¡Hola Camila! Tu cita para Peinado & Corte está confirmada...
                           </p>
                         </div>
                       </div>
@@ -535,9 +542,16 @@ export const AILogoStudioModal: React.FC<AILogoStudioModalProps> = ({
                   <p className="text-xs text-charcoal-400">Genera o selecciona una propuesta para previsualizar.</p>
                 )}
               </div>
+            </div>
 
-              {/* Action Bar */}
-              <div className="pt-2 flex flex-col sm:flex-row items-center justify-end gap-2.5">
+            {/* Bottom Actions */}
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2">
+              <div className="text-xs text-charcoal-500 flex items-center space-x-1.5">
+                <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                <span>SVG vectorial nítido para Instagram, vitrinas y boletas</span>
+              </div>
+
+              <div className="flex items-center space-x-2 w-full sm:w-auto">
                 <Button
                   variant="outline"
                   onClick={handleDownloadLogo}
@@ -551,16 +565,15 @@ export const AILogoStudioModal: React.FC<AILogoStudioModalProps> = ({
                 <Button
                   onClick={handleApplyLogo}
                   disabled={!selectedLogo}
-                  className="w-full sm:w-auto text-xs font-bold bg-charcoal-900 hover:bg-charcoal-950 text-white shadow-md"
+                  className="w-full sm:w-auto text-xs font-bold bg-brand-600 hover:bg-brand-700 text-white shadow-md"
                 >
-                  <CheckCircle2 className="w-3.5 h-3.5 mr-1.5 text-emerald-400" />
+                  <Check className="w-3.5 h-3.5 mr-1.5" />
                   Establecer como Logo Oficial del Salón
                 </Button>
               </div>
             </div>
           </div>
         </div>
-
       </div>
     </div>
   );
