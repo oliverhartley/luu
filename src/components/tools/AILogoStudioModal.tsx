@@ -110,24 +110,13 @@ export const AILogoStudioModal: React.FC<AILogoStudioModalProps> = ({
   const handleDownloadLogo = () => {
     if (!selectedLogo) return;
 
-    // Convert SVG Data URI to a high-res PNG for download
-    const img = new Image();
-    img.crossOrigin = 'anonymous';
-    img.onload = () => {
-      const canvas = document.createElement('canvas');
-      canvas.width = 1200;
-      canvas.height = 1200;
-      const ctx = canvas.getContext('2d');
-      if (ctx) {
-        ctx.drawImage(img, 0, 0, 1200, 1200);
-        const pngUrl = canvas.toDataURL('image/png');
-        const link = document.createElement('a');
-        link.download = `logo-${salonName.toLowerCase().replace(/\s+/g, '-')}.png`;
-        link.href = pngUrl;
-        link.click();
-      }
-    };
-    img.src = selectedLogo.url;
+    const blob = new Blob([selectedLogo.svg], { type: 'image/svg+xml;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.download = `logo-${salonName.toLowerCase().replace(/\s+/g, '-')}.svg`;
+    link.href = url;
+    link.click();
+    URL.revokeObjectURL(url);
   };
 
   return (
@@ -389,10 +378,9 @@ export const AILogoStudioModal: React.FC<AILogoStudioModalProps> = ({
                             : 'border-brand-100 hover:border-brand-300 hover:shadow-md'
                         }`}
                       >
-                        <img
-                          src={logo.url}
-                          alt={`Propuesta de Logo ${idx + 1}`}
-                          className="w-full h-full object-contain rounded-xl"
+                        <div 
+                          className="w-full h-full flex items-center justify-center p-1 rounded-xl overflow-hidden pointer-events-none"
+                          dangerouslySetInnerHTML={{ __html: logo.svg }}
                         />
 
                         {isSelected && (
@@ -468,9 +456,10 @@ export const AILogoStudioModal: React.FC<AILogoStudioModalProps> = ({
                       <div className="w-full max-w-sm rounded-2xl p-5 text-white shadow-xl bg-gradient-to-br from-charcoal-900 via-charcoal-950 to-brand-950 border border-white/20 space-y-4 animate-fade-in">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center space-x-2.5">
-                            <div className="w-10 h-10 rounded-xl bg-white p-1 overflow-hidden shadow-sm flex items-center justify-center">
-                              <img src={selectedLogo.url} alt="Logo" className="w-full h-full object-contain" />
-                            </div>
+                            <div 
+                              className="w-10 h-10 rounded-xl bg-white p-0.5 overflow-hidden shadow-sm flex items-center justify-center pointer-events-none"
+                              dangerouslySetInnerHTML={{ __html: selectedLogo.svg }}
+                            />
                             <div>
                               <p className="font-serif font-bold text-sm text-white tracking-wide">{salonName}</p>
                               <p className="text-[10px] text-brand-200">{slogan}</p>
@@ -488,9 +477,10 @@ export const AILogoStudioModal: React.FC<AILogoStudioModalProps> = ({
                     {/* Mockup 2: Salon Store Signboard */}
                     {mockupTab === 'store' && (
                       <div className="w-full max-w-sm rounded-2xl p-6 bg-[#161618] border-2 border-brand-300/40 shadow-2xl flex flex-col items-center justify-center text-center space-y-3 animate-fade-in">
-                        <div className="w-16 h-16 rounded-2xl bg-white p-2 shadow-lg flex items-center justify-center border border-white/20">
-                          <img src={selectedLogo.url} alt="Logo Store" className="w-full h-full object-contain" />
-                        </div>
+                        <div 
+                          className="w-16 h-16 rounded-2xl bg-white p-1 shadow-lg flex items-center justify-center border border-white/20 pointer-events-none"
+                          dangerouslySetInnerHTML={{ __html: selectedLogo.svg }}
+                        />
                         <div>
                           <h4 className="font-serif text-xl font-bold tracking-widest text-white uppercase">
                             {salonName}
@@ -506,9 +496,10 @@ export const AILogoStudioModal: React.FC<AILogoStudioModalProps> = ({
                     {/* Mockup 3: WhatsApp Notification Profile */}
                     {mockupTab === 'whatsapp' && (
                       <div className="w-full max-w-sm bg-white rounded-2xl p-4 shadow-md border border-emerald-100 flex items-center space-x-3 animate-fade-in">
-                        <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-emerald-500 shadow-sm flex items-center justify-center bg-[#FAF8F5] p-1 flex-shrink-0">
-                          <img src={selectedLogo.url} alt="Avatar" className="w-full h-full object-contain rounded-full" />
-                        </div>
+                        <div 
+                          className="w-12 h-12 rounded-full overflow-hidden border-2 border-emerald-500 shadow-sm flex items-center justify-center bg-[#FAF8F5] p-0.5 flex-shrink-0 pointer-events-none"
+                          dangerouslySetInnerHTML={{ __html: selectedLogo.svg }}
+                        />
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center justify-between">
                             <h4 className="text-xs font-bold text-charcoal-900 truncate">{salonName}</h4>
@@ -535,7 +526,7 @@ export const AILogoStudioModal: React.FC<AILogoStudioModalProps> = ({
                   className="w-full sm:w-auto text-xs font-bold"
                 >
                   <Download className="w-3.5 h-3.5 mr-1.5" />
-                  Descargar PNG (1200x1200)
+                  Descargar Vector SVG
                 </Button>
 
                 <Button
