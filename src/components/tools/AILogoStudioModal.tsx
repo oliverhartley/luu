@@ -66,16 +66,22 @@ export const AILogoStudioModal: React.FC<AILogoStudioModalProps> = ({
 
   if (!isOpen) return null;
 
-  const handleGenerate = async (overrideName?: string, overrideSlogan?: string) => {
+  const handleGenerate = async (
+    overrideName?: string, 
+    overrideSlogan?: string,
+    overrideStyleId?: string,
+    overrideSymbolId?: string,
+    overridePaletteId?: string
+  ) => {
     setIsGenerating(true);
 
     try {
       const res = await generateLogosWithAI({
-        salonName: overrideName || salonName,
-        slogan: overrideSlogan || slogan,
-        styleId: selectedStyleId,
-        symbolId: selectedSymbolId,
-        paletteId: selectedPaletteId,
+        salonName: overrideName !== undefined ? overrideName : salonName,
+        slogan: overrideSlogan !== undefined ? overrideSlogan : slogan,
+        styleId: overrideStyleId !== undefined ? overrideStyleId : selectedStyleId,
+        symbolId: overrideSymbolId !== undefined ? overrideSymbolId : selectedSymbolId,
+        paletteId: overridePaletteId !== undefined ? overridePaletteId : selectedPaletteId,
         customDetails
       });
 
@@ -221,6 +227,7 @@ export const AILogoStudioModal: React.FC<AILogoStudioModalProps> = ({
                     key={style.id}
                     onClick={() => {
                       setSelectedStyleId(style.id);
+                      handleGenerate(undefined, undefined, style.id, undefined, undefined);
                     }}
                     className={`text-left p-2.5 rounded-xl border transition-all relative ${
                       selectedStyleId === style.id
@@ -255,6 +262,7 @@ export const AILogoStudioModal: React.FC<AILogoStudioModalProps> = ({
                     key={sym.id}
                     onClick={() => {
                       setSelectedSymbolId(sym.id);
+                      handleGenerate(undefined, undefined, undefined, sym.id, undefined);
                     }}
                     className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all ${
                       selectedSymbolId === sym.id
@@ -281,6 +289,7 @@ export const AILogoStudioModal: React.FC<AILogoStudioModalProps> = ({
                     key={pal.id}
                     onClick={() => {
                       setSelectedPaletteId(pal.id);
+                      handleGenerate(undefined, undefined, undefined, undefined, pal.id);
                     }}
                     className={`p-2.5 rounded-xl border flex items-center justify-between transition-all ${
                       selectedPaletteId === pal.id
@@ -359,10 +368,20 @@ export const AILogoStudioModal: React.FC<AILogoStudioModalProps> = ({
                   Array.from({ length: 4 }).map((_, idx) => (
                     <div 
                       key={idx} 
-                      className="aspect-square rounded-2xl bg-brand-50/70 animate-pulse flex flex-col items-center justify-center p-4 border border-brand-100 text-center space-y-2"
+                      className="aspect-square rounded-2xl bg-brand-50/70 animate-pulse flex flex-col items-center justify-center p-4 border border-brand-200 text-center space-y-2"
                     >
-                      <Sparkles className="w-6 h-6 text-brand-300 animate-spin" />
-                      <span className="text-[11px] font-semibold text-brand-600">Diseñando propuesta {idx + 1}...</span>
+                      <Sparkles className="w-6 h-6 text-brand-600 animate-spin" />
+                      <div>
+                        <p className="text-xs font-bold text-charcoal-900">
+                          {LOGO_SYMBOLS.find(s => s.id === selectedSymbolId)?.name || 'Isotipo'}
+                        </p>
+                        <p className="text-[11px] text-brand-700 font-medium mt-0.5">
+                          Opción {idx + 1} ({LOGO_STYLES.find(s => s.id === selectedStyleId)?.name || 'Estilo'})
+                        </p>
+                      </div>
+                      <span className="text-[9px] px-2 py-0.5 rounded-md bg-emerald-100/80 text-emerald-900 font-bold border border-emerald-300">
+                        Google Cloud Vertex AI
+                      </span>
                     </div>
                   ))
                 ) : (
