@@ -1,0 +1,10 @@
+{
+  "name": "luu-cloud-functions",
+  "version": "1.0.0",
+  "description": "Google Cloud Functions for Luu Hair & Beauty AI",
+  "main": "index.js",
+  "dependencies": {
+    "@google-cloud/vertexai": "^1.9.3",
+    "@google-cloud/functions-framework": "^3.4.5"
+  }
+}

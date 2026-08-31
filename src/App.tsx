@@ -17,7 +17,6 @@ import { ClientBookingApp } from './components/client-portal/ClientBookingApp';
 import { CommandPalette } from './components/command/CommandPalette';
 import { ColorRatioCalculatorModal } from './components/tools/ColorRatioCalculatorModal';
 import { BeforeAfterSliderModal } from './components/tools/BeforeAfterSliderModal';
-import { AILogoStudioModal } from './components/tools/AILogoStudioModal';
 import { BeautyPassModal } from './components/clients/BeautyPassModal';
 import { SalonFloorPlan } from './components/salon-floor/SalonFloorPlan';
 import { ServicesManager } from './components/services/ServicesManager';
@@ -40,7 +39,6 @@ export const App: React.FC = () => {
   const [whatsAppTargetPhone, setWhatsAppTargetPhone] = useState<string | undefined>(undefined);
   const [isColorCalculatorOpen, setIsColorCalculatorOpen] = useState<boolean>(false);
   const [isBeforeAfterOpen, setIsBeforeAfterOpen] = useState<boolean>(false);
-  const [isLogoStudioOpen, setIsLogoStudioOpen] = useState<boolean>(false);
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState<boolean>(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
 
@@ -77,7 +75,6 @@ export const App: React.FC = () => {
         onOpenColorCalculator={() => setIsColorCalculatorOpen(true)}
         onOpenCommandPalette={() => setIsCommandPaletteOpen(true)}
         onOpenBeforeAfterSlider={() => setIsBeforeAfterOpen(true)}
-        onOpenLogoStudio={() => setIsLogoStudioOpen(true)}
         onOpenAuthScreen={() => setIsAuthModalOpen(true)}
       />
 
@@ -203,7 +200,6 @@ export const App: React.FC = () => {
           setWhatsAppTargetPhone(undefined);
           setIsWhatsAppSimulatorOpen(true);
         }}
-        onOpenLogoStudio={() => setIsLogoStudioOpen(true)}
         onViewClientProfile={(cid) => setProfileTargetClientId(cid)}
       />
 
@@ -224,12 +220,6 @@ export const App: React.FC = () => {
 
       {/* Onboarding Wizard Modal */}
       <OnboardingWizardModal />
-
-      {/* AI Logo Studio Modal */}
-      <AILogoStudioModal
-        isOpen={isLogoStudioOpen}
-        onClose={() => setIsLogoStudioOpen(false)}
-      />
 
       {/* Feature Tutorial Modal (Carrusel de Funcionalidades) */}
       <TutorialModal />

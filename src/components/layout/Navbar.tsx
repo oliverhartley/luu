@@ -28,7 +28,6 @@ interface NavbarProps {
   onOpenColorCalculator: () => void;
   onOpenCommandPalette: () => void;
   onOpenBeforeAfterSlider: () => void;
-  onOpenLogoStudio?: () => void;
   onOpenAuthScreen?: () => void;
 }
 
@@ -38,7 +37,6 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenColorCalculator,
   onOpenCommandPalette,
   onOpenBeforeAfterSlider,
-  onOpenLogoStudio,
   onOpenAuthScreen
 }) => {
   const { 
@@ -157,18 +155,6 @@ export const Navbar: React.FC<NavbarProps> = ({
               </button>
             )}
 
-            {/* AI Logo Studio Button */}
-            {currentUser && role !== 'client' && onOpenLogoStudio && (
-              <button
-                onClick={onOpenLogoStudio}
-                className="hidden lg:flex items-center space-x-1.5 px-2.5 py-1.5 rounded-xl text-xs font-bold bg-gradient-to-r from-brand-50 to-roseGold/20 hover:from-brand-100 hover:to-roseGold/30 text-brand-900 border border-brand-200 shadow-2xs transition-all"
-                title="Diseñar Logo con IA para el Salón (Google Imagen 3)"
-              >
-                <Palette className="w-3.5 h-3.5 text-brand-600" />
-                <span>Logo IA</span>
-              </button>
-            )}
-
             {/* Portal Switcher Button for Client Testing */}
             <button
               onClick={() => setRole('client')}
@@ -181,7 +167,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
             {/* User Profile Menu or Sign In */}
             {currentUser ? (
-              <UserMenu onOpenLogoStudio={onOpenLogoStudio} />
+              <UserMenu />
             ) : (
               <Button
                 variant="dark"
