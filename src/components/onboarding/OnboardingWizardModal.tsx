@@ -20,7 +20,9 @@ import {
   CheckCircle2, 
   Copy, 
   ExternalLink,
-  ShieldCheck
+  ShieldCheck,
+  Upload,
+  Camera
 } from 'lucide-react';
 import { Professional, Service, ServiceCategory } from '../../types';
 import { Button } from '../ui/button';
@@ -174,6 +176,53 @@ export const OnboardingWizardModal: React.FC = () => {
   const [isAddressVerified, setIsAddressVerified] = useState<boolean>(Boolean(currentSalon?.coordinates || currentSalon?.googleMapsUrl));
   const addressInputRef = useRef<HTMLInputElement | null>(null);
   const autocompleteRef = useRef<any>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [isCustomPhoto, setIsCustomPhoto] = useState<boolean>(() => {
+    return !!currentSalon?.logo && !PRESET_SALON_PHOTOS.includes(currentSalon.logo);
+  });
+
+  const handlePhotoFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      showToast('Archivo no compatible', 'Por favor selecciona un archivo de imagen válido (JPG, PNG o WEBP).', 'error');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const img = new window.Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const maxDim = 1200;
+        let width = img.width;
+        let height = img.height;
+        if (width > height && width > maxDim) {
+          height = Math.round((height * maxDim) / width);
+          width = maxDim;
+        } else if (height > maxDim) {
+          width = Math.round((width * maxDim) / height);
+          height = maxDim;
+        }
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, width, height);
+          const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.85);
+          setSalonLogo(compressedDataUrl);
+          setIsCustomPhoto(true);
+        } else {
+          setSalonLogo(event.target?.result as string);
+          setIsCustomPhoto(true);
+        }
+        showToast('Foto Cargada con Éxito', 'Se ha subido la foto de tu salón.', 'success');
+      };
+      img.src = event.target?.result as string;
+    };
+    reader.readAsDataURL(file);
+  };
 
   // STEP 3: Professional inline add
   const [newProfName, setNewProfName] = useState<string>('');
@@ -213,6 +262,7 @@ export const OnboardingWizardModal: React.FC = () => {
       setSalonCoordinates(currentSalon?.coordinates);
       setSalonMapsUrl(currentSalon?.googleMapsUrl);
       setIsAddressVerified(Boolean(currentSalon?.coordinates || currentSalon?.googleMapsUrl));
+      setIsCustomPhoto(Boolean(currentSalon?.logo && !PRESET_SALON_PHOTOS.includes(currentSalon.logo)));
     }
     wasOpenRef.current = isOnboardingOpen;
   }, [isOnboardingOpen]);
@@ -683,29 +733,97 @@ export const OnboardingWizardModal: React.FC = () => {
               </div>
             </div>
 
-            {/* Presets de Foto de Portada */}
-            <div className="pt-2">
-              <label className="block text-xs font-bold text-charcoal-700 mb-2">
-                Foto de Portada o Fachada del Salón
-              </label>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                {PRESET_SALON_PHOTOS.map((photoUrl, idx) => (
+            {/* Foto de Portada o Fachada con opción de Subida */}
+            <div className="pt-2 space-y-3">
+              <div className="flex items-center justify-between">
+                <label className="block text-xs font-bold text-charcoal-700">
+                  Foto de Portada o Fachada del Salón
+                </label>
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handlePhotoFileChange}
+                  accept="image/*"
+                  className="hidden"
+                />
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="inline-flex items-center space-x-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold text-white bg-brand-500 hover:bg-brand-600 shadow-sm transition-all active:scale-95 cursor-pointer"
+                >
+                  <Upload className="w-3.5 h-3.5" />
+                  <span>Subir Tu Propia Foto</span>
+                </button>
+              </div>
+
+              {/* Vista previa de foto propia subida */}
+              {isCustomPhoto && (
+                <div className="rounded-2xl border-2 border-brand-500 ring-2 ring-brand-300/40 p-2 bg-brand-50/40 shadow-xs flex items-center justify-between gap-3 animate-fade-in">
+                  <div className="flex items-center space-x-3 min-w-0">
+                    <img
+                      src={salonLogo}
+                      alt="Foto subida del salón"
+                      className="w-20 h-14 object-cover rounded-xl border border-brand-200 shrink-0"
+                    />
+                    <div className="min-w-0">
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-100 text-emerald-800 mb-0.5">
+                        <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                        Foto personalizada seleccionada
+                      </span>
+                      <p className="text-xs font-bold text-charcoal-900 truncate">Foto subida desde tu dispositivo</p>
+                      <button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        className="text-[11px] text-brand-600 hover:text-brand-800 font-semibold underline mt-0.5 block text-left"
+                      >
+                        Cambiar por otra imagen
+                      </button>
+                    </div>
+                  </div>
                   <button
-                    key={idx}
                     type="button"
-                    onClick={() => setSalonLogo(photoUrl)}
-                    className={`relative rounded-xl overflow-hidden aspect-video border-2 transition-all ${
-                      salonLogo === photoUrl ? 'border-brand-500 ring-2 ring-brand-300' : 'border-transparent opacity-70 hover:opacity-100'
-                    }`}
+                    onClick={() => {
+                      setIsCustomPhoto(false);
+                      setSalonLogo(PRESET_SALON_PHOTOS[0]);
+                    }}
+                    className="p-2 text-charcoal-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all shrink-0"
+                    title="Quitar foto propia y volver a fotos de muestra"
                   >
-                    <img src={photoUrl} alt={`Preset ${idx + 1}`} className="w-full h-full object-cover" />
-                    {salonLogo === photoUrl && (
-                      <div className="absolute inset-0 bg-brand-900/30 flex items-center justify-center">
-                        <CheckCircle2 className="w-5 h-5 text-white" />
-                      </div>
-                    )}
+                    <Trash2 className="w-4 h-4" />
                   </button>
-                ))}
+                </div>
+              )}
+
+              <div>
+                <p className="text-[11px] text-charcoal-500 mb-2 font-medium">
+                  {isCustomPhoto 
+                    ? "O si prefieres, elige una de nuestras fotos de muestra:" 
+                    : "Elige una foto de muestra o presiona 'Subir Tu Propia Foto':"}
+                </p>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  {PRESET_SALON_PHOTOS.map((photoUrl, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => {
+                        setSalonLogo(photoUrl);
+                        setIsCustomPhoto(false);
+                      }}
+                      className={`relative rounded-xl overflow-hidden aspect-video border-2 transition-all cursor-pointer ${
+                        salonLogo === photoUrl && !isCustomPhoto 
+                          ? 'border-brand-500 ring-2 ring-brand-300 shadow-sm' 
+                          : 'border-transparent opacity-70 hover:opacity-100'
+                      }`}
+                    >
+                      <img src={photoUrl} alt={`Preset ${idx + 1}`} className="w-full h-full object-cover" />
+                      {salonLogo === photoUrl && !isCustomPhoto && (
+                        <div className="absolute inset-0 bg-brand-900/30 flex items-center justify-center">
+                          <CheckCircle2 className="w-5 h-5 text-white" />
+                        </div>
+                      )}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
 
