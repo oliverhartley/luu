@@ -62,8 +62,11 @@ export const ClientBookingApp: React.FC = () => {
     const items = selectedServices.map((serv) => {
       let chosenProf = professionals.find((p) => p.id === selectedProfessional);
       if (!chosenProf) {
-        // Pick first matching specialty
-        chosenProf = professionals.find((p) => p.specialties.includes(serv.category)) || professionals[0];
+        // Pick first matching service or specialty
+        chosenProf = professionals.find((p) => 
+          (p.serviceIds && p.serviceIds.includes(serv.id)) || 
+          p.specialties.includes(serv.category)
+        ) || professionals[0];
       }
       return {
         serviceId: serv.id,

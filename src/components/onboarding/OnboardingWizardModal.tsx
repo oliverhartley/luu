@@ -14,6 +14,7 @@ import {
   Mail, 
   MapPin, 
   Clock, 
+  Calendar,
   X, 
   Smile, 
   CheckCircle2, 
@@ -24,6 +25,7 @@ import {
 import { Professional, Service, ServiceCategory } from '../../types';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
+import { loadGoogleMapsScript, extractAddressComponents } from '../../utils/googleMaps';
 
 const InstagramIcon: React.FC<{ className?: string }> = ({ className }) => (
   <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -32,6 +34,35 @@ const InstagramIcon: React.FC<{ className?: string }> = ({ className }) => (
     <line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/>
   </svg>
 );
+
+const CATEGORY_OPTIONS: { id: ServiceCategory; label: string; icon: string }[] = [
+  { id: 'hair', label: 'Cabello / Color', icon: '💇‍♀️' },
+  { id: 'nails', label: 'Manicura & Pedicura', icon: '💅' },
+  { id: 'brows_lashes', label: 'Pestañas & Cejas', icon: '👁️' },
+  { id: 'skincare', label: 'Facial & Piel', icon: '✨' },
+  { id: 'spa', label: 'Spa & Relajación', icon: '🧖‍♀️' },
+];
+
+const WEEK_DAYS: { id: 'lun' | 'mar' | 'mie' | 'jue' | 'vie' | 'sab' | 'dom'; label: string; full: string }[] = [
+  { id: 'lun', label: 'L', full: 'Lunes' },
+  { id: 'mar', label: 'M', full: 'Martes' },
+  { id: 'mie', label: 'M', full: 'Miércoles' },
+  { id: 'jue', label: 'J', full: 'Jueves' },
+  { id: 'vie', label: 'V', full: 'Viernes' },
+  { id: 'sab', label: 'S', full: 'Sábado' },
+  { id: 'dom', label: 'D', full: 'Domingo' }
+];
+
+const formatWorkingDays = (days?: string[]) => {
+  if (!days || days.length === 0) return 'Todos los días';
+  if (days.length === 7) return 'Todos los días (Lun a Dom)';
+  if (days.length === 6 && !days.includes('dom')) return 'Lun a Sáb';
+  if (days.length === 5 && !days.includes('sab') && !days.includes('dom')) return 'Lun a Vie';
+  const map: Record<string, string> = {
+    lun: 'Lun', mar: 'Mar', mie: 'Mié', jue: 'Jue', vie: 'Vie', sab: 'Sáb', dom: 'Dom'
+  };
+  return days.map((d) => map[d] || d).join(', ');
+};
 
 const PRESET_AVATARS = [
   'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300&auto=format&fit=crop&q=80',
@@ -137,13 +168,27 @@ export const OnboardingWizardModal: React.FC = () => {
   const [salonInstagram, setSalonInstagram] = useState<string>(currentSalon?.instagram || '');
   const [salonHours, setSalonHours] = useState<string>(currentSalon?.openingHours || 'Lunes a Sábado 10:00 - 20:00');
   const [salonLogo, setSalonLogo] = useState<string>(currentSalon?.logo || PRESET_SALON_PHOTOS[0]);
+  const [salonCoordinates, setSalonCoordinates] = useState<{ lat: number; lng: number } | undefined>(currentSalon?.coordinates);
+  const [salonMapsUrl, setSalonMapsUrl] = useState<string | undefined>(currentSalon?.googleMapsUrl);
+  const [isMapsLoaded, setIsMapsLoaded] = useState<boolean>(false);
+  const [isAddressVerified, setIsAddressVerified] = useState<boolean>(Boolean(currentSalon?.coordinates || currentSalon?.googleMapsUrl));
+  const addressInputRef = useRef<HTMLInputElement | null>(null);
+  const autocompleteRef = useRef<any>(null);
 
-  // STEP 2: Stylist inline add
+  // STEP 3: Professional inline add
   const [newProfName, setNewProfName] = useState<string>('');
-  const [newProfRole, setNewProfRole] = useState<string>('Master Colorista');
+  const [newProfEmail, setNewProfEmail] = useState<string>('');
+  const [newProfPhone, setNewProfPhone] = useState<string>('+56 9 ');
   const [newProfAvatar, setNewProfAvatar] = useState<string>(PRESET_AVATARS[0]);
+  const [newProfCategories, setNewProfCategories] = useState<ServiceCategory[]>(['hair']);
+  const [newProfServiceIds, setNewProfServiceIds] = useState<string[]>([]);
+  const [newProfWorkingDays, setNewProfWorkingDays] = useState<('lun' | 'mar' | 'mie' | 'jue' | 'vie' | 'sab' | 'dom')[]>([
+    'lun', 'mar', 'mie', 'jue', 'vie', 'sab'
+  ]);
+  const [newProfStartHour, setNewProfStartHour] = useState<string>('10:00');
+  const [newProfEndHour, setNewProfEndHour] = useState<string>('19:00');
 
-  // STEP 3: Custom service inline add
+  // STEP 2: Custom service inline add
   const [newServiceName, setNewServiceName] = useState<string>('');
   const [newServicePrice, setNewServicePrice] = useState<number>(30000);
   const [newServiceDuration, setNewServiceDuration] = useState<number>(60);
@@ -165,9 +210,53 @@ export const OnboardingWizardModal: React.FC = () => {
       setSalonInstagram(currentSalon?.instagram || '');
       setSalonHours(currentSalon?.openingHours || 'Lunes a Sábado 10:00 - 20:00');
       setSalonLogo(currentSalon?.logo || PRESET_SALON_PHOTOS[0]);
+      setSalonCoordinates(currentSalon?.coordinates);
+      setSalonMapsUrl(currentSalon?.googleMapsUrl);
+      setIsAddressVerified(Boolean(currentSalon?.coordinates || currentSalon?.googleMapsUrl));
     }
     wasOpenRef.current = isOnboardingOpen;
   }, [isOnboardingOpen]);
+
+  // Initialize Google Maps Places Autocomplete on Step 1
+  useEffect(() => {
+    if (step === 1 && addressInputRef.current) {
+      loadGoogleMapsScript()
+        .then((googleMaps) => {
+          setIsMapsLoaded(true);
+          if (!autocompleteRef.current && addressInputRef.current && googleMaps?.places) {
+            const isChile = (salonCity || currentSalon?.city || '').toLowerCase().includes('chile');
+            const autocomplete = new googleMaps.places.Autocomplete(addressInputRef.current, {
+              ...(isChile ? { componentRestrictions: { country: ['cl'] } } : {}),
+              fields: ['address_components', 'formatted_address', 'geometry', 'name', 'url', 'place_id']
+            });
+
+            autocomplete.addListener('place_changed', () => {
+              const place = autocomplete.getPlace();
+              if (place && (place.formatted_address || place.name)) {
+                const extracted = extractAddressComponents(place);
+                setSalonAddress(extracted.streetAddress || extracted.formattedAddress);
+                if (extracted.cityOrComuna) {
+                  setSalonCity(extracted.cityOrComuna);
+                }
+                if (extracted.lat && extracted.lng) {
+                  setSalonCoordinates({ lat: extracted.lat, lng: extracted.lng });
+                }
+                if (extracted.url) {
+                  setSalonMapsUrl(extracted.url);
+                }
+                setIsAddressVerified(true);
+                showToast('Dirección Verificada', 'Ubicación conectada con Google Maps ✨', 'success');
+              }
+            });
+
+            autocompleteRef.current = autocomplete;
+          }
+        })
+        .catch((err) => {
+          console.warn('Google Maps Places API not available:', err);
+        });
+    }
+  }, [step, salonCity, currentSalon?.city, showToast]);
 
   if (!isOnboardingOpen) return null;
 
@@ -182,7 +271,9 @@ export const OnboardingWizardModal: React.FC = () => {
       phone: salonPhone.trim(),
       instagram: salonInstagram.trim(),
       openingHours: salonHours.trim(),
-      logo: salonLogo
+      logo: salonLogo,
+      coordinates: salonCoordinates,
+      googleMapsUrl: salonMapsUrl
     });
     setStep(2);
   };
@@ -196,13 +287,16 @@ export const OnboardingWizardModal: React.FC = () => {
     if (!alreadyExists) {
       addProfessional({
         name: ownerName,
-        roleTitle: 'Dueño(a) & Master Stylist',
-        specialties: ['hair'],
+        email: currentUser?.email,
+        roleTitle: 'Dueño(a) & Profesional',
+        specialties: ['hair', 'nails'],
         avatar: currentUser?.avatar || PRESET_AVATARS[0],
         rating: 5.0,
         commissionRate: 0.5,
         phone: salonPhone || '+56 9 ',
-        colorHex: '#D57B6C'
+        colorHex: '#D57B6C',
+        workingDays: ['lun', 'mar', 'mie', 'jue', 'vie', 'sab'],
+        workingHours: { start: '10:00', end: '20:00' }
       });
     }
   };
@@ -212,23 +306,29 @@ export const OnboardingWizardModal: React.FC = () => {
     const teamToLoad = [
       {
         name: 'Valentina Morales',
+        email: 'valentina.morales@salonglow.cl',
         roleTitle: 'Master Colorista & Balayage',
         specialties: ['hair' as ServiceCategory],
         avatar: PRESET_AVATARS[0],
         rating: 5.0,
         commissionRate: 0.45,
         phone: '+56 9 8123 4567',
-        colorHex: '#D57B6C'
+        colorHex: '#D57B6C',
+        workingDays: ['mar' as const, 'mie' as const, 'jue' as const, 'vie' as const, 'sab' as const],
+        workingHours: { start: '10:00', end: '19:00' }
       },
       {
         name: 'Camila Soto',
+        email: 'camila.soto@salonglow.cl',
         roleTitle: 'Especialista en Manicura & Nail Art',
         specialties: ['nails' as ServiceCategory],
         avatar: PRESET_AVATARS[1],
         rating: 4.9,
         commissionRate: 0.4,
         phone: '+56 9 8234 5678',
-        colorHex: '#E8B4B8'
+        colorHex: '#E8B4B8',
+        workingDays: ['lun' as const, 'mar' as const, 'mie' as const, 'jue' as const, 'vie' as const],
+        workingHours: { start: '10:00', end: '18:00' }
       }
     ];
 
@@ -243,18 +343,43 @@ export const OnboardingWizardModal: React.FC = () => {
   const handleAddCustomStylist = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newProfName.trim()) return;
+
+    const cats = newProfCategories.length > 0 ? newProfCategories : ['hair' as ServiceCategory];
+    const categoryLabels: Record<ServiceCategory, string> = {
+      hair: 'Estilista & Colorista',
+      nails: 'Especialista en Manicura',
+      brows_lashes: 'Pestañas & Cejas',
+      skincare: 'Cosmetóloga Facial',
+      spa: 'Terapeuta Spa'
+    };
+    const generatedRole = cats.map((c) => categoryLabels[c] || c).join(', ');
+
     addProfessional({
       name: newProfName.trim(),
-      roleTitle: newProfRole.trim() || 'Estilista Profesional',
-      specialties: ['hair'],
+      email: newProfEmail.trim() || undefined,
+      phone: newProfPhone.trim() || '+56 9 ',
+      roleTitle: generatedRole || 'Profesional & Especialista',
+      specialties: cats,
+      serviceIds: newProfServiceIds.length > 0 ? newProfServiceIds : undefined,
       avatar: newProfAvatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(newProfName.trim())}&background=D57B6C&color=fff`,
       rating: 5.0,
       commissionRate: 0.4,
-      phone: '+56 9 ',
-      colorHex: '#D57B6C'
+      colorHex: '#D57B6C',
+      workingDays: newProfWorkingDays,
+      workingHours: {
+        start: newProfStartHour || '10:00',
+        end: newProfEndHour || '19:00'
+      }
     });
+
     setNewProfName('');
-    setNewProfRole('Master Colorista');
+    setNewProfEmail('');
+    setNewProfPhone('+56 9 ');
+    setNewProfCategories(['hair']);
+    setNewProfServiceIds([]);
+    setNewProfWorkingDays(['lun', 'mar', 'mie', 'jue', 'vie', 'sab']);
+    setNewProfStartHour('10:00');
+    setNewProfEndHour('19:00');
   };
 
   // Toggle Suggested Service
@@ -321,8 +446,8 @@ export const OnboardingWizardModal: React.FC = () => {
               <p className="text-[11px] text-white/60">
                 {step === 0 && 'Bienvenida al CRM de tu salón'}
                 {step === 1 && 'Paso 1 de 3: Identidad y Contacto'}
-                {step === 2 && 'Paso 2 de 3: Tu Equipo de Estilistas'}
-                {step === 3 && 'Paso 3 de 3: Tu Carta de Servicios'}
+                {step === 2 && 'Paso 2 de 3: Tu Carta de Servicios'}
+                {step === 3 && 'Paso 3 de 3: Profesionales & Especialistas'}
                 {step === 4 && '¡Configuración Completada!'}
               </p>
             </div>
@@ -336,11 +461,11 @@ export const OnboardingWizardModal: React.FC = () => {
               </span>
               <span className="text-white/30">→</span>
               <span className={`px-2.5 py-1 rounded-full ${step === 2 ? 'bg-brand-500 text-white font-bold' : 'bg-white/10 text-white/60'}`}>
-                2. Equipo
+                2. Servicios
               </span>
               <span className="text-white/30">→</span>
               <span className={`px-2.5 py-1 rounded-full ${step === 3 ? 'bg-brand-500 text-white font-bold' : 'bg-white/10 text-white/60'}`}>
-                3. Servicios
+                3. Profesionales
               </span>
             </div>
           )}
@@ -390,16 +515,16 @@ export const OnboardingWizardModal: React.FC = () => {
                 <div className="w-10 h-10 mx-auto rounded-xl bg-brand-100/80 text-brand-800 flex items-center justify-center font-bold">
                   2
                 </div>
-                <h4 className="font-bold text-xs text-charcoal-900">Tu Equipo</h4>
-                <p className="text-[11px] text-charcoal-500">Tus estilistas y profesionales estrella.</p>
+                <h4 className="font-bold text-xs text-charcoal-900">Tus Servicios</h4>
+                <p className="text-[11px] text-charcoal-500">Elige tus servicios con 1 solo clic.</p>
               </div>
 
               <div className="p-4 rounded-2xl bg-[#FAF8F5] border border-brand-200/80 text-center space-y-2">
                 <div className="w-10 h-10 mx-auto rounded-xl bg-brand-100/80 text-brand-800 flex items-center justify-center font-bold">
                   3
                 </div>
-                <h4 className="font-bold text-xs text-charcoal-900">Tus Servicios</h4>
-                <p className="text-[11px] text-charcoal-500">Elige tus servicios con 1 solo clic.</p>
+                <h4 className="font-bold text-xs text-charcoal-900">Profesionales & Especialistas</h4>
+                <p className="text-[11px] text-charcoal-500">Tus estilistas y profesionales estrella.</p>
               </div>
             </div>
 
@@ -431,7 +556,7 @@ export const OnboardingWizardModal: React.FC = () => {
                 </h3>
               </div>
               <p className="text-xs text-charcoal-500 mt-1">
-                Estos datos aparecerán en los recordatorios automáticos de WhatsApp y en el portal de tus clientas.
+                Estos datos aparecerán en los recordatorios automáticos de WhatsApp y en el portal de tus clientes y clientas.
               </p>
             </div>
 
@@ -482,19 +607,64 @@ export const OnboardingWizardModal: React.FC = () => {
                 />
               </div>
 
-              {/* Address */}
+              {/* Address with Google Places Autocomplete */}
               <div>
-                <label className="block text-xs font-bold text-charcoal-700 mb-1 flex items-center">
-                  <MapPin className="w-3.5 h-3.5 mr-1 text-brand-600" />
-                  Dirección Física
-                </label>
-                <input
-                  type="text"
-                  value={salonAddress}
-                  onChange={(e) => setSalonAddress(e.target.value)}
-                  placeholder="Ej. Nueva Costanera 3222"
-                  className="w-full px-3.5 py-2.5 text-xs bg-[#FAF8F5] border border-brand-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-400"
-                />
+                <div className="flex items-center justify-between mb-1">
+                  <label className="text-xs font-bold text-charcoal-700 flex items-center">
+                    <MapPin className="w-3.5 h-3.5 mr-1 text-brand-600" />
+                    Dirección Física
+                  </label>
+                  {isAddressVerified ? (
+                    <span className="inline-flex items-center text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200 shadow-2xs">
+                      <CheckCircle2 className="w-3 h-3 mr-1 text-emerald-600" />
+                      Verificada en Maps
+                    </span>
+                  ) : isMapsLoaded ? (
+                    <span className="text-[10px] text-brand-600 font-semibold flex items-center">
+                      <Sparkles className="w-3 h-3 mr-0.5 text-brand-500" />
+                      Google Places
+                    </span>
+                  ) : null}
+                </div>
+
+                <div className="relative flex items-center">
+                  <input
+                    ref={addressInputRef}
+                    type="text"
+                    value={salonAddress}
+                    onChange={(e) => {
+                      setSalonAddress(e.target.value);
+                      setIsAddressVerified(false);
+                    }}
+                    placeholder="Ej. Nueva Costanera 3222 (o busca tu salón)"
+                    className="w-full pl-3.5 pr-9 py-2.5 text-xs bg-[#FAF8F5] border border-brand-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-400"
+                  />
+                  {salonAddress.trim() && (
+                    <a
+                      href={salonMapsUrl || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(salonAddress + ', ' + salonCity)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="absolute right-2.5 p-1 text-brand-600 hover:text-brand-800 hover:bg-brand-50 rounded-lg transition-colors"
+                      title="Ver y comprobar pin en Google Maps"
+                    >
+                      <ExternalLink className="w-3.5 h-3.5" />
+                    </a>
+                  )}
+                </div>
+
+                <div className="flex items-center justify-between mt-1 text-[11px] text-charcoal-400">
+                  <span className="truncate">Escribe y selecciona para verificar en Google Maps.</span>
+                  {salonAddress.trim() && (
+                    <a
+                      href={salonMapsUrl || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(salonAddress + ', ' + salonCity)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-brand-600 hover:underline font-semibold text-[10px] shrink-0 ml-2 inline-flex items-center"
+                    >
+                      Ver en Maps ↗
+                    </a>
+                  )}
+                </div>
               </div>
 
               {/* Instagram */}
@@ -556,7 +726,7 @@ export const OnboardingWizardModal: React.FC = () => {
                 variant="luxury"
                 className="text-xs px-6 font-bold shadow-md shadow-brand-500/20"
               >
-                <span>Continuar a Tu Equipo</span>
+                <span>Continuar a Tus Servicios</span>
                 <ArrowRight className="w-3.5 h-3.5 ml-1.5" />
               </Button>
             </div>
@@ -564,197 +734,13 @@ export const OnboardingWizardModal: React.FC = () => {
         )}
 
         {/* ========================================================================= */}
-        {/* STEP 2: TU EQUIPO (LAS PELUQUERAS / PROFESIONALES)                        */}
+        {/* STEP 2: TUS SERVICIOS (SELECCIÓN VISUAL CON 1 CLIC)                      */}
         {/* ========================================================================= */}
         {step === 2 && (
           <div className="p-6 sm:p-8 overflow-y-auto flex-1 space-y-5">
             <div>
               <div className="flex items-center space-x-2">
                 <Badge variant="luxury">Paso 2 de 3</Badge>
-                <h3 className="font-serif text-xl font-bold text-charcoal-950">
-                  Tu Equipo de Peluqueras & Especialistas
-                </h3>
-              </div>
-              <p className="text-xs text-charcoal-500 mt-1">
-                Agrega a las profesionales de tu salón para que las clientas puedan reservar hora con ellas.
-              </p>
-            </div>
-
-            {/* 1-Click Quick Add Cards if empty */}
-            {professionals.length === 0 && (
-              <div className="p-4 bg-brand-50/60 border border-brand-200 rounded-2xl space-y-3">
-                <p className="text-xs font-semibold text-brand-950">
-                  ⚡ Agrega tu primer profesional con 1 clic:
-                </p>
-                <div className="flex flex-col sm:flex-row gap-2">
-                  <button
-                    type="button"
-                    onClick={handleAddOwnerAsStylist}
-                    className="flex-1 px-3.5 py-2.5 bg-white border border-brand-200 rounded-xl hover:bg-brand-50 text-left transition-all shadow-2xs"
-                  >
-                    <span className="block text-xs font-bold text-charcoal-900">
-                      + Agregarme a mí ({currentUser?.name || 'Dueño'})
-                    </span>
-                    <span className="block text-[11px] text-charcoal-500">Como Estilista & Colorista Principal</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={handleAddSuggestedTeam}
-                    className="flex-1 px-3.5 py-2.5 bg-white border border-brand-200 rounded-xl hover:bg-brand-50 text-left transition-all shadow-2xs"
-                  >
-                    <span className="block text-xs font-bold text-charcoal-900">+ Cargar 2 estilistas de ejemplo</span>
-                    <span className="block text-[11px] text-charcoal-500">Colorista y Manicurista</span>
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* Current Team List */}
-            {professionals.length > 0 && (
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-charcoal-700 uppercase tracking-wider">
-                    Peluqueras en el Salón ({professionals.length})
-                  </span>
-                  <button
-                    type="button"
-                    onClick={handleAddOwnerAsStylist}
-                    className="text-[11px] text-brand-700 hover:text-brand-900 font-semibold"
-                  >
-                    + Agregarme a mí
-                  </button>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                  {professionals.map((prof) => (
-                    <div
-                      key={prof.id}
-                      className="p-3 bg-[#FAF8F5] border border-brand-200/80 rounded-2xl flex items-center justify-between space-x-3 shadow-2xs"
-                    >
-                      <div className="flex items-center space-x-2.5 min-w-0">
-                        <img
-                          src={prof.avatar}
-                          alt={prof.name}
-                          className="w-10 h-10 rounded-xl object-cover ring-1 ring-brand-300 shrink-0"
-                        />
-                        <div className="min-w-0">
-                          <h4 className="text-xs font-bold text-charcoal-900 truncate">{prof.name}</h4>
-                          <p className="text-[11px] text-charcoal-500 truncate">{prof.roleTitle}</p>
-                        </div>
-                      </div>
-
-                      <button
-                        type="button"
-                        onClick={() => deleteProfessional(prof.id)}
-                        className="p-1.5 text-charcoal-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 transition-colors"
-                        title="Eliminar profesional"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Inline Add Stylist Form */}
-            <form onSubmit={handleAddCustomStylist} className="p-4 bg-white border border-brand-200/80 rounded-2xl space-y-3">
-              <span className="text-xs font-bold text-charcoal-800 flex items-center">
-                <Plus className="w-3.5 h-3.5 mr-1 text-brand-600" />
-                Añadir Otra Profesional
-              </span>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                <div>
-                  <label className="block text-[11px] font-medium text-charcoal-600 mb-1">Nombre</label>
-                  <input
-                    type="text"
-                    value={newProfName}
-                    onChange={(e) => setNewProfName(e.target.value)}
-                    placeholder="Ej. Valentina Morales"
-                    className="w-full px-3 py-2 text-xs bg-[#FAF8F5] border border-brand-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-400"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-[11px] font-medium text-charcoal-600 mb-1">Especialidad / Cargo</label>
-                  <input
-                    type="text"
-                    value={newProfRole}
-                    onChange={(e) => setNewProfRole(e.target.value)}
-                    placeholder="Ej. Colorista & Balayage, Manicurista"
-                    className="w-full px-3 py-2 text-xs bg-[#FAF8F5] border border-brand-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-400"
-                  />
-                </div>
-              </div>
-
-              {/* Avatar Selector */}
-              <div>
-                <label className="block text-[11px] font-medium text-charcoal-600 mb-1.5">Foto de perfil (elige una):</label>
-                <div className="flex items-center gap-2 overflow-x-auto pb-1">
-                  {PRESET_AVATARS.map((av, idx) => (
-                    <button
-                      key={idx}
-                      type="button"
-                      onClick={() => setNewProfAvatar(av)}
-                      className={`w-9 h-9 rounded-full overflow-hidden shrink-0 border-2 transition-all ${
-                        newProfAvatar === av ? 'border-brand-500 scale-110' : 'border-transparent opacity-60 hover:opacity-100'
-                      }`}
-                    >
-                      <img src={av} alt="Avatar" className="w-full h-full object-cover" />
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="flex justify-end">
-                <Button
-                  type="submit"
-                  variant="outline"
-                  size="sm"
-                  disabled={!newProfName.trim()}
-                  className="text-xs font-semibold"
-                >
-                  <Plus className="w-3.5 h-3.5 mr-1" />
-                  Agregar al Equipo
-                </Button>
-              </div>
-            </form>
-
-            {/* Navigation */}
-            <div className="flex items-center justify-between pt-4 border-t border-brand-100">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setStep(1)}
-                className="text-xs"
-              >
-                <ArrowLeft className="w-3.5 h-3.5 mr-1" />
-                Volver a Salón
-              </Button>
-
-              <Button
-                type="button"
-                variant="luxury"
-                onClick={() => setStep(3)}
-                className="text-xs px-6 font-bold shadow-md shadow-brand-500/20"
-              >
-                <span>Continuar a Servicios</span>
-                <ArrowRight className="w-3.5 h-3.5 ml-1.5" />
-              </Button>
-            </div>
-          </div>
-        )}
-
-        {/* ========================================================================= */}
-        {/* STEP 3: TUS SERVICIOS (SELECCIÓN VISUAL CON 1 CLIC)                      */}
-        {/* ========================================================================= */}
-        {step === 3 && (
-          <div className="p-6 sm:p-8 overflow-y-auto flex-1 space-y-5">
-            <div>
-              <div className="flex items-center space-x-2">
-                <Badge variant="luxury">Paso 3 de 3</Badge>
                 <h3 className="font-serif text-xl font-bold text-charcoal-950">
                   Tu Carta de Servicios
                 </h3>
@@ -814,7 +800,7 @@ export const OnboardingWizardModal: React.FC = () => {
                 className="w-full py-2.5 border border-dashed border-brand-300 rounded-2xl text-xs font-semibold text-brand-800 hover:bg-brand-50/60 transition-colors flex items-center justify-center space-x-1.5"
               >
                 <Plus className="w-4 h-4" />
-                <span>+ Agregar un servicio personalizado</span>
+                <span>Agregar un servicio personalizado</span>
               </button>
             ) : (
               <form onSubmit={handleAddCustomService} className="p-4 bg-brand-50/50 border border-brand-200 rounded-2xl space-y-3">
@@ -880,11 +866,407 @@ export const OnboardingWizardModal: React.FC = () => {
               <Button
                 type="button"
                 variant="outline"
+                onClick={() => setStep(1)}
+                className="text-xs"
+              >
+                <ArrowLeft className="w-3.5 h-3.5 mr-1" />
+                Volver a Salón
+              </Button>
+
+              <Button
+                type="button"
+                variant="luxury"
+                onClick={() => setStep(3)}
+                className="text-xs px-6 font-bold shadow-md shadow-brand-500/20"
+              >
+                <span>Continuar a Profesionales & Especialistas</span>
+                <ArrowRight className="w-3.5 h-3.5 ml-1.5" />
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* ========================================================================= */}
+        {/* STEP 3: PROFESIONALES & ESPECIALISTAS                                     */}
+        {/* ========================================================================= */}
+        {step === 3 && (
+          <div className="p-6 sm:p-8 overflow-y-auto flex-1 space-y-5">
+            <div>
+              <div className="flex items-center space-x-2">
+                <Badge variant="luxury">Paso 3 de 3</Badge>
+                <h3 className="font-serif text-xl font-bold text-charcoal-950">
+                  Profesionales & Especialistas
+                </h3>
+              </div>
+              <p className="text-xs text-charcoal-500 mt-1">
+                Agrega a las y los profesionales de tu salón para que clientes y clientas puedan reservar hora con ellos.
+              </p>
+            </div>
+
+            {/* 1-Click Quick Add Cards if empty */}
+            {professionals.length === 0 && (
+              <div className="p-4 bg-brand-50/60 border border-brand-200 rounded-2xl space-y-3">
+                <p className="text-xs font-semibold text-brand-950">
+                  ⚡ Agrega tu primer profesional con 1 clic:
+                </p>
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <button
+                    type="button"
+                    onClick={handleAddOwnerAsStylist}
+                    className="flex-1 px-3.5 py-2.5 bg-white border border-brand-200 rounded-xl hover:bg-brand-50 text-left transition-all shadow-2xs"
+                  >
+                    <span className="block text-xs font-bold text-charcoal-900">
+                      + Agregarme a mí ({currentUser?.name || 'Dueño'})
+                    </span>
+                    <span className="block text-[11px] text-charcoal-500">Como Estilista & Colorista Principal</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={handleAddSuggestedTeam}
+                    className="flex-1 px-3.5 py-2.5 bg-white border border-brand-200 rounded-xl hover:bg-brand-50 text-left transition-all shadow-2xs"
+                  >
+                    <span className="block text-xs font-bold text-charcoal-900">+ Cargar 2 estilistas de ejemplo</span>
+                    <span className="block text-[11px] text-charcoal-500">Colorista y Manicurista</span>
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Current Team List */}
+            {professionals.length > 0 && (
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-charcoal-700 uppercase tracking-wider">
+                    Profesionales en el Salón ({professionals.length})
+                  </span>
+                  <button
+                    type="button"
+                    onClick={handleAddOwnerAsStylist}
+                    className="text-[11px] text-brand-700 hover:text-brand-900 font-semibold"
+                  >
+                    + Agregarme a mí
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                  {professionals.map((prof) => (
+                    <div
+                      key={prof.id}
+                      className="p-3 bg-[#FAF8F5] border border-brand-200/80 rounded-2xl flex items-start justify-between space-x-3 shadow-2xs"
+                    >
+                      <div className="flex items-start space-x-2.5 min-w-0">
+                        <img
+                          src={prof.avatar}
+                          alt={prof.name}
+                          className="w-10 h-10 rounded-xl object-cover ring-1 ring-brand-300 shrink-0 mt-0.5"
+                        />
+                        <div className="min-w-0 space-y-0.5">
+                          <h4 className="text-xs font-bold text-charcoal-900 truncate">{prof.name}</h4>
+                          <p className="text-[11px] text-brand-700 font-medium truncate">{prof.roleTitle}</p>
+                          
+                          <div className="flex flex-wrap items-center gap-2 pt-0.5 text-[10px] text-charcoal-500">
+                            {prof.phone && (
+                              <span className="flex items-center">
+                                <Phone className="w-2.5 h-2.5 mr-0.5 text-charcoal-400" />
+                                {prof.phone}
+                              </span>
+                            )}
+                            {prof.email && (
+                              <span className="flex items-center truncate max-w-[130px]">
+                                <Mail className="w-2.5 h-2.5 mr-0.5 text-charcoal-400 shrink-0" />
+                                <span className="truncate">{prof.email}</span>
+                              </span>
+                            )}
+                          </div>
+
+                          {prof.workingDays && prof.workingDays.length > 0 && (
+                            <p className="text-[10px] text-charcoal-500 flex items-center pt-0.5">
+                              <Calendar className="w-2.5 h-2.5 mr-1 text-charcoal-400 shrink-0" />
+                              <span className="truncate">
+                                {formatWorkingDays(prof.workingDays)}
+                                {prof.workingHours ? ` · ${prof.workingHours.start} - ${prof.workingHours.end}` : ''}
+                              </span>
+                            </p>
+                          )}
+                        </div>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => deleteProfessional(prof.id)}
+                        className="p-1.5 text-charcoal-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 transition-colors shrink-0"
+                        title="Eliminar profesional"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Inline Add Stylist Form */}
+            <form onSubmit={handleAddCustomStylist} className="p-4 sm:p-5 bg-white border border-brand-200/90 rounded-2xl space-y-4 shadow-xs">
+              <div className="flex items-center justify-between border-b border-brand-100 pb-2.5">
+                <span className="text-xs font-bold text-charcoal-900 flex items-center">
+                  <Plus className="w-4 h-4 mr-1 text-brand-600" />
+                  Añadir Profesional o Especialista
+                </span>
+                <span className="text-[11px] text-charcoal-400">Datos para agenda y contacto</span>
+              </div>
+
+              {/* Basic Details: Name, Email, Phone */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div>
+                  <label className="block text-[11px] font-bold text-charcoal-700 mb-1">Nombre Completo *</label>
+                  <input
+                    type="text"
+                    required
+                    value={newProfName}
+                    onChange={(e) => setNewProfName(e.target.value)}
+                    placeholder="Ej. Valentina Morales"
+                    className="w-full px-3 py-2 text-xs bg-[#FAF8F5] border border-brand-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-400"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-bold text-charcoal-700 mb-1 flex items-center">
+                    <Mail className="w-3 h-3 mr-1 text-charcoal-400" />
+                    Correo Electrónico
+                  </label>
+                  <input
+                    type="email"
+                    value={newProfEmail}
+                    onChange={(e) => setNewProfEmail(e.target.value)}
+                    placeholder="valentina@gmail.com"
+                    className="w-full px-3 py-2 text-xs bg-[#FAF8F5] border border-brand-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-400"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-bold text-charcoal-700 mb-1 flex items-center">
+                    <Phone className="w-3 h-3 mr-1 text-charcoal-400" />
+                    Teléfono / WhatsApp *
+                  </label>
+                  <input
+                    type="tel"
+                    required
+                    value={newProfPhone}
+                    onChange={(e) => setNewProfPhone(e.target.value)}
+                    placeholder="+56 9 8123 4567"
+                    className="w-full px-3 py-2 text-xs bg-[#FAF8F5] border border-brand-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-400"
+                  />
+                </div>
+              </div>
+
+              {/* Categorías y Servicios que atiende */}
+              <div className="space-y-2 pt-1 border-t border-brand-100/60">
+                <div className="flex items-center justify-between">
+                  <label className="block text-[11px] font-bold text-charcoal-800">
+                    Categorías y Servicios que atiende (para linkear a la agenda) *
+                  </label>
+                  <span className="text-[10px] text-brand-600 font-medium">Selecciona al menos una categoría</span>
+                </div>
+                
+                {/* Categorías Principales */}
+                <div className="flex flex-wrap gap-1.5">
+                  {CATEGORY_OPTIONS.map((cat) => {
+                    const isSelected = newProfCategories.includes(cat.id);
+                    return (
+                      <button
+                        key={cat.id}
+                        type="button"
+                        onClick={() => {
+                          if (isSelected) {
+                            if (newProfCategories.length > 1) {
+                              setNewProfCategories(newProfCategories.filter((c) => c !== cat.id));
+                            }
+                          } else {
+                            setNewProfCategories([...newProfCategories, cat.id]);
+                          }
+                        }}
+                        className={`px-2.5 py-1.5 rounded-xl text-xs font-semibold flex items-center space-x-1.5 border transition-all ${
+                          isSelected
+                            ? 'bg-brand-500 text-white border-brand-500 shadow-2xs'
+                            : 'bg-[#FAF8F5] text-charcoal-700 border-brand-200 hover:bg-brand-50/50'
+                        }`}
+                      >
+                        <span>{cat.icon}</span>
+                        <span>{cat.label}</span>
+                        {isSelected && <Check className="w-3 h-3 ml-1" />}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Servicios específicos del Salón configurados en Paso 2 */}
+                {services.length > 0 && (
+                  <div className="pt-1.5">
+                    <p className="text-[10px] text-charcoal-500 mb-1.5">
+                      Servicios específicos de tu salón que realiza (clic para asignar o desasignar):
+                    </p>
+                    <div className="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto p-1.5 bg-[#FAF8F5] rounded-xl border border-brand-200/60">
+                      {services.map((serv) => {
+                        const isAssigned = newProfServiceIds.includes(serv.id) || 
+                          (newProfServiceIds.length === 0 && newProfCategories.includes(serv.category));
+                        return (
+                          <button
+                            key={serv.id}
+                            type="button"
+                            onClick={() => {
+                              if (newProfServiceIds.length === 0) {
+                                const matchingIds = services.filter((s) => newProfCategories.includes(s.category)).map((s) => s.id);
+                                if (matchingIds.includes(serv.id)) {
+                                  setNewProfServiceIds(matchingIds.filter((id) => id !== serv.id));
+                                } else {
+                                  setNewProfServiceIds([...matchingIds, serv.id]);
+                                }
+                              } else if (newProfServiceIds.includes(serv.id)) {
+                                setNewProfServiceIds(newProfServiceIds.filter((id) => id !== serv.id));
+                              } else {
+                                setNewProfServiceIds([...newProfServiceIds, serv.id]);
+                              }
+                            }}
+                            className={`px-2 py-1 rounded-lg text-[11px] font-medium border transition-all ${
+                              isAssigned
+                                ? 'bg-brand-100 text-brand-900 border-brand-300 font-semibold shadow-2xs'
+                                : 'bg-white text-charcoal-500 border-charcoal-200 hover:border-brand-300'
+                            }`}
+                          >
+                            <span>{serv.name}</span>
+                            {isAssigned && <span className="ml-1 text-brand-700">✓</span>}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Días y Horarios que atiende */}
+              <div className="pt-2 border-t border-brand-100/60 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="block text-[11px] font-bold text-charcoal-800 flex items-center">
+                      <Calendar className="w-3 h-3 mr-1 text-charcoal-400" />
+                      Días que atiende en el salón
+                    </label>
+                    <div className="space-x-1">
+                      <button
+                        type="button"
+                        onClick={() => setNewProfWorkingDays(['lun', 'mar', 'mie', 'jue', 'vie', 'sab'])}
+                        className="text-[10px] text-brand-600 hover:underline"
+                      >
+                        Lun-Sáb
+                      </button>
+                      <span className="text-[10px] text-charcoal-300">·</span>
+                      <button
+                        type="button"
+                        onClick={() => setNewProfWorkingDays(['lun', 'mar', 'mie', 'jue', 'vie', 'sab', 'dom'])}
+                        className="text-[10px] text-brand-600 hover:underline"
+                      >
+                        Todos
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-1">
+                    {WEEK_DAYS.map((day) => {
+                      const isActive = newProfWorkingDays.includes(day.id);
+                      return (
+                        <button
+                          key={day.id}
+                          type="button"
+                          title={day.full}
+                          onClick={() => {
+                            if (isActive) {
+                              if (newProfWorkingDays.length > 1) {
+                                setNewProfWorkingDays(newProfWorkingDays.filter((d) => d !== day.id));
+                              }
+                            } else {
+                              setNewProfWorkingDays([...newProfWorkingDays, day.id]);
+                            }
+                          }}
+                          className={`w-7 h-7 rounded-lg text-xs font-bold transition-all ${
+                            isActive
+                              ? 'bg-brand-600 text-white shadow-2xs'
+                              : 'bg-[#FAF8F5] text-charcoal-500 border border-brand-200 hover:bg-brand-50'
+                          }`}
+                        >
+                          {day.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-bold text-charcoal-800 mb-1.5 flex items-center">
+                    <Clock className="w-3 h-3 mr-1 text-charcoal-400" />
+                    Horario de atención
+                  </label>
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="time"
+                      value={newProfStartHour}
+                      onChange={(e) => setNewProfStartHour(e.target.value)}
+                      className="px-2 py-1 text-xs bg-[#FAF8F5] border border-brand-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-brand-400 font-medium"
+                    />
+                    <span className="text-xs text-charcoal-400 font-medium">a</span>
+                    <input
+                      type="time"
+                      value={newProfEndHour}
+                      onChange={(e) => setNewProfEndHour(e.target.value)}
+                      className="px-2 py-1 text-xs bg-[#FAF8F5] border border-brand-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-brand-400 font-medium"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Avatar Selector */}
+              <div className="pt-2 border-t border-brand-100/60">
+                <label className="block text-[11px] font-bold text-charcoal-700 mb-1.5">Foto de perfil:</label>
+                <div className="flex items-center gap-2 overflow-x-auto pb-1">
+                  {PRESET_AVATARS.map((av, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => setNewProfAvatar(av)}
+                      className={`w-9 h-9 rounded-full overflow-hidden shrink-0 border-2 transition-all ${
+                        newProfAvatar === av ? 'border-brand-500 scale-110' : 'border-transparent opacity-60 hover:opacity-100'
+                      }`}
+                    >
+                      <img src={av} alt="Avatar" className="w-full h-full object-cover" />
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex justify-end pt-1">
+                <Button
+                  type="submit"
+                  variant="luxury"
+                  size="sm"
+                  disabled={!newProfName.trim()}
+                  className="text-xs font-bold px-4"
+                >
+                  <Plus className="w-3.5 h-3.5 mr-1" />
+                  Agregar Profesional
+                </Button>
+              </div>
+            </form>
+
+            {/* Navigation */}
+            <div className="flex items-center justify-between pt-4 border-t border-brand-100">
+              <Button
+                type="button"
+                variant="outline"
                 onClick={() => setStep(2)}
                 className="text-xs"
               >
                 <ArrowLeft className="w-3.5 h-3.5 mr-1" />
-                Volver a Equipo
+                Volver a Servicios
               </Button>
 
               <Button
@@ -915,7 +1297,7 @@ export const OnboardingWizardModal: React.FC = () => {
               </h2>
 
               <p className="text-xs sm:text-sm text-charcoal-600">
-                Hemos configurado la base de <strong>{salonName || currentSalon.name}</strong>. Ya puedes empezar a agendar citas y recibir clientas.
+                Hemos configurado la base de <strong>{salonName || currentSalon.name}</strong>. Ya puedes empezar a agendar citas y recibir clientes y clientas.
               </p>
             </div>
 
@@ -928,15 +1310,15 @@ export const OnboardingWizardModal: React.FC = () => {
               </div>
 
               <div className="p-3 bg-[#FAF8F5] border border-brand-200/80 rounded-2xl">
-                <Users className="w-5 h-5 mx-auto text-brand-600 mb-1" />
-                <span className="block text-[11px] text-charcoal-500">Equipo</span>
-                <span className="block text-xs font-bold text-charcoal-900">{professionals.length} estilistas</span>
-              </div>
-
-              <div className="p-3 bg-[#FAF8F5] border border-brand-200/80 rounded-2xl">
                 <Scissors className="w-5 h-5 mx-auto text-brand-600 mb-1" />
                 <span className="block text-[11px] text-charcoal-500">Servicios</span>
                 <span className="block text-xs font-bold text-charcoal-900">{services.length} activos</span>
+              </div>
+
+              <div className="p-3 bg-[#FAF8F5] border border-brand-200/80 rounded-2xl">
+                <Users className="w-5 h-5 mx-auto text-brand-600 mb-1" />
+                <span className="block text-[11px] text-charcoal-500">Profesionales</span>
+                <span className="block text-xs font-bold text-charcoal-900">{professionals.length} en equipo</span>
               </div>
             </div>
 
@@ -970,7 +1352,7 @@ export const OnboardingWizardModal: React.FC = () => {
                 </button>
               </div>
               <p className="text-[11px] text-charcoal-500">
-                Puedes poner este link en tu biografía de Instagram o enviarlo por WhatsApp a tus clientas.
+                Puedes poner este link en tu biografía de Instagram o enviarlo por WhatsApp a tus clientes y clientas.
               </p>
             </div>
 

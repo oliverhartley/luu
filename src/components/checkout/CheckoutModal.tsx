@@ -11,7 +11,8 @@ import {
   Plus, 
   FileText, 
   MessageSquare,
-  CheckCircle
+  CheckCircle,
+  Clock
 } from 'lucide-react';
 import { Appointment } from '../../types';
 
@@ -291,16 +292,30 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
             </div>
           </div>
 
-          {/* WhatsApp Survey Notification Banner */}
-          <div className="bg-emerald-50 p-3 rounded-2xl border border-emerald-200 flex items-start space-x-2.5">
-            <MessageSquare className="w-4 h-4 text-emerald-600 mt-0.5 shrink-0" />
-            <div className="text-xs text-emerald-950">
-              <p className="font-bold">Disparo Automático de Encuesta de Satisfacción</p>
-              <p className="text-[11px] text-emerald-800">
-                Al confirmar, se enviará un mensaje de WhatsApp a {appointment.clientName} para calificar su experiencia de 1 a 5 ⭐.
-              </p>
-            </div>
-          </div>
+          {/* WhatsApp Post-Service (+2 Hours) Survey Banner */}
+          {(() => {
+            const now = new Date();
+            const scheduledHour = (now.getHours() + 2) % 24;
+            const scheduledTime = `${String(scheduledHour).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+            return (
+              <div className="bg-gradient-to-r from-emerald-50 to-brand-50/70 p-3.5 rounded-2xl border border-emerald-200/90 flex items-start space-x-3">
+                <div className="w-8 h-8 rounded-xl bg-emerald-500 text-white flex items-center justify-center shrink-0 shadow-xs">
+                  <Clock className="w-4 h-4" />
+                </div>
+                <div className="text-xs text-emerald-950 flex-1">
+                  <div className="flex items-center justify-between">
+                    <p className="font-bold">Encuesta Post-Servicio Programada (+2 Horas)</p>
+                    <span className="text-[10px] font-mono font-bold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-md">
+                      A las {scheduledTime} hrs
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-emerald-800 mt-0.5 leading-relaxed">
+                    Se enviará un WhatsApp con <strong>enlace único</strong> a {appointment.clientName} consultando si está feliz con su look o si necesita algún retoque rápido sin costo para garantizar su satisfacción.
+                  </p>
+                </div>
+              </div>
+            );
+          })()}
 
           {/* Total & Action */}
           <div className="bg-charcoal-950 text-white p-4 rounded-2xl flex items-center justify-between shadow-lg">
@@ -315,7 +330,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
               className="px-6 py-3 bg-brand-500 hover:bg-brand-600 text-white font-bold text-sm rounded-xl shadow-lg shadow-brand-500/30 transition-all transform active:scale-95 flex items-center space-x-2"
             >
               <CheckCircle className="w-4 h-4" />
-              <span>Finalizar & Enviar Encuesta</span>
+              <span>Finalizar & Programar Encuesta (+2h)</span>
             </button>
           </div>
 

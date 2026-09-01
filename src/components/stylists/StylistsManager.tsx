@@ -490,7 +490,7 @@ export const StylistsManager: React.FC<StylistsManagerProps> = ({
                           className="w-full flex items-center justify-center space-x-1.5 py-2 px-3 rounded-xl text-xs font-bold text-brand-700 bg-white hover:bg-brand-50 border border-brand-300 border-dashed hover:border-brand-500 transition-all shadow-2xs group"
                         >
                           <Plus className="w-4 h-4 text-brand-500 group-hover:scale-110 transition-transform" />
-                          <span>+ Agregar Servicio (Queratina, Lavado, etc.)</span>
+                          <span>Agregar Servicio (Queratina, Lavado, etc.)</span>
                         </button>
                       )}
                     </div>

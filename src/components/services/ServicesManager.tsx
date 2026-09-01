@@ -136,7 +136,7 @@ export const ServicesManager: React.FC = () => {
           className="self-start sm:self-auto flex items-center space-x-1.5"
         >
           <Plus className="w-4 h-4" />
-          <span>+ Nuevo Servicio</span>
+          <span>Nuevo Servicio</span>
         </Button>
       </div>
 

@@ -141,7 +141,7 @@ export const ClientProfileModal: React.FC<ClientProfileModalProps> = ({
               className="inline-flex items-center space-x-1 px-3 py-1.5 text-xs font-semibold bg-brand-500 hover:bg-brand-600 text-white rounded-xl shadow-sm transition-all"
             >
               <Plus className="w-3.5 h-3.5" />
-              <span>+ Registrar Fórmula</span>
+              <span>Registrar Fórmula</span>
             </button>
           )}
         </div>

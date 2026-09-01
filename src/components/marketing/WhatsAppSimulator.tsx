@@ -21,7 +21,7 @@ import {
 } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
-import { openWhatsApp, cleanWhatsAppNumber, WhatsAppTemplates } from '../../lib/whatsapp';
+import { openWhatsApp, cleanWhatsAppNumber, WhatsAppTemplates, getSurveyUrl } from '../../lib/whatsapp';
 
 interface WhatsAppSimulatorProps {
   isOpen: boolean;
@@ -49,10 +49,15 @@ export const WhatsAppSimulator: React.FC<WhatsAppSimulatorProps> = ({
   // Estado para envío REAL de WhatsApp
   const [realPhone, setRealPhone] = useState<string>(targetClientPhone || '+56 9 ');
   const [realName, setRealName] = useState<string>('Oliver');
-  const [selectedTemplate, setSelectedTemplate] = useState<'confirmation' | 'reminder' | 'beautypass' | 'survey' | 'custom'>('confirmation');
+  const [selectedTemplate, setSelectedTemplate] = useState<'confirmation' | 'reminder' | 'beautypass' | 'survey' | 'post_service_survey' | 'custom'>('post_service_survey');
   const [realMessage, setRealMessage] = useState<string>(() => {
     const salonName = currentSalon?.name || 'Pelu OBi';
-    return `¡Hola Oliver! ✨ Te confirmamos tu cita en *${salonName}*:\n\n📅 Fecha: Viernes 5 de Septiembre\n⏰ Hora: 15:30 hrs\n💆‍♀️ Servicio: Corte & Estilo de Autor\n💇‍♀️ Estilista: Francisca\n\nSi necesitas reagendar o tienes alguna duda, escríbenos por aquí. ¡Te esperamos!`;
+    return WhatsAppTemplates.postServiceSurvey(
+      'Oliver',
+      salonName,
+      'Corte & Estilo de Autor',
+      getSurveyUrl('apt-demo-1')
+    );
   });
 
   // Estado para el simulador de pantalla
@@ -72,12 +77,43 @@ export const WhatsAppSimulator: React.FC<WhatsAppSimulatorProps> = ({
     (m) => m.toPhone === currentClient?.phone || m.toName === currentClient?.name
   );
 
+  // Cargar prueba rápida para Francisca Lizama (+56994891994)
+  const handleLoadFranciscaTest = () => {
+    setRealName('Francisca Lizama');
+    setRealPhone('+56 9 9489 1994');
+    setSelectedTemplate('post_service_survey');
+    const demoApt = appointments.find((a) => a.id) || appointments[0];
+    const surveyUrl = getSurveyUrl(demoApt?.id || 'apt-francisca-test');
+    setRealMessage(
+      WhatsAppTemplates.postServiceSurvey(
+        'Francisca',
+        salonName,
+        'Balayage Signature & Matiz Gloss',
+        surveyUrl
+      )
+    );
+    showToast('Datos de Prueba Cargados', 'Francisca Lizama (+56994891994) con encuesta post-servicio (+2h).', 'info');
+  };
+
   // Cambiar plantilla en el envío real
-  const handleSelectTemplate = (type: 'confirmation' | 'reminder' | 'beautypass' | 'survey' | 'custom') => {
+  const handleSelectTemplate = (type: 'confirmation' | 'reminder' | 'beautypass' | 'survey' | 'post_service_survey' | 'custom') => {
     setSelectedTemplate(type);
-    const firstName = realName.trim() || 'Cliente';
+    const firstName = realName.trim().split(' ')[0] || 'Cliente';
 
     switch (type) {
+      case 'post_service_survey':
+      case 'survey':
+        const demoApt = appointments[0];
+        const surveyUrl = getSurveyUrl(demoApt?.id || 'apt-demo-1');
+        setRealMessage(
+          WhatsAppTemplates.postServiceSurvey(
+            firstName,
+            salonName,
+            'Balayage Signature & Matiz Gloss',
+            surveyUrl
+          )
+        );
+        break;
       case 'confirmation':
         setRealMessage(
           `¡Hola ${firstName}! ✨ Te confirmamos tu cita en *${salonName}*:\n\n📅 Fecha: Viernes 5 de Septiembre\n⏰ Hora: 15:30 hrs\n💆‍♀️ Servicio: Balayage & Olaplex\n💇‍♀️ Estilista: Francisca\n\nSi necesitas reagendar, por favor avísanos con anticipación. ¡Te esperamos!`
@@ -91,11 +127,6 @@ export const WhatsAppSimulator: React.FC<WhatsAppSimulatorProps> = ({
       case 'beautypass':
         setRealMessage(
           `¡Hola ${firstName}! ✨ Te compartimos tu Beauty Pass VIP de *${salonName}*:\n\n💎 Tienes *1.450 Puntos Acumulados*\n🎁 20% de descuento en tu próxima sesión\n\nRevisa tus beneficios y visitas aquí: https://test.luu.cl/pass/vip-member`
-        );
-        break;
-      case 'survey':
-        setRealMessage(
-          `✨ *¿Cómo estuvo tu experiencia hoy en ${salonName}?*\n\nHola ${firstName}, gracias por visitarnos. ¿Podrías calificarnos del 1 al 5 ⭐ respondiendo a este mensaje? Tu opinión nos ayuda a brindarte siempre lo mejor.`
         );
         break;
       case 'custom':
@@ -256,6 +287,21 @@ export const WhatsAppSimulator: React.FC<WhatsAppSimulatorProps> = ({
                   <span>Seleccionar Tipo de Notificación</span>
                 </h4>
 
+                {/* Quick Test Preset for Verification */}
+                <div className="bg-emerald-50/90 p-2.5 rounded-xl border border-emerald-200 flex items-center justify-between">
+                  <div className="text-[11px] text-emerald-950 font-medium">
+                    <span>Prueba <strong>Francisca Lizama</strong> (+56 9 9489 1994)</span>
+                  </div>
+                  <Button
+                    type="button"
+                    size="sm"
+                    onClick={handleLoadFranciscaTest}
+                    className="h-7 text-[11px] font-bold bg-[#25D366] hover:bg-[#20ba5a] text-white px-2.5 shadow-xs"
+                  >
+                    ⚡ Cargar Prueba Francisca
+                  </Button>
+                </div>
+
                 <div className="grid grid-cols-2 gap-2">
                   <button
                     onClick={() => handleSelectTemplate('confirmation')}
@@ -300,16 +346,16 @@ export const WhatsAppSimulator: React.FC<WhatsAppSimulatorProps> = ({
                   </button>
 
                   <button
-                    onClick={() => handleSelectTemplate('survey')}
+                    onClick={() => handleSelectTemplate('post_service_survey')}
                     className={`p-2.5 rounded-xl text-left border transition-all ${
-                      selectedTemplate === 'survey'
+                      selectedTemplate === 'post_service_survey' || selectedTemplate === 'survey'
                         ? 'bg-emerald-50 border-[#25D366] text-emerald-950 font-bold shadow-xs ring-2 ring-[#25D366]/20'
                         : 'bg-[#FAF8F5] border-brand-100 hover:border-brand-300 text-charcoal-700'
                     }`}
                   >
                     <div className="flex items-center space-x-1.5">
-                      <Star className="w-4 h-4 text-emerald-600" />
-                      <span className="text-xs">Encuesta 5 Estrellas</span>
+                      <Sparkles className="w-4 h-4 text-emerald-600" />
+                      <span className="text-xs">Encuesta +2h & Retoque</span>
                     </div>
                   </button>
                 </div>

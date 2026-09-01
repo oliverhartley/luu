@@ -37,6 +37,16 @@ export function openWhatsApp(phone: string, message?: string): void {
 }
 
 /**
+ * Genera el enlace único para la encuesta post-servicio (+2h)
+ */
+export function getSurveyUrl(appointmentId: string): string {
+  if (typeof window !== 'undefined' && window.location) {
+    return `${window.location.origin}/?feedback=${appointmentId}`;
+  }
+  return `https://luu.cl/?feedback=${appointmentId}`;
+}
+
+/**
  * Plantillas predefinidas para mensajería directa
  */
 export const WhatsAppTemplates = {
@@ -55,9 +65,26 @@ export const WhatsAppTemplates = {
   ): string =>
     `¡Hola ${clientName.split(' ')[0]}! ✨ Te recordamos tu cita en *${salonName}*:\n\n📅 Fecha: ${date}\n⏰ Hora: ${time}\n💆‍♀️ Servicio: ${serviceName}\n💇‍♀️ Estilista: ${professionalName}\n\nSi necesitas reagendar, por favor avísanos con anticipación. ¡Te esperamos!`,
 
-  /** Encuesta de Satisfacción */
+  /** Encuesta de Satisfacción tradicional */
   survey: (clientName: string, salonName: string, professionalName: string): string =>
     `✨ *¿Cómo estuvo tu experiencia en ${salonName}?*\n\nHola ${clientName.split(' ')[0]}, gracias por visitarnos hoy para tu atención con ${professionalName}. ¿Podrías calificarnos del 1 al 5 ⭐? Tu opinión nos ayuda a brindarte siempre lo mejor.`,
+
+  /** Encuesta Post-Servicio (+2 Horas) con Link Único y Garantía de Retoque */
+  postServiceSurvey: (
+    clientName: string,
+    salonName: string,
+    serviceName: string,
+    surveyUrl: string
+  ): string =>
+    `¡Hola ${clientName.split(' ')[0]}! ✨ Esperamos que estés disfrutando tu día tras visitarnos en *${salonName}* 💕\n\nQueremos asegurarnos de que estés 100% feliz con tu atención de *${serviceName}*. ¿Te encantó tu resultado o hay algún detalle que quieras cambiar o retocar?\n\nTu satisfacción es nuestra prioridad: si algo no quedó exactamente como soñabas, ¡lo solucionamos de inmediato sin costo!\n\n👉 Cuéntanos aquí en 30 segundos:\n${surveyUrl}`,
+
+  /** Coordinación de Retoque Inmediato (Protocolo de Rescate) */
+  retouchCoordination: (
+    clientName: string,
+    salonName: string,
+    retouchDetail: string
+  ): string =>
+    `¡Hola ${clientName.split(' ')[0]}! 💕 Vimos tus comentarios en la encuesta post-servicio sobre tu atención en *${salonName}* (${retouchDetail}).\n\nEn nuestro salón tu felicidad está garantizada: queremos coordinar contigo una cita prioritaria de retoque totalmente gratuita para dejarlo exactamente como te gusta. ¿Qué día y horario te acomoda mejor? 🌸✨`,
 
   /** Saludo genérico para chat */
   greeting: (clientName: string, salonName: string): string =>

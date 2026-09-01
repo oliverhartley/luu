@@ -18,6 +18,11 @@ export interface TenantSalon {
   ownerId: string;
   createdAt: string;
   onboardingCompleted?: boolean;
+  coordinates?: {
+    lat: number;
+    lng: number;
+  };
+  googleMapsUrl?: string;
 }
 
 export interface GoogleAuthResponse {
@@ -81,13 +86,20 @@ export interface Professional {
   id: string;
   salonId?: string;
   name: string;
+  email?: string;
   roleTitle: string; // e.g. "Colorista Master", "Manicurista Senior"
   specialties: ServiceCategory[];
+  serviceIds?: string[]; // IDs or names of specific services they provide
   avatar: string;
   rating: number;
   commissionRate: number; // e.g. 0.40 (40%)
   phone: string;
   colorHex: string;
+  workingDays?: ('lun' | 'mar' | 'mie' | 'jue' | 'vie' | 'sab' | 'dom')[];
+  workingHours?: {
+    start: string; // e.g. "10:00"
+    end: string;   // e.g. "19:00"
+  };
 }
 
 export interface TechnicalFormula {
@@ -167,9 +179,15 @@ export interface Appointment {
     uploadedPhoto?: string;
     technicalNotes?: string;
     surveySent: boolean;
+    surveyScheduledAt?: string; // Hora programada para enviar la encuesta (2 horas después)
+    surveyUniqueLink?: string; // Enlace único personalizado para la clienta
+    surveyStatus?: 'scheduled' | 'sent' | 'completed' | 'retouch_requested';
     surveyRating?: number;
     surveyComment?: string;
     rectificationNeeded?: boolean;
+    retouchReason?: 'color_matiz' | 'corte_puntas' | 'volumen' | 'tratamiento' | 'otro';
+    retouchNotes?: string;
+    retouchResolved?: boolean;
   };
 }
 

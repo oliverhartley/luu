@@ -5,7 +5,6 @@ import {
   Calendar as CalendarIcon, 
   Store, 
   Scissors, 
-  Plus, 
   Smartphone, 
   Scale, 
   Search, 
@@ -23,7 +22,6 @@ import { UserMenu } from './UserMenu';
 import { isTestEnv } from '../../lib/env';
 
 interface NavbarProps {
-  onOpenNewAppointmentModal: () => void;
   onOpenWhatsAppSimulator: () => void;
   onOpenColorCalculator: () => void;
   onOpenCommandPalette: () => void;
@@ -32,7 +30,6 @@ interface NavbarProps {
 }
 
 export const Navbar: React.FC<NavbarProps> = ({ 
-  onOpenNewAppointmentModal, 
   onOpenWhatsAppSimulator,
   onOpenColorCalculator,
   onOpenCommandPalette,
@@ -117,19 +114,6 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <span className="w-2 h-2 rounded-full bg-white animate-ping absolute -top-0.5 -right-0.5 sm:relative sm:top-auto sm:right-auto" />
               )}
             </Button>
-
-            {/* Quick New Appointment Button */}
-            {role !== 'client' && (
-              <Button
-                variant="luxury"
-                size="sm"
-                onClick={onOpenNewAppointmentModal}
-                className="flex items-center space-x-1.5"
-              >
-                <Plus className="w-4 h-4" />
-                <span className="hidden xs:inline">Nueva Cita</span>
-              </Button>
-            )}
 
             {/* Setup Wizard Button */}
             {currentUser && role !== 'client' && (

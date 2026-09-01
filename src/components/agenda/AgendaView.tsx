@@ -13,23 +13,28 @@ import {
   Plus,
   Phone,
   AlertCircle,
-  Filter
+  Filter,
+  AlertTriangle,
+  ExternalLink
 } from 'lucide-react';
 import { Appointment, AppointmentStatus } from '../../types';
 import { AddServiceToAppointmentModal } from '../stylists/AddServiceToAppointmentModal';
+import { openWhatsApp, WhatsAppTemplates } from '../../lib/whatsapp';
 
 interface AgendaViewProps {
   onOpenNewAppointment: () => void;
   onOpenCheckout: (appointment: Appointment) => void;
   onViewClientProfile: (clientId: string) => void;
   onOpenWhatsAppForAppointment: (appointment: Appointment) => void;
+  onOpenSurveyPreview?: (appointmentId: string) => void;
 }
 
 export const AgendaView: React.FC<AgendaViewProps> = ({
   onOpenNewAppointment,
   onOpenCheckout,
   onViewClientProfile,
-  onOpenWhatsAppForAppointment
+  onOpenWhatsAppForAppointment,
+  onOpenSurveyPreview
 }) => {
   const { 
     appointments, 
@@ -40,6 +45,7 @@ export const AgendaView: React.FC<AgendaViewProps> = ({
     setSelectedProfessionalFilter,
     checkInAppointment,
     updateAppointmentStatus,
+    resolveRetouchRequest,
     role,
     currentSalon,
     setIsOnboardingOpen
@@ -233,12 +239,6 @@ export const AgendaView: React.FC<AgendaViewProps> = ({
             <p className="text-xs text-charcoal-500 mt-1 max-w-sm mx-auto">
               No se encontraron citas para esta fecha o profesional seleccionado.
             </p>
-            <button
-              onClick={onOpenNewAppointment}
-              className="mt-4 px-4 py-2 text-xs font-semibold text-white bg-brand-500 hover:bg-brand-600 rounded-xl shadow-md transition-all"
-            >
-              Crear Nueva Cita
-            </button>
           </div>
         ) : (
           filteredAppointments.map((apt) => (
@@ -318,7 +318,7 @@ export const AgendaView: React.FC<AgendaViewProps> = ({
                       className="mt-2 w-full flex items-center justify-center space-x-1 py-1 px-2 rounded-lg text-[11px] font-bold text-brand-700 bg-white hover:bg-brand-50 border border-brand-200 border-dashed hover:border-brand-400 transition-all"
                     >
                       <Plus className="w-3 h-3 text-brand-600" />
-                      <span>+ Agregar Servicio</span>
+                      <span>Agregar Servicio</span>
                     </button>
                   )}
                 </div>
@@ -359,15 +359,65 @@ export const AgendaView: React.FC<AgendaViewProps> = ({
                     </button>
                   )}
 
-                  {/* If completed, show survey rating badge */}
+                  {/* If completed, show post-service survey & retouch status */}
                   {apt.status === 'completed' && apt.checkoutDetails && (
-                    <div className="text-right">
-                      {apt.checkoutDetails.surveyRating ? (
-                        <div className="inline-flex items-center space-x-1 px-2.5 py-1 bg-amber-50 border border-amber-200 rounded-xl text-xs font-bold text-amber-800">
-                          <span>⭐ {apt.checkoutDetails.surveyRating}/5 estrellas</span>
+                    <div className="flex flex-col items-end gap-1.5">
+                      {/* Case 1: Retouch Requested (Client at risk!) */}
+                      {apt.checkoutDetails.surveyStatus === 'retouch_requested' || (apt.checkoutDetails.surveyRating && apt.checkoutDetails.surveyRating <= 3) ? (
+                        <div className="flex flex-col items-end gap-1">
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl text-xs font-bold bg-rose-100 text-rose-800 border border-rose-300 animate-pulse">
+                            <AlertTriangle className="w-3.5 h-3.5 text-rose-600" />
+                            🚨 Retoque Solicitado ({apt.checkoutDetails.retouchReason || 'Detalle'})
+                          </span>
+
+                          <div className="flex items-center gap-1.5 mt-0.5">
+                            <button
+                              onClick={() => {
+                                const detail = apt.checkoutDetails?.retouchNotes || apt.checkoutDetails?.retouchReason || 'revisión del resultado';
+                                const msg = WhatsAppTemplates.retouchCoordination(apt.clientName, currentSalon?.name || 'nuestro salón', detail);
+                                openWhatsApp(apt.clientPhone, msg);
+                              }}
+                              className="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-[#25D366] hover:bg-[#20ba5a] text-white shadow-xs flex items-center space-x-1"
+                              title="Contactar a la clienta por WhatsApp para coordinar el retoque prioritario"
+                            >
+                              <MessageCircle className="w-3 h-3" />
+                              <span>Coordinar Retoque (wa.me)</span>
+                            </button>
+
+                            <button
+                              onClick={() => resolveRetouchRequest(apt.id)}
+                              className="px-2 py-1 rounded-lg text-[10px] font-medium bg-charcoal-100 hover:bg-charcoal-200 text-charcoal-700"
+                              title="Marcar retoque como resuelto"
+                            >
+                              Listo ✓
+                            </button>
+                          </div>
+                        </div>
+                      ) : apt.checkoutDetails.surveyRating ? (
+                        /* Case 2: Happy Rating */
+                        <div className="inline-flex items-center space-x-1 px-2.5 py-1 bg-emerald-50 border border-emerald-200 rounded-xl text-xs font-bold text-emerald-800">
+                          <span>⭐ {apt.checkoutDetails.surveyRating}/5 estrellas (Clienta Feliz)</span>
                         </div>
                       ) : (
-                        <span className="text-[11px] text-charcoal-500 italic">Encuesta WhatsApp enviada</span>
+                        /* Case 3: Scheduled (+2 Hours) */
+                        <div className="flex items-center gap-1.5">
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-brand-50 border border-brand-200 rounded-xl text-[11px] font-medium text-brand-800">
+                            <Clock className="w-3 h-3 text-brand-600" />
+                            <span>Encuesta +2h {apt.checkoutDetails.surveyScheduledAt ? `(${apt.checkoutDetails.surveyScheduledAt} hrs)` : ''}</span>
+                          </span>
+                        </div>
+                      )}
+
+                      {/* Test / Preview Button for the survey */}
+                      {onOpenSurveyPreview && (
+                        <button
+                          onClick={() => onOpenSurveyPreview(apt.id)}
+                          className="text-[10px] text-brand-600 hover:text-brand-800 underline flex items-center gap-0.5"
+                          title="Abrir vista de encuesta como la ve la clienta"
+                        >
+                          <ExternalLink className="w-2.5 h-2.5" />
+                          <span>Ver Encuesta Clienta</span>
+                        </button>
                       )}
                     </div>
                   )}

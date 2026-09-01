@@ -24,6 +24,7 @@ import { StylistsManager } from './components/stylists/StylistsManager';
 import { AuthScreen } from './components/auth/AuthScreen';
 import { OnboardingWizardModal } from './components/onboarding/OnboardingWizardModal';
 import { TutorialModal } from './components/tutorial/TutorialModal';
+import { ClientSatisfactionSurvey } from './components/client-portal/ClientSatisfactionSurvey';
 import { Appointment, Client } from './types';
 
 export const App: React.FC = () => {
@@ -41,6 +42,43 @@ export const App: React.FC = () => {
   const [isBeforeAfterOpen, setIsBeforeAfterOpen] = useState<boolean>(false);
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState<boolean>(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
+  const [surveyTargetAppointmentId, setSurveyTargetAppointmentId] = useState<string | null>(null);
+
+  // Check if URL has ?feedback=appointmentId, /feedback/:id or #feedback-:id for direct customer link (100% sin autenticación)
+  const [urlFeedbackAptId, setUrlFeedbackAptId] = useState<string | null>(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const queryParam = params.get('feedback') || params.get('encuesta');
+      if (queryParam) return queryParam;
+
+      const path = window.location.pathname;
+      if (path.startsWith('/feedback/') || path.startsWith('/encuesta/')) {
+        return path.split('/')[2] || 'apt-direct';
+      }
+
+      const hash = window.location.hash;
+      if (hash.startsWith('#feedback-') || hash.startsWith('#encuesta-')) {
+        return hash.replace(/^#(feedback|encuesta)-/, '');
+      }
+    }
+    return null;
+  });
+
+  // If customer accessed direct unique survey link (?feedback=aptId)
+  if (urlFeedbackAptId) {
+    return (
+      <div className="min-h-screen bg-[#FAF7F2]">
+        <ClientSatisfactionSurvey
+          appointmentId={urlFeedbackAptId}
+          onClose={() => {
+            setUrlFeedbackAptId(null);
+            window.history.replaceState({}, '', window.location.pathname);
+          }}
+        />
+        <ToastContainer />
+      </div>
+    );
+  }
 
   // If Client self-booking role is active, render customer booking view
   if (role === 'client') {
@@ -67,7 +105,6 @@ export const App: React.FC = () => {
       
       {/* Top Navigation */}
       <Navbar
-        onOpenNewAppointmentModal={() => setIsNewAppointmentOpen(true)}
         onOpenWhatsAppSimulator={() => {
           setWhatsAppTargetPhone(undefined);
           setIsWhatsAppSimulatorOpen(true);
@@ -95,6 +132,7 @@ export const App: React.FC = () => {
                 setWhatsAppTargetPhone(apt.clientPhone);
                 setIsWhatsAppSimulatorOpen(true);
               }}
+              onOpenSurveyPreview={(aptId) => setSurveyTargetAppointmentId(aptId)}
             />
           )}
 
@@ -180,6 +218,15 @@ export const App: React.FC = () => {
         onClose={() => setIsWhatsAppSimulatorOpen(false)}
         targetClientPhone={whatsAppTargetPhone}
       />
+
+      {/* Client Satisfaction & Retouch Survey Modal Preview */}
+      {surveyTargetAppointmentId && (
+        <ClientSatisfactionSurvey
+          appointmentId={surveyTargetAppointmentId}
+          isModal
+          onClose={() => setSurveyTargetAppointmentId(null)}
+        />
+      )}
 
       <ColorRatioCalculatorModal
         isOpen={isColorCalculatorOpen}

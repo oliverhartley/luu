@@ -84,6 +84,19 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({ isOpen, onCl
     const serv = services.find((s) => s.id === serviceId);
     if (!serv) return;
 
+    // Check if the current professional already attends this service or category
+    const currentItem = selectedItems[index];
+    const currentProf = professionals.find((p) => p.id === currentItem?.professionalId);
+    const currentCanDo = currentProf && (
+      (currentProf.serviceIds && currentProf.serviceIds.includes(serv.id)) ||
+      currentProf.specialties.includes(serv.category)
+    );
+
+    // If current professional cannot attend, find one who can
+    const matchingProf = currentCanDo ? currentProf : professionals.find((p) =>
+      (p.serviceIds && p.serviceIds.includes(serv.id)) || p.specialties.includes(serv.category)
+    ) || currentProf;
+
     setSelectedItems((prev) =>
       prev.map((item, i) => {
         if (i === index) {
@@ -92,7 +105,8 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({ isOpen, onCl
             serviceId: serv.id,
             serviceName: serv.name,
             durationMinutes: serv.durationMinutes,
-            price: serv.price
+            price: serv.price,
+            ...(matchingProf ? { professionalId: matchingProf.id, professionalName: matchingProf.name } : {})
           };
         }
         return item;
@@ -292,7 +306,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({ isOpen, onCl
                 className="inline-flex items-center space-x-1 text-xs font-bold text-brand-600 hover:text-brand-800 bg-brand-50 hover:bg-brand-100 px-2.5 py-1 rounded-lg transition-all"
               >
                 <Plus className="w-3.5 h-3.5" />
-                <span>+ Agregar Otro Servicio</span>
+                <span>Agregar Otro Servicio</span>
               </button>
             </div>
 
@@ -328,11 +342,18 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({ isOpen, onCl
                       onChange={(e) => handleProfessionalChange(index, e.target.value)}
                       className="w-full px-2.5 py-1.5 text-xs bg-white border border-brand-200 rounded-lg focus:outline-none font-medium"
                     >
-                      {professionals.map((p) => (
-                        <option key={p.id} value={p.id}>
-                          {p.name} ({p.roleTitle.split(' ')[0]})
-                        </option>
-                      ))}
+                      {professionals.map((p) => {
+                        const targetService = services.find((s) => s.id === item.serviceId);
+                        const attends = targetService && (
+                          (p.serviceIds && p.serviceIds.includes(targetService.id)) ||
+                          p.specialties?.includes(targetService.category)
+                        );
+                        return (
+                          <option key={p.id} value={p.id}>
+                            {p.name} {attends ? '✓' : ''} ({p.roleTitle.split(' ')[0]})
+                          </option>
+                        );
+                      })}
                     </select>
                   </div>
 

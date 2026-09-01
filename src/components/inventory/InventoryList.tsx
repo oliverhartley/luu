@@ -310,7 +310,7 @@ export const InventoryList: React.FC = () => {
             className="inline-flex items-center space-x-1.5 px-3.5 py-2 text-xs font-bold text-white bg-brand-500 hover:bg-brand-600 rounded-xl shadow-md transition-all active:scale-95"
           >
             <Plus className="w-4 h-4" />
-            <span>+ Nuevo Producto</span>
+            <span>Nuevo Producto</span>
           </button>
         </div>
       </div>

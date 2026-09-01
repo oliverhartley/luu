@@ -39,6 +39,7 @@ import {
   INITIAL_WHATSAPP_LOGS,
   INITIAL_STATIONS
 } from '../data/mockData';
+import { WhatsAppTemplates, getSurveyUrl } from '../lib/whatsapp';
 
 interface Toast {
   id: string;
@@ -154,6 +155,17 @@ interface AppContextType {
   checkInAppointment: (id: string) => void;
   checkoutAppointment: (id: string, details: Appointment['checkoutDetails']) => void;
   submitSurveyFeedback: (appointmentId: string, rating: number, comment?: string) => void;
+  submitPostServiceSurvey: (
+    appointmentId: string,
+    data: {
+      rating: number;
+      isHappy: boolean;
+      wantsRetouch: boolean;
+      retouchReason?: 'color_matiz' | 'corte_puntas' | 'volumen' | 'tratamiento' | 'otro';
+      retouchNotes?: string;
+    }
+  ) => void;
+  resolveRetouchRequest: (appointmentId: string) => void;
   addClientFormula: (clientId: string, formula: Omit<TechnicalFormula, 'id' | 'date'>) => void;
   addClient: (client: Omit<Client, 'id' | 'totalVisits' | 'totalSpent' | 'avgTicket' | 'firstVisitDate' | 'lastVisitDate' | 'formulas'>) => Client;
   updateClient: (client: Client) => void;
@@ -1087,6 +1099,22 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     // Deduct stock
     autoDeductInventoryForServices(apt.items);
 
+    // Calcular hora programada para la encuesta (2 horas después)
+    const timePart = details.completedAt ? details.completedAt.split(' ')[1] : '14:00';
+    const [h, m] = (timePart || '14:00').split(':').map(Number);
+    const scheduledHour = (h + 2) % 24;
+    const surveyScheduledAt = `${String(scheduledHour).padStart(2, '0')}:${String(m || 0).padStart(2, '0')}`;
+    const surveyUniqueLink = getSurveyUrl(apt.id);
+    const primaryService = apt.items.map((i) => i.serviceName).join(' + ') || 'tu servicio';
+
+    const enrichedDetails = {
+      ...details,
+      surveyScheduledAt,
+      surveyUniqueLink,
+      surveyStatus: 'scheduled' as const,
+      surveySent: true
+    };
+
     // Update appointment
     setAppointments((prev) =>
       prev.map((a) =>
@@ -1094,7 +1122,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           ? {
               ...a,
               status: 'completed',
-              checkoutDetails: details
+              checkoutDetails: enrichedDetails
             }
           : a
       )
@@ -1118,30 +1146,54 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       })
     );
 
-    // Automatically trigger WhatsApp satisfaction survey
+    // Enviar / programar mensaje de WhatsApp post-servicio (+2 horas) con link único de garantía
+    const postServiceMsg = WhatsAppTemplates.postServiceSurvey(
+      apt.clientName,
+      currentSalon.name,
+      primaryService,
+      surveyUniqueLink
+    );
+
     sendWhatsAppMessage(
       apt.clientName,
       apt.clientPhone,
       'survey',
-      `✨ *¿Cómo fue tu experiencia hoy en ${currentSalon.name}?*\n\nHola ${apt.clientName}, fue un placer atenderte. Para nosotras es fundamental saber qué te pareció tu visita de hoy con ${apt.items.map((i) => i.professionalName).join(', ')}.\n\nPor favor califícanos del 1 al 5 estrellas ⭐ respondiendo este mensaje o tocando en tu enlace personalizado de feedback.`,
+      postServiceMsg,
       apt.id
     );
 
-    showToast('Atención finalizada & Cobrada', `Total $${details.total.toLocaleString('es-CL')}. Encuesta enviada por WhatsApp.`);
+    showToast(
+      'Atención Cobrada & Encuesta Programada',
+      `Total $${details.total.toLocaleString('es-CL')}. Encuesta +2h (${surveyScheduledAt} hrs) con enlace único preparada.`,
+      'success'
+    );
   };
 
-  const submitSurveyFeedback = (appointmentId: string, rating: number, comment?: string) => {
+  const submitPostServiceSurvey = (
+    appointmentId: string,
+    data: {
+      rating: number;
+      isHappy: boolean;
+      wantsRetouch: boolean;
+      retouchReason?: 'color_matiz' | 'corte_puntas' | 'volumen' | 'tratamiento' | 'otro';
+      retouchNotes?: string;
+    }
+  ) => {
     setAppointments((prev) =>
       prev.map((apt) => {
         if (apt.id === appointmentId && apt.checkoutDetails) {
-          const rectificationNeeded = rating <= 3;
+          const rectificationNeeded = data.wantsRetouch || data.rating <= 3;
           return {
             ...apt,
             checkoutDetails: {
               ...apt.checkoutDetails,
-              surveyRating: rating,
-              surveyComment: comment,
-              rectificationNeeded
+              surveyRating: data.rating,
+              surveyComment: data.retouchNotes,
+              surveyStatus: data.wantsRetouch ? 'retouch_requested' : 'completed',
+              rectificationNeeded,
+              retouchReason: data.retouchReason,
+              retouchNotes: data.retouchNotes,
+              retouchResolved: false
             }
           };
         }
@@ -1151,23 +1203,53 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     const apt = appointments.find((a) => a.id === appointmentId);
     if (apt) {
-      if (rating <= 3) {
+      if (data.wantsRetouch || data.rating <= 3) {
         showToast(
-          '🚨 Alerta de Calificación Baja',
-          `${apt.clientName} calificó con ${rating} estrellas. Se activó el protocolo de rectificación post-servicio.`,
+          '🚨 ALERTA: Solicitud de Retoque Preventivo',
+          `${apt.clientName} quiere revisar/retocar su atención (${data.retouchReason || 'Detalle'}). Se activó el protocolo de rescate inmediato.`,
           'warning'
         );
         sendWhatsAppMessage(
           apt.clientName,
           apt.clientPhone,
           'rectification',
-          `Hola ${apt.clientName}, lamentamos profundamente que tu experiencia no haya sido 100% perfecta. En ${currentSalon.name} nuestra prioridad es que ames tu resultado. Nuestro director(a) de salón te contactará enseguida para ofrecerte un retoque o solución gratuita de inmediato. 🙏💖`,
+          `Hola ${apt.clientName}, recibimos tu respuesta en la encuesta post-servicio. En ${currentSalon.name} tu felicidad está 100% garantizada 💕 Nuestro equipo te contactará de inmediato para agendar un retoque prioritario sin ningún costo. 🙏🌸`,
           apt.id
         );
       } else {
-        showToast('⭐ Calificación Recibida', `${apt.clientName} dejó una reseña de ${rating} estrellas!`);
+        showToast('⭐ Clienta 100% Feliz', `¡${apt.clientName} está feliz con su atención! Calificación 5 estrellas registrada.`);
       }
     }
+  };
+
+  const resolveRetouchRequest = (appointmentId: string) => {
+    setAppointments((prev) =>
+      prev.map((apt) => {
+        if (apt.id === appointmentId && apt.checkoutDetails) {
+          return {
+            ...apt,
+            checkoutDetails: {
+              ...apt.checkoutDetails,
+              retouchResolved: true,
+              rectificationNeeded: false,
+              surveyStatus: 'completed'
+            }
+          };
+        }
+        return apt;
+      })
+    );
+    showToast('Retoque Coordinado', 'Se marcó el requerimiento de retoque como gestionado exitosamente.', 'success');
+  };
+
+  const submitSurveyFeedback = (appointmentId: string, rating: number, comment?: string) => {
+    submitPostServiceSurvey(appointmentId, {
+      rating,
+      isHappy: rating >= 4,
+      wantsRetouch: rating <= 3,
+      retouchReason: rating <= 3 ? 'otro' : undefined,
+      retouchNotes: comment
+    });
   };
 
   const addClientFormula = (clientId: string, formulaData: Omit<TechnicalFormula, 'id' | 'date'>) => {
@@ -1407,6 +1489,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         checkInAppointment,
         checkoutAppointment,
         submitSurveyFeedback,
+        submitPostServiceSurvey,
+        resolveRetouchRequest,
         addClientFormula,
         addClient,
         updateClient,
