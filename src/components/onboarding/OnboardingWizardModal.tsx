@@ -241,6 +241,8 @@ export const OnboardingWizardModal: React.FC = () => {
   const [newServiceName, setNewServiceName] = useState<string>('');
   const [newServicePrice, setNewServicePrice] = useState<number>(30000);
   const [newServiceDuration, setNewServiceDuration] = useState<number>(60);
+  const [newServiceCategory, setNewServiceCategory] = useState<ServiceCategory>('hair');
+  const [newServiceRecurrenceDays, setNewServiceRecurrenceDays] = useState<number>(30);
   const [isAddingCustomService, setIsAddingCustomService] = useState<boolean>(false);
 
   // Link copy state
@@ -448,14 +450,19 @@ export const OnboardingWizardModal: React.FC = () => {
     if (!newServiceName.trim()) return;
     addService({
       name: newServiceName.trim(),
-      category: 'hair',
+      category: newServiceCategory,
       durationMinutes: Number(newServiceDuration) || 60,
       price: Number(newServicePrice) || 25000,
+      defaultRecurrenceDays: Number(newServiceRecurrenceDays) || 30,
       description: 'Servicio creado durante la configuración inicial.'
     });
     setNewServiceName('');
     setNewServicePrice(30000);
+    setNewServiceDuration(60);
+    setNewServiceCategory('hair');
+    setNewServiceRecurrenceDays(30);
     setIsAddingCustomService(false);
+    showToast('Servicio Agregado', `Se agregó "${newServiceName.trim()}" a tu carta.`, 'success');
   };
 
   // Finish Onboarding
@@ -921,43 +928,149 @@ export const OnboardingWizardModal: React.FC = () => {
                 <span>Agregar un servicio personalizado</span>
               </button>
             ) : (
-              <form onSubmit={handleAddCustomService} className="p-4 bg-brand-50/50 border border-brand-200 rounded-2xl space-y-3">
-                <span className="text-xs font-bold text-charcoal-800">Nuevo Servicio Personalizado</span>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-                  <div className="sm:col-span-1">
-                    <label className="block text-[11px] font-medium text-charcoal-600 mb-1">Nombre</label>
+              <form onSubmit={handleAddCustomService} className="p-4 sm:p-5 bg-white border-2 border-brand-300 ring-2 ring-brand-100/50 rounded-2xl space-y-4 shadow-sm animate-fade-in">
+                <div className="flex items-center justify-between border-b border-brand-100 pb-2.5">
+                  <span className="text-xs font-bold text-charcoal-900 flex items-center gap-1.5">
+                    <Sparkles className="w-3.5 h-3.5 text-brand-500" />
+                    Nuevo Servicio Personalizado
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setIsAddingCustomService(false)}
+                    className="text-charcoal-400 hover:text-charcoal-700 text-xs p-1"
+                  >
+                    ✕
+                  </button>
+                </div>
+
+                {/* Fila 1: Categoría y Nombre */}
+                <div className="grid grid-cols-1 sm:grid-cols-12 gap-3">
+                  <div className="sm:col-span-4">
+                    <label className="block text-[11px] font-bold text-charcoal-700 mb-1">
+                      Categoría *
+                    </label>
+                    <select
+                      value={newServiceCategory}
+                      onChange={(e) => {
+                        const cat = e.target.value as ServiceCategory;
+                        setNewServiceCategory(cat);
+                        // Auto-sugerir recurrencia inteligente según categoría
+                        if (cat === 'nails') setNewServiceRecurrenceDays(15);
+                        else if (cat === 'brows_lashes') setNewServiceRecurrenceDays(25);
+                        else if (cat === 'skincare') setNewServiceRecurrenceDays(30);
+                        else if (cat === 'spa') setNewServiceRecurrenceDays(30);
+                        else setNewServiceRecurrenceDays(45);
+                      }}
+                      className="w-full px-3 py-2 text-xs bg-[#FAF8F5] border border-brand-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-400 font-medium text-charcoal-800"
+                    >
+                      {CATEGORY_OPTIONS.map((cat) => (
+                        <option key={cat.id} value={cat.id}>
+                          {cat.icon} {cat.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="sm:col-span-8">
+                    <label className="block text-[11px] font-bold text-charcoal-700 mb-1">
+                      Nombre del Servicio *
+                    </label>
                     <input
                       type="text"
                       required
                       value={newServiceName}
                       onChange={(e) => setNewServiceName(e.target.value)}
-                      placeholder="Ej. Mechas Babylights"
-                      className="w-full px-3 py-2 text-xs bg-white border border-brand-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-400"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-[11px] font-medium text-charcoal-600 mb-1">Precio ($ CLP)</label>
-                    <input
-                      type="number"
-                      required
-                      value={newServicePrice}
-                      onChange={(e) => setNewServicePrice(Number(e.target.value))}
-                      className="w-full px-3 py-2 text-xs bg-white border border-brand-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-400"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-[11px] font-medium text-charcoal-600 mb-1">Duración (min)</label>
-                    <input
-                      type="number"
-                      required
-                      value={newServiceDuration}
-                      onChange={(e) => setNewServiceDuration(Number(e.target.value))}
-                      className="w-full px-3 py-2 text-xs bg-white border border-brand-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-400"
+                      placeholder="Ej. Mechas Babylights, Retoque de Raíz, etc."
+                      className="w-full px-3 py-2 text-xs bg-[#FAF8F5] border border-brand-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-400"
                     />
                   </div>
                 </div>
 
-                <div className="flex justify-end space-x-2">
+                {/* Fila 2: Precio, Duración y Frecuencia de Retorno */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div>
+                    <label className="block text-[11px] font-bold text-charcoal-700 mb-1">
+                      Precio ($ CLP) *
+                    </label>
+                    <input
+                      type="number"
+                      required
+                      min={0}
+                      step={500}
+                      value={newServicePrice}
+                      onChange={(e) => setNewServicePrice(Number(e.target.value))}
+                      className="w-full px-3 py-2 text-xs bg-[#FAF8F5] border border-brand-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-400"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-bold text-charcoal-700 mb-1">
+                      Duración del Servicio *
+                    </label>
+                    <div className="relative">
+                      <input
+                        type="number"
+                        required
+                        min={10}
+                        step={5}
+                        value={newServiceDuration}
+                        onChange={(e) => setNewServiceDuration(Number(e.target.value))}
+                        className="w-full px-3 py-2 pr-12 text-xs bg-[#FAF8F5] border border-brand-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-400"
+                      />
+                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[11px] text-charcoal-400 font-medium pointer-events-none">
+                        min
+                      </span>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-bold text-charcoal-700 mb-1">
+                      ¿Cada cuánto tiempo realizarse? *
+                    </label>
+                    <div className="relative">
+                      <input
+                        type="number"
+                        required
+                        min={7}
+                        max={365}
+                        value={newServiceRecurrenceDays}
+                        onChange={(e) => setNewServiceRecurrenceDays(Number(e.target.value))}
+                        className="w-full px-3 py-2 pr-12 text-xs bg-[#FAF8F5] border border-brand-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-400 font-medium text-charcoal-900"
+                      />
+                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[11px] text-charcoal-400 font-medium pointer-events-none">
+                        días
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Presets rápidos de sugerencia */}
+                <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
+                  <span className="text-[10px] text-charcoal-500 font-medium mr-1">Frecuencia sugerida:</span>
+                  {[
+                    { label: '15 días (Uñas)', days: 15 },
+                    { label: '25 días (Pestañas/Raíz)', days: 25 },
+                    { label: '30 días (1 mes)', days: 30 },
+                    { label: '45 días (1.5 meses)', days: 45 },
+                    { label: '60 días (2 meses)', days: 60 },
+                    { label: '90 días (3 meses)', days: 90 },
+                  ].map((preset) => (
+                    <button
+                      key={preset.days}
+                      type="button"
+                      onClick={() => setNewServiceRecurrenceDays(preset.days)}
+                      className={`px-2 py-0.5 rounded-lg text-[10px] font-medium border transition-all cursor-pointer ${
+                        newServiceRecurrenceDays === preset.days
+                          ? 'bg-brand-100 border-brand-400 text-brand-900 font-bold'
+                          : 'bg-[#FAF8F5] border-brand-200 text-charcoal-600 hover:bg-brand-50'
+                      }`}
+                    >
+                      {preset.label}
+                    </button>
+                  ))}
+                </div>
+
+                <div className="flex justify-end space-x-2 pt-2 border-t border-brand-100">
                   <Button
                     type="button"
                     variant="ghost"
@@ -971,7 +1084,7 @@ export const OnboardingWizardModal: React.FC = () => {
                     type="submit"
                     variant="luxury"
                     size="sm"
-                    className="text-xs font-bold"
+                    className="text-xs font-bold shadow-xs"
                   >
                     Guardar Servicio
                   </Button>
