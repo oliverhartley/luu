@@ -11,12 +11,14 @@ import {
   FileText, 
   Image as ImageIcon, 
   Heart, 
-  DollarSign,
   Phone,
   Mail,
-  Award
+  Award,
+  MessageCircle,
+  ExternalLink
 } from 'lucide-react';
 import { Client, TechnicalFormula } from '../../types';
+import { openWhatsApp, WhatsAppTemplates, getSurveyUrl } from '../../lib/whatsapp';
 
 interface ClientProfileModalProps {
   clientId: string | null;
@@ -29,7 +31,7 @@ export const ClientProfileModal: React.FC<ClientProfileModalProps> = ({
   onClose,
   onOpenNewFormula
 }) => {
-  const { clients, appointments, role } = useApp();
+  const { clients, appointments, currentSalon, showToast, role } = useApp();
 
   const client = clients.find((c) => c.id === clientId);
   const [activeSubTab, setActiveSubTab] = useState<'formulas' | 'history' | 'photos'>('formulas');
@@ -37,6 +39,31 @@ export const ClientProfileModal: React.FC<ClientProfileModalProps> = ({
   if (!clientId || !client) return null;
 
   const clientAppointments = appointments.filter((a) => a.clientId === client.id);
+
+  // Gatillar mensaje de encuesta de satisfacción y retoque vía WhatsApp
+  const handleTriggerSurvey = (targetAppointmentId?: string) => {
+    const latestApt = targetAppointmentId 
+      ? clientAppointments.find((a) => a.id === targetAppointmentId)
+      : clientAppointments.filter((a) => a.status === 'completed')[0] || clientAppointments[0];
+
+    const serviceName = latestApt?.items[0]?.serviceName || 'tu atención';
+    const aptId = latestApt?.id || `client-${client.id}`;
+    const surveyUrl = getSurveyUrl(aptId);
+    
+    const message = WhatsAppTemplates.postServiceSurvey(
+      client.name,
+      currentSalon?.name || 'nuestro salón',
+      serviceName,
+      surveyUrl
+    );
+
+    openWhatsApp(client.phone, message);
+    showToast(
+      'Encuesta WhatsApp Gatillada',
+      `Se abrió WhatsApp con el enlace único de encuesta para ${client.name}.`,
+      'success'
+    );
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-charcoal-950/60 backdrop-blur-sm animate-fade-in overflow-y-auto">
@@ -91,6 +118,33 @@ export const ClientProfileModal: React.FC<ClientProfileModalProps> = ({
                 Nota de Salón: "{client.notes}"
               </p>
             )}
+
+            {/* Acciones Rápidas: Gatillar Encuesta WhatsApp */}
+            <div className="mt-3 flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                onClick={() => handleTriggerSurvey()}
+                className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-bold text-white bg-[#25D366] hover:bg-[#20ba5a] shadow-xs transition-all active:scale-95 cursor-pointer"
+                title="Enviar mensaje de WhatsApp con la encuesta de satisfacción y garantía de retoque"
+              >
+                <MessageCircle className="w-3.5 h-3.5" />
+                <span>Gatillar Encuesta WhatsApp</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  const latestApt = clientAppointments.filter((a) => a.status === 'completed')[0] || clientAppointments[0];
+                  const aptId = latestApt?.id || `client-${client.id}`;
+                  window.open(getSurveyUrl(aptId), '_blank');
+                }}
+                className="inline-flex items-center space-x-1 px-2.5 py-1.5 rounded-xl text-xs font-semibold text-charcoal-700 bg-[#FAF8F5] hover:bg-brand-50 border border-brand-200 transition-all cursor-pointer"
+                title="Abrir vista previa de la encuesta de esta clienta"
+              >
+                <ExternalLink className="w-3 h-3 text-brand-600" />
+                <span>Ver Encuesta</span>
+              </button>
+            </div>
           </div>
         </div>
 
@@ -286,14 +340,32 @@ export const ClientProfileModal: React.FC<ClientProfileModalProps> = ({
                       <div key={idx}>• {i.serviceName} ({i.professionalName})</div>
                     ))}
                   </div>
-                  {apt.checkoutDetails?.surveyRating && (
-                    <div className="mt-2 pt-1 border-t border-brand-200/60 flex items-center justify-between text-[11px] text-amber-800">
-                      <span>Calificación WhatsApp: ⭐ {apt.checkoutDetails.surveyRating}/5</span>
-                      {apt.checkoutDetails.surveyComment && (
-                        <span className="italic truncate max-w-xs">"{apt.checkoutDetails.surveyComment}"</span>
-                      )}
-                    </div>
-                  )}
+                  {/* Survey & Retouch Status + Action */}
+                  <div className="mt-2 pt-2 border-t border-brand-200/60 flex items-center justify-between flex-wrap gap-2">
+                    {apt.checkoutDetails?.surveyRating ? (
+                      <span className="text-[11px] font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-lg">
+                        ⭐ Calificación: {apt.checkoutDetails.surveyRating}/5 estrellas
+                      </span>
+                    ) : apt.checkoutDetails?.surveyStatus === 'retouch_requested' ? (
+                      <span className="text-[11px] font-bold text-rose-800 bg-rose-50 border border-rose-200 px-2 py-0.5 rounded-lg">
+                        🚨 Retoque solicitado ({apt.checkoutDetails?.retouchReason || 'Detalle'})
+                      </span>
+                    ) : (
+                      <span className="text-[11px] text-charcoal-500 font-medium">
+                        {apt.status === 'completed' ? 'Atención finalizada' : 'Cita programada'}
+                      </span>
+                    )}
+
+                    <button
+                      type="button"
+                      onClick={() => handleTriggerSurvey(apt.id)}
+                      className="inline-flex items-center space-x-1 px-2.5 py-1 rounded-lg text-[11px] font-bold text-[#128C7E] hover:text-white bg-emerald-50 hover:bg-[#25D366] border border-emerald-200 transition-all cursor-pointer shadow-2xs"
+                      title="Enviar por WhatsApp la encuesta correspondiente a esta cita"
+                    >
+                      <MessageCircle className="w-3 h-3" />
+                      <span>{apt.checkoutDetails?.surveyRating ? 'Reenviar Encuesta' : 'Gatillar Encuesta WhatsApp'}</span>
+                    </button>
+                  </div>
                 </div>
               ))
             )}
