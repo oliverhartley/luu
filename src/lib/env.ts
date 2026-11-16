@@ -15,19 +15,16 @@ export function getAppEnvironment(): AppEnvironment {
     }
   }
 
-  // 2. Variable de entorno configurada en el build
-  const envVar = import.meta.env.VITE_APP_ENV;
-  if (envVar === 'production') return 'production';
-  if (envVar === 'test') return 'test';
-
-  // 3. Detección por Hostname
+  // 2. Detección por Hostname (Cloud Run test service, test domain, localhost, preview)
   if (typeof window !== 'undefined') {
     const host = window.location.hostname.toLowerCase();
     if (
       host === 'localhost' ||
       host === '127.0.0.1' ||
       host === 'test.luu.cl' ||
+      host.includes('luu-test-harliz') ||
       host.includes('luu-cl-test') ||
+      host.includes('luu-test') ||
       host.includes('--test') ||
       host.startsWith('test.') ||
       host.includes('preview')
@@ -35,6 +32,11 @@ export function getAppEnvironment(): AppEnvironment {
       return 'test';
     }
   }
+
+  // 3. Variable de entorno configurada en el build
+  const envVar = import.meta.env.VITE_APP_ENV;
+  if (envVar === 'production') return 'production';
+  if (envVar === 'test') return 'test';
 
   return 'production';
 }

@@ -1,7 +1,7 @@
 const { VertexAI } = require('@google-cloud/vertexai');
 
 const vertexAI = new VertexAI({
-  project: 'pelu-harliz-green-df830',
+  project: 'pelu-harliz-green',
   location: 'us-central1'
 });
 

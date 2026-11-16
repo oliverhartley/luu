@@ -1,15 +1,15 @@
 {
   "projects": {
-    "default": "pelu-harliz-green-df830"
+    "default": "pelu-harliz-green"
   },
   "targets": {
-    "pelu-harliz-green-df830": {
+    "pelu-harliz-green": {
       "hosting": {
         "prod": [
-          "pelu-harliz-green-df830"
+          "pelu-harliz-green"
         ],
         "test": [
-          "luu-cl-test"
+          "luu-test-harliz"
         ]
       }
     }

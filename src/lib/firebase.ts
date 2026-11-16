@@ -3,13 +3,12 @@ import { getAuth, GoogleAuthProvider } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 
 export const firebaseConfig = {
-  projectId: 'pelu-harliz-green-df830',
-  appId: '1:437514694034:web:82dba50042406d4199254b',
-  storageBucket: 'pelu-harliz-green-df830.firebasestorage.app',
-  apiKey: 'AIzaSyBjkzLm8xiOXGwDyc7yljAhXjarw5b7Sw8',
-  authDomain: 'pelu-harliz-green-df830.firebaseapp.com',
-  messagingSenderId: '437514694034',
-  measurementId: 'G-XJC9DJD71X'
+  projectId: 'pelu-harliz-green',
+  appId: '1:217318402011:web:b660dcacfb27c4badde9fe',
+  storageBucket: 'pelu-harliz-green.firebasestorage.app',
+  apiKey: 'AIzaSyDeSPCO40kAsHtIx6Ej6zulu2Bh2Ukd2PU',
+  authDomain: 'pelu-harliz-green.firebaseapp.com',
+  messagingSenderId: '217318402011'
 };
 
 // Initialize Firebase App singleton
